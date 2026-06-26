@@ -503,6 +503,19 @@ function Pop-Bg {
     return ("background:hsl(205,80%,{0}%)" -f ([math]::Round($l)))
 }
 
+# 雨量セル: 多いほど濃い青（20mmで最濃）。1mm未満は1mm相当、30mm以上は薄橙の単色
+function Rain-Bg {
+    param($v)
+    if ($null -eq $v) { return "" }
+    $vv = [double]$v
+    if ($vv -le 0)   { return "" }                   # 雨なしは無色
+    if ($vv -ge 30)  { return "background:#ffd9a0" } # 30mm以上は薄橙(単色)
+    $eff = [math]::Max(1.0, $vv)                      # 1mm未満は1mm扱い
+    $l = 100 - [math]::Min($eff, 20) / 20 * 55        # 1mm→97%、20mm→45%
+    $fg = if ($l -lt 55) { ";color:#fff" } else { "" }
+    return ("background:hsl(210,85%,{0}%){1}" -f [math]::Round($l), $fg)
+}
+
 $JpWeek = @("日", "月", "火", "水", "木", "金", "土")
 
 # ---- HTML ----
@@ -608,7 +621,7 @@ td.starcell{font-weight:700;color:#3a3f7a;}
         $wbg = if ($r.wind -ge 6) { ' style="background:#ffe0b2"' } elseif ($r.wind -ge 3) { ' style="background:#fff9c4"' } else { '' }
         "<td{0}>{1:0.0}</td>" -f $wbg, $r.wind
     }
-    Row "雨量mm"   { param($r) "<td>{0:0.0}</td>" -f $r.precip }
+    Row "雨量mm"   { param($r) "<td style=""{0}"">{1:0.0}</td>" -f (Rain-Bg $r.precip), $r.precip }
     Row "全雲量%"  { param($r) "<td style=""{0}"">{1}</td>" -f (Cloud-Bg $r.total), $r.total }
 
     # 月の欄: 月が出ている時間帯を明るさに応じた薄黄でグラデーション（縦線なし）
@@ -664,7 +677,7 @@ td.starcell{font-weight:700;color:#3a3f7a;}
     }
 
     [void]$sb.AppendLine('</table></div>')
-    [void]$sb.AppendLine('<p class="legend">セルの色: 濃いほど雲量・降水確率が高い。低層雲が当プロジェクトの主目的の指標です。<br>月の欄: 月が出ている時間帯を薄黄で表示（濃いほど明るい）。出／南中／入りの時刻と月齢を記載。<br>星空指数(0〜100, 5単位): 夜間のみ算出。大きいほど星空観測に好条件。雲量・月明かり(月齢・高度)・薄明・降水確率から計算。</p>')
+    [void]$sb.AppendLine('<p class="legend">セルの色: 雲量・雨量は濃いほど多い（雨量は20mmで最濃、30mm以上は橙）。低層雲が当プロジェクトの主目的の指標です。<br>月の欄: 月が出ている時間帯を薄黄で表示（濃いほど明るい）。出／南中／入りの時刻と月齢を記載。<br>星空指数(0〜100, 5単位): 夜間のみ算出。大きいほど星空観測に好条件。雲量・月明かり(月齢・高度)・薄明・降水量から計算。</p>')
 
     # ---- 週間予報 ----
     if ($daily -and $daily.Count -gt 0) {
