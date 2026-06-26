@@ -516,7 +516,33 @@ h2{font-size:16px;margin:18px 16px 6px;font-weight:600;}
         [void]$sb.AppendLine('</div>')
     }
 
-    [void]$sb.AppendLine('</div></body></html>')
+    [void]$sb.AppendLine('</div>')
+
+    # 親ページ(WordPress等)へ自身の高さを通知し、iframeの高さを自動追従させる
+    $autoHeight = @'
+<script>
+(function () {
+  function postHeight() {
+    var h = Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight
+    );
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'karstweather-height', height: h }, '*');
+    }
+  }
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+  if (window.ResizeObserver) {
+    new ResizeObserver(postHeight).observe(document.body);
+  }
+  // フォント描画やレイアウト確定後の取りこぼし防止
+  setTimeout(postHeight, 300);
+})();
+</script>
+'@
+    [void]$sb.AppendLine($autoHeight)
+    [void]$sb.AppendLine('</body></html>')
 
     $enc = New-Object System.Text.UTF8Encoding($true)
     [System.IO.File]::WriteAllText($path, $sb.ToString(), $enc)
