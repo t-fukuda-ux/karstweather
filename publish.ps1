@@ -34,19 +34,28 @@ try {
     Write-Log "index.html を更新しました。"
 
     # Step 3: git commit & push
+    # gitはLF/CRLF等の警告をstderrに出す。$EAP=Stop + 2>&1 だと警告が例外化して
+    # commit/push に到達しないため、このブロックだけ Continue にし、終了コードで成否判定する。
     Push-Location $dir
+    $prevEAP = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     try {
-        git add index.html lowcloud.html 2>&1 | Out-Null
+        git add index.html lowcloud.html 2>$null
         $changed = git status --porcelain
         if ($changed) {
             $ts = Get-Date -Format "yyyy-MM-dd HH:mm"
-            git commit -m "update: $ts" 2>&1 | Out-Null
-            git push origin main 2>&1 | Out-Null
-            Write-Log "GitHub Pages にアップロードしました。"
+            git commit -m "update: $ts" 2>$null | Out-Null
+            git push origin main 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log "GitHub Pages にアップロードしました。"
+            } else {
+                Write-Log ("push 失敗 (exit {0})。資格情報・ネットワークを確認してください。" -f $LASTEXITCODE)
+            }
         } else {
             Write-Log "変更なし。スキップします。"
         }
     } finally {
+        $ErrorActionPreference = $prevEAP
         Pop-Location
     }
 
