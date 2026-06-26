@@ -541,8 +541,8 @@ h1{font-size:18px;margin:14px 16px 2px;}
 .meta{font-size:12px;color:#666;margin:0 16px 10px;}
 .scroll{overflow-x:auto;border-top:1px solid #d8dde3;border-bottom:1px solid #d8dde3;background:#fff;}
 table{border-collapse:collapse;white-space:nowrap;}
-th,td{border:1px solid #e3e7ec;text-align:center;font-size:12px;padding:3px 6px;min-width:46px;}
-th.rl{position:sticky;left:0;z-index:2;background:#eef1f5;text-align:right;min-width:74px;font-weight:600;color:#444;}
+th,td{border:1px solid #e3e7ec;text-align:center;font-size:12px;padding:3px 4px;min-width:40px;}
+th.rl{position:sticky;left:0;z-index:2;background:#eef1f5;text-align:right;min-width:62px;font-weight:600;color:#444;}
 tr.date th{background:#f0f3f7;font-weight:600;color:#333;border-bottom:none;}
 tr.hour th{background:#f7f9fb;color:#555;font-weight:500;}
 td.ico{line-height:1;padding-top:4px;}
@@ -567,13 +567,13 @@ h2{font-size:16px;margin:18px 16px 6px;font-weight:600;}
 .card.sat .dow{color:#1c7ed6;}.card.sun .dow{color:#d6336c;}
 /* 日付行: 横スクロールしても日付ラベルが左に貼り付く */
 tr.date th.dcell{text-align:left;background:#f0f3f7;border-bottom:none;padding:3px 0;}
-tr.date th.dcell>span{position:sticky;left:80px;padding:0 8px;display:inline-block;font-weight:600;color:#333;}
+tr.date th.dcell>span{position:sticky;left:64px;padding:0 8px;display:inline-block;font-weight:600;color:#333;}
 tr.date th.dcell.datesat>span{color:#1c7ed6;}
 tr.date th.dcell.datesun>span{color:#d6336c;}
 /* 月の欄: 縦線なし。月が出ている時間帯を明るさに応じた薄黄でグラデーション */
 td.moonband{border-left:none;border-right:none;font-size:10px;padding:2px 1px;color:#7a5c00;line-height:1.3;white-space:nowrap;}
-td.moonband b.arUp{color:#e8590c;font-size:13px;font-weight:900;}
-td.moonband b.arDn{color:#1565c0;font-size:13px;font-weight:900;}
+b.arUp{color:#e8590c;font-size:13px;font-weight:900;}
+b.arDn{color:#1565c0;font-size:13px;font-weight:900;}
 td.starcell{font-weight:700;color:#3a3f7a;}
 </style>
 '@)
@@ -704,7 +704,7 @@ td.starcell{font-weight:700;color:#3a3f7a;}
                 default { "月齢{0}日" -f $ageInt }
             }
             [void]$sb.Append(("<div class=""moonrow"">{0} {1}</div>" -f $r.moonEmoji, $moonLabel))
-            [void]$sb.AppendLine(("<div class=""moonrs"">🌙↑{0}　↓{1}</div></div>" -f $r.moonRise, $r.moonSet))
+            [void]$sb.AppendLine(("<div class=""moonrs"">🌙<b class=""arUp"">↑</b>{0}　<b class=""arDn"">↓</b>{1}</div></div>" -f $r.moonRise, $r.moonSet))
         }
         [void]$sb.AppendLine('</div>')
     }
