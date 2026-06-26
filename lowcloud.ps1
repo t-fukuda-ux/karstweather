@@ -160,7 +160,26 @@ function Get-MoonRADec {
     $ra  = ([math]::Atan2(
                 [math]::Sin($lonMoon*$r)*[math]::Cos($obl*$r) - [math]::Tan($latMoon*$r)*[math]::Sin($obl*$r),
                 [math]::Cos($lonMoon*$r)) / $r + 360) % 360
-    return @{ ra = $ra; dec = $dec }
+    return @{ ra = $ra; dec = $dec; lon = $lonMoon }
+}
+
+# 太陽の黄経（度）
+function Get-SunLon {
+    param([double]$jd)
+    $r = [math]::PI / 180
+    $n = $jd - 2451545.0
+    $L = ((280.460 + 0.9856474 * $n) % 360 + 360) % 360
+    $g = ((357.528 + 0.9856003 * $n) % 360 + 360) % 360
+    return (($L + 1.915 * [math]::Sin($g*$r) + 0.020 * [math]::Sin(2*$g*$r)) % 360 + 360) % 360
+}
+
+# 月相 phase（0=新月, 0.5=満月）。月と太陽の黄経差（離角）から算出＝朔基準で正確
+function Get-MoonPhase {
+    param([double]$jd)
+    $lm = (Get-MoonRADec -jd $jd).lon
+    $ls = Get-SunLon -jd $jd
+    $D  = (($lm - $ls) % 360 + 360) % 360
+    return $D / 360.0
 }
 
 # 指定JD（UTC）における月の高度（度）
@@ -208,13 +227,99 @@ function Get-MoonRiseSet {
 function Get-MoonPhaseInfo {
     param([datetime]$localDate, [int]$tz = 9)
     $jd = Get-JD -utc $localDate.Date.AddHours(12 - $tz)   # 正午 JST
-    $phase = (($jd - 2451550.1) / 29.53059) % 1
-    if ($phase -lt 0) { $phase += 1 }
+    $phase = Get-MoonPhase -jd $jd
     $age = $phase * 29.53
     $idx = [int][math]::Round($phase * 8) % 8
     $emojis = @("🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘")
     $names  = @("新月","三日月","上弦","十三夜","満月","十六夜","下弦","有明月")
     return @{ phase = $phase; age = $age; emoji = $emojis[$idx]; name = $names[$idx] }
+}
+
+# ---- 星空指数 ----
+# 設計: 月齢→明るさ K&S(1991) / 高度減光 Kasten-Young(1989) / 薄明→空輝度SQM / 雲量と合成
+# すべて「満月の南中=明るさ100」スケールに統一する。
+
+# Kasten & Young (1989) のエアマス（高度 h 度、h>0 を想定）
+function Get-AirMass {
+    param([double]$h)
+    if ($h -le 0) { return 40.0 }
+    $r = [math]::PI / 180
+    return 1.0 / ([math]::Sin($h*$r) + 0.50572 * [math]::Pow($h + 6.07995, -1.6364))
+}
+
+# 太陽高度（度）。低精度式（薄明判定には十分な±0.01°級）
+function Get-SunAlt {
+    param([double]$jd, [double]$lat, [double]$lon)
+    $r = [math]::PI / 180
+    $n = $jd - 2451545.0
+    $L = ((280.460 + 0.9856474 * $n) % 360 + 360) % 360
+    $g = ((357.528 + 0.9856003 * $n) % 360 + 360) % 360
+    $lambda = $L + 1.915 * [math]::Sin($g*$r) + 0.020 * [math]::Sin(2*$g*$r)
+    $eps = 23.439 - 0.0000004 * $n
+    $ra  = ([math]::Atan2([math]::Cos($eps*$r)*[math]::Sin($lambda*$r), [math]::Cos($lambda*$r)) / $r + 360) % 360
+    $dec = [math]::Asin([math]::Sin($eps*$r)*[math]::Sin($lambda*$r)) / $r
+    $gmst = ((280.46061837 + 360.98564736629 * $n) % 360 + 360) % 360
+    $lha  = ($gmst + $lon - $ra + 360) % 360
+    $sinAlt = [math]::Sin($lat*$r)*[math]::Sin($dec*$r) + [math]::Cos($lat*$r)*[math]::Cos($dec*$r)*[math]::Cos($lha*$r)
+    return [math]::Asin([math]::Max(-1.0,[math]::Min(1.0,$sinAlt))) / $r
+}
+
+# 薄明による空の明るさ（満月南中=100）。太陽高度 s 度。SQM式: hnsky.org のフィット
+function Get-TwilightBrightness {
+    param([double]$s)
+    if ($s -ge 0)   { return 100.0 }   # 日没前は星見えない
+    if ($s -le -18) { return 0.0 }     # 天文薄明終了＝暗夜
+    if ($s -gt -12) { $sqm = -1.057 * $s + 6.749 }
+    else            { $sqm = -0.0744 * $s * $s - 2.577 * $s - 0.585 }
+    # 暗夜 SQM≈21.8 を 0、満月南中 SQM≈18 を 100 に正規化（係数3.0）
+    $excess = [math]::Pow(10, 0.4 * (21.8 - $sqm))
+    $ind = 3.0 * ($excess - 1)
+    if ($ind -lt 0)   { return 0.0 }
+    if ($ind -gt 100) { return 100.0 }
+    return $ind
+}
+
+# 月明かりによる空の明るさ（満月南中=100）
+function Get-MoonBrightness {
+    param([double]$jd, [double]$lat, [double]$lon, [double]$kext = 0.15)
+    $r = [math]::PI / 180
+    $pos = Get-MoonRADec -jd $jd
+    $T = ($jd - 2451545.0) / 36525.0
+    $gmst = ((280.46061837 + 360.98564736629*($jd-2451545.0) + 0.000387933*$T*$T) % 360 + 360) % 360
+    $lha  = ($gmst + $lon - $pos.ra + 360) % 360
+    $sinAlt = [math]::Sin($lat*$r)*[math]::Sin($pos.dec*$r) + [math]::Cos($lat*$r)*[math]::Cos($pos.dec*$r)*[math]::Cos($lha*$r)
+    $h = [math]::Asin([math]::Max(-1.0,[math]::Min(1.0,$sinAlt))) / $r
+    if ($h -le 0) { return 0.0 }   # 月が地平線下なら月明かりなし
+    # 月相→位相角α（度）: phase 0=新月, 0.5=満月
+    $phase = Get-MoonPhase -jd $jd
+    $alpha = [math]::Abs(180 - $phase * 360)
+    # K&S(1991) 位相項。満月(α=0)で1
+    $phaseCoef = [math]::Pow(10, -0.4 * (0.026 * $alpha + 4e-9 * [math]::Pow($alpha, 4)))
+    # 高度による大気減光（その夜の南中高度を基準=1）
+    $hTransit = 90 - [math]::Abs($lat - $pos.dec)
+    $X  = Get-AirMass -h $h
+    $Xt = Get-AirMass -h $hTransit
+    $altCoef = [math]::Pow(10, -0.4 * $kext * ($X - $Xt))
+    return 100.0 * $phaseCoef * $altCoef
+}
+
+# 星空指数（0-100, 5単位）。昼間（太陽高度>=0）は $null を返す
+function Get-StarIndex {
+    param([double]$jd, [double]$lat, [double]$lon, $totalCloud, $precip)
+    $s = Get-SunAlt -jd $jd -lat $lat -lon $lon
+    if ($s -ge 0) { return $null }
+    $bMoon = Get-MoonBrightness -jd $jd -lat $lat -lon $lon
+    $bTwi  = Get-TwilightBrightness -s $s
+    $B = $bMoon + $bTwi
+    if ($B -gt 100) { $B = 100 }
+    $c = if ($null -eq $totalCloud) { 0.0 } else { [double]$totalCloud }
+    $idx = (100 - $c) * (1 - $B / 100)
+    # 降水量で減衰（1mm未満の雨は×0.7、1mm以上は×0.4。降水確率はMSMで非提供のため不使用）
+    $pr = if ($null -eq $precip) { 0.0 } else { [double]$precip }
+    if     ($pr -ge 1.0) { $idx *= 0.4 }
+    elseif ($pr -gt 0.0) { $idx *= 0.7 }
+    if ($idx -lt 0) { $idx = 0 }
+    return [int]([math]::Round($idx / 5.0) * 5)   # 5単位に丸め
 }
 
 # ---- データ取得 ----
@@ -282,6 +387,13 @@ function Build-Rows {
     $h = $data.hourly
     $rows = New-Object System.Collections.Generic.List[object]
     for ($i = 0; $i -lt $h.time.Count; $i++) {
+        $dt  = [datetime]($h.time[$i] -replace 'T', ' ')
+        $jd  = Get-JD -utc $dt.AddHours(-9)   # JST -> UTC
+        $star = Get-StarIndex -jd $jd -lat $Latitude -lon $Longitude -totalCloud $h.cloud_cover[$i] -precip $h.precipitation[$i]
+        $mAlt = Get-MoonAlt -jd $jd -lat $Latitude -lon $Longitude
+        $mBri = Get-MoonBrightness -jd $jd -lat $Latitude -lon $Longitude
+        $mPhase = Get-MoonPhase -jd $jd
+        $mEmoji = @("🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘")[[int][math]::Round($mPhase*8)%8]
         $rows.Add([pscustomobject]@{
             time    = ($h.time[$i] -replace 'T', ' ')
             wcode   = $h.weather_code[$i]
@@ -294,6 +406,11 @@ function Build-Rows {
             mid     = $h.cloud_cover_mid[$i]
             high    = $h.cloud_cover_high[$i]
             total   = $h.cloud_cover[$i]
+            star    = $star
+            moonAlt    = $mAlt
+            moonBright = $mBri
+            moonAge    = [int][math]::Round($mPhase * 29.53)
+            moonEmoji  = $mEmoji
         })
     }
     # 現在時刻の時以降をすべて返す（4日分の末尾まで）
@@ -331,21 +448,22 @@ function Show-Table {
     Write-Host ("取得時刻: {0:yyyy-MM-dd HH:mm}   気温=°C / 風速=m/s" -f (Get-Date))
     Write-Host ""
     $header = (Pad "日時" 18 -Left) + (Pad "天気" 10 -Left) + (Pad "気温" 7) + (Pad "風速" 7) +
-              (Pad "降水" 6) + (Pad "雨量" 8) +
-              (Pad "低層" 6) + (Pad "中層" 6) + (Pad "高層" 6) + (Pad "全雲量" 7)
+              (Pad "雨量" 8) +
+              (Pad "低層" 6) + (Pad "中層" 6) + (Pad "高層" 6) + (Pad "全雲量" 7) + (Pad "星空" 6)
     Write-Host $header
     Write-Host ("-" * (Get-DisplayWidth $header))
     foreach ($r in $rows) {
+        $starTxt = if ($null -eq $r.star) { "--" } else { [string]$r.star }
         $line = (Pad $r.time 18 -Left) +
                 (Pad $r.weather 10 -Left) +
                 (Pad (Format-Temp $r.temp) 7) +
                 (Pad (Format-Wind $r.wind) 7) +
-                (Pad (Format-Pct $r.pop) 6) +
                 (Pad (Format-Precip $r.precip) 8) +
                 (Pad (Format-Pct $r.low) 6) +
                 (Pad (Format-Pct $r.mid) 6) +
                 (Pad (Format-Pct $r.high) 6) +
-                (Pad (Format-Pct $r.total) 7)
+                (Pad (Format-Pct $r.total) 7) +
+                (Pad $starTxt 6)
         Write-Host $line
     }
 }
@@ -355,10 +473,11 @@ function Show-Table {
 function Save-Csv {
     param($rows, [string]$path)
     $sb = New-Object System.Text.StringBuilder
-    [void]$sb.AppendLine("日時,天気,気温℃,風速m/s,降水確率%,雨量mm,低層雲%,中層雲%,高層雲%,全雲量%")
+    [void]$sb.AppendLine("日時,天気,気温℃,風速m/s,雨量mm,低層雲%,中層雲%,高層雲%,全雲量%,星空指数")
     foreach ($r in $rows) {
-        [void]$sb.AppendLine(("{0},{1},{2},{3:0.0},{4},{5:0.0},{6},{7},{8},{9}" -f `
-            $r.time, $r.weather, $r.temp, $r.wind, $r.pop, $r.precip, $r.low, $r.mid, $r.high, $r.total))
+        $starCsv = if ($null -eq $r.star) { "" } else { [string]$r.star }
+        [void]$sb.AppendLine(("{0},{1},{2},{3:0.0},{4:0.0},{5},{6},{7},{8},{9}" -f `
+            $r.time, $r.weather, $r.temp, $r.wind, $r.precip, $r.low, $r.mid, $r.high, $r.total, $starCsv))
     }
     $enc = New-Object System.Text.UTF8Encoding($true)
     [System.IO.File]::WriteAllText($path, $sb.ToString(), $enc)
@@ -433,6 +552,16 @@ h2{font-size:16px;margin:18px 16px 6px;font-weight:600;}
 .card .moonrow{font-size:12px;margin-top:3px;}
 .card .moonrs{font-size:11px;color:#5c6bc0;margin-top:2px;}
 .card.sat .dow{color:#1c7ed6;}.card.sun .dow{color:#d6336c;}
+/* 日付行: 横スクロールしても日付ラベルが左に貼り付く */
+tr.date th.dcell{text-align:left;background:#f0f3f7;border-bottom:none;padding:3px 0;}
+tr.date th.dcell>span{position:sticky;left:80px;padding:0 8px;display:inline-block;font-weight:600;color:#333;}
+tr.date th.dcell.datesat>span{color:#1c7ed6;}
+tr.date th.dcell.datesun>span{color:#d6336c;}
+/* 月の欄: 縦線なし。月が出ている時間帯を明るさに応じた薄黄でグラデーション */
+td.moonband{border-left:none;border-right:none;font-size:10px;padding:2px 1px;color:#7a5c00;line-height:1.3;white-space:nowrap;}
+td.moonband b.arUp{color:#e8590c;font-size:13px;font-weight:900;}
+td.moonband b.arDn{color:#1565c0;font-size:13px;font-weight:900;}
+td.starcell{font-weight:700;color:#3a3f7a;}
 </style>
 '@)
     [void]$sb.AppendLine('</head><body><div class="wrap">')
@@ -440,20 +569,20 @@ h2{font-size:16px;margin:18px 16px 6px;font-weight:600;}
     [void]$sb.AppendLine(("<p class=""meta"">緯度 {0} / 経度 {1} / 標高 {2}　|　取得: {3}　|　{4} ～ {5}　|　出典: Open-Meteo</p>" -f $Latitude, $Longitude, $elevLabel, $generated, $startTime, $endTime))
     [void]$sb.AppendLine('<div class="scroll"><table>')
 
-    # 日付行
+    # 日付行: 各日を colspan でまとめ、ラベルを sticky にして横スクロール時も左に表示
     [void]$sb.Append('<tr class="date"><th class="rl">日付</th>')
-    $prevDate = ""
-    foreach ($r in $rows) {
-        $dt = [datetime]$r.time
-        $d = "{0:yyyy-MM-dd}" -f $dt
-        if ($d -ne $prevDate) {
-            $wd = $JpWeek[[int]$dt.DayOfWeek]
-            $cls = if ($dt.DayOfWeek -eq 'Saturday') { ' class="sat"' } elseif ($dt.DayOfWeek -eq 'Sunday') { ' class="sun"' } else { '' }
-            [void]$sb.Append(("<th{0}>{1}/{2}({3})</th>" -f $cls, $dt.Month, $dt.Day, $wd))
-            $prevDate = $d
-        } else {
-            [void]$sb.Append("<th></th>")
+    $idx = 0
+    while ($idx -lt $rows.Count) {
+        $dt = [datetime]$rows[$idx].time
+        $d  = "{0:yyyy-MM-dd}" -f $dt
+        $span = 0
+        for ($j = $idx; $j -lt $rows.Count; $j++) {
+            if (("{0:yyyy-MM-dd}" -f [datetime]$rows[$j].time) -eq $d) { $span++ } else { break }
         }
+        $wd  = $JpWeek[[int]$dt.DayOfWeek]
+        $cls = if ($dt.DayOfWeek -eq 'Saturday') { ' datesat' } elseif ($dt.DayOfWeek -eq 'Sunday') { ' datesun' } else { '' }
+        [void]$sb.Append(("<th class=""dcell{0}"" colspan=""{1}""><span>{2}/{3}({4})</span></th>" -f $cls, $span, $dt.Month, $dt.Day, $wd))
+        $idx += $span
     }
     [void]$sb.AppendLine('</tr>')
 
@@ -479,12 +608,63 @@ h2{font-size:16px;margin:18px 16px 6px;font-weight:600;}
         $wbg = if ($r.wind -ge 6) { ' style="background:#ffe0b2"' } elseif ($r.wind -ge 3) { ' style="background:#fff9c4"' } else { '' }
         "<td{0}>{1:0.0}</td>" -f $wbg, $r.wind
     }
-    Row "降水確率" { param($r) "<td style=""{0}"">{1}%</td>" -f (Pop-Bg $r.pop), $r.pop }
     Row "雨量mm"   { param($r) "<td>{0:0.0}</td>" -f $r.precip }
     Row "全雲量%"  { param($r) "<td style=""{0}"">{1}</td>" -f (Cloud-Bg $r.total), $r.total }
 
+    # 月の欄: 月が出ている時間帯を明るさに応じた薄黄でグラデーション（縦線なし）
+    # 出/南中/入りの正確時刻を毎時の月高度から補間し、月齢を出〜南中・南中〜入りの中間に表示
+    $moonRise = @{}; $moonSet = @{}; $moonTransit = @{}; $ageAt = @{}
+    for ($k = 0; $k -lt $rows.Count; $k++) {
+        $a  = [double]$rows[$k].moonAlt
+        $t  = [datetime]$rows[$k].time
+        $pa = if ($k -gt 0)              { [double]$rows[$k-1].moonAlt } else { $null }
+        $na = if ($k -lt $rows.Count-1)  { [double]$rows[$k+1].moonAlt } else { $null }
+        if ($null -ne $pa -and $pa -lt 0 -and $a -ge 0) {
+            $frac = (0 - $pa) / ($a - $pa)
+            $moonRise[$k] = "{0:HH:mm}" -f $t.AddHours(-1).AddMinutes([int][math]::Round($frac*60))
+        }
+        if ($null -ne $pa -and $pa -ge 0 -and $a -lt 0) {
+            $frac = $pa / ($pa - $a)
+            $moonSet[$k] = "{0:HH:mm}" -f $t.AddHours(-1).AddMinutes([int][math]::Round($frac*60))
+        }
+        if ($null -ne $pa -and $null -ne $na -and $a -gt 0 -and $a -ge $pa -and $a -gt $na) {
+            $den = $pa - 2*$a + $na
+            $off = if ($den -ne 0) { 0.5 * ($pa - $na) / $den } else { 0 }
+            $moonTransit[$k] = "{0:HH:mm}" -f $t.AddMinutes([int][math]::Round($off*60))
+        }
+    }
+    foreach ($tk in $moonTransit.Keys) {
+        $age = $rows[$tk].moonAge
+        $em  = $rows[$tk].moonEmoji
+        $rk = ($moonRise.Keys | Where-Object { $_ -le $tk } | Sort-Object -Descending | Select-Object -First 1)
+        $sk = ($moonSet.Keys  | Where-Object { $_ -ge $tk } | Sort-Object | Select-Object -First 1)
+        if ($null -ne $rk) { $ageAt[[int](($rk + $tk)/2)] = "$em 月齢$age" }
+        if ($null -ne $sk) { $ageAt[[int](($tk + $sk)/2)] = "$em 月齢$age" }
+    }
+    [void]$sb.Append('<tr><th class="rl">月</th>')
+    for ($k = 0; $k -lt $rows.Count; $k++) {
+        $r = $rows[$k]; $a = [double]$r.moonAlt
+        $label = ""
+        if     ($moonRise.ContainsKey($k))    { $label = "🌙<b class=""arUp"">↑</b>" + $moonRise[$k] }
+        elseif ($moonTransit.ContainsKey($k)) { $label = "南中" + $moonTransit[$k] }
+        elseif ($moonSet.ContainsKey($k))     { $label = "<b class=""arDn"">↓</b>" + $moonSet[$k] + "🌙" }
+        elseif ($ageAt.ContainsKey($k))       { $label = $ageAt[$k] }
+        $style = ""
+        if ($a -gt 0) {
+            $L = 100 - [math]::Round([double]$r.moonBright * 0.35)   # 明るいほど濃い黄
+            $style = " style=""background:hsl(50,90%,{0}%)""" -f $L
+        }
+        [void]$sb.Append(("<td class=""moonband""{0}>{1}</td>" -f $style, $label))
+    }
+    [void]$sb.AppendLine('</tr>')
+
+    Row "星空指数" { param($r)
+        if ($null -eq $r.star) { '<td class="starcell">--</td>' }
+        else { "<td class=""starcell"">{0}</td>" -f $r.star }
+    }
+
     [void]$sb.AppendLine('</table></div>')
-    [void]$sb.AppendLine('<p class="legend">セルの色: 濃いほど雲量・降水確率が高い。低層雲が当プロジェクトの主目的の指標です。</p>')
+    [void]$sb.AppendLine('<p class="legend">セルの色: 濃いほど雲量・降水確率が高い。低層雲が当プロジェクトの主目的の指標です。<br>月の欄: 月が出ている時間帯を薄黄で表示（濃いほど明るい）。出／南中／入りの時刻と月齢を記載。<br>星空指数(0〜100, 5単位): 夜間のみ算出。大きいほど星空観測に好条件。雲量・月明かり(月齢・高度)・薄明・降水確率から計算。</p>')
 
     # ---- 週間予報 ----
     if ($daily -and $daily.Count -gt 0) {
