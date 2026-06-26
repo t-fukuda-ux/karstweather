@@ -20,7 +20,7 @@
 param(
     [double]$Latitude    = 33.4666147,    # 四国カルスト 姫鶴荘
     [double]$Longitude   = 132.9610114,
-    [Nullable[double]]$Elevation = 1390,   # 標高(m)。$null ならAPIが自動採用
+    [Nullable[double]]$Elevation = $null,  # 標高(m)。$null ならAPIが自動採用（この地点は約1296m）
     [int]   $ForecastDays = 4,            # 72h確保のため4日取得（内部用）
     [int]   $WeeklyDays  = 7,             # 週間予報の日数（最大16）
     [string]$Timezone    = "Asia/Tokyo",
