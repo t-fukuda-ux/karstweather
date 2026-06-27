@@ -20,7 +20,7 @@
 param(
     [double]$Latitude    = 33.4666147,    # 四国カルスト 姫鶴荘
     [double]$Longitude   = 132.9610114,
-    [Nullable[double]]$Elevation = $null,  # 標高(m)。$null ならAPIが自動採用（この地点は約1296m）
+    [Nullable[double]]$Elevation = 1380,   # 標高(m)。$null ならAPIが自動採用（この地点は約1296m）
     [int]   $ForecastDays = 4,            # 72h確保のため4日取得（内部用）
     [int]   $WeeklyDays  = 7,             # 週間予報の日数（最大16）
     [string]$Timezone    = "Asia/Tokyo",
@@ -389,6 +389,9 @@ function Build-Rows {
     for ($i = 0; $i -lt $h.time.Count; $i++) {
         $dt  = [datetime]($h.time[$i] -replace 'T', ' ')
         $jd  = Get-JD -utc $dt.AddHours(-9)   # JST -> UTC
+        # 晴れた昼間は実気温より低く出がちなため時間帯ごとに気温を補正（表示用）
+        $hh = $dt.Hour
+        $tAdj = if ($hh -ge 8 -and $hh -le 10) { 1 } elseif ($hh -ge 11 -and $hh -le 15) { 2 } elseif ($hh -ge 16 -and $hh -le 17) { 1 } else { 0 }
         $star = Get-StarIndex -jd $jd -lat $Latitude -lon $Longitude -totalCloud $h.cloud_cover[$i] -precip $h.precipitation[$i]
         $mAlt = Get-MoonAlt -jd $jd -lat $Latitude -lon $Longitude
         $mBri = Get-MoonBrightness -jd $jd -lat $Latitude -lon $Longitude
@@ -399,6 +402,7 @@ function Build-Rows {
             wcode   = $h.weather_code[$i]
             weather = (Get-WeatherText $h.weather_code[$i])
             temp    = $h.temperature_2m[$i]
+            tempAdj = if ($null -eq $h.temperature_2m[$i]) { $null } else { [double]$h.temperature_2m[$i] + $tAdj }
             wind    = $h.wind_speed_10m[$i]
             pop     = $h.precipitation_probability[$i]
             precip  = $h.precipitation[$i]
@@ -456,7 +460,7 @@ function Show-Table {
         $starTxt = if ($null -eq $r.star) { "--" } else { [string]$r.star }
         $line = (Pad $r.time 18 -Left) +
                 (Pad $r.weather 10 -Left) +
-                (Pad (Format-Temp $r.temp) 7) +
+                (Pad (Format-Temp $r.tempAdj) 7) +
                 (Pad (Format-Wind $r.wind) 7) +
                 (Pad (Format-Precip $r.precip) 8) +
                 (Pad (Format-Pct $r.low) 6) +
@@ -617,7 +621,7 @@ th.rl .lcl{font-size:9px;font-weight:600;}
 
     Row "天気"     { param($r) "<td class=""ico"">{0}<div class=""wt"">{1}</div></td>" -f (Get-WeatherSvg $r.wcode), $r.weather }
     Row '<span class="lcl">低層雲</span> 霧'  { param($r) "<td class=""low"" style=""{0}"">{1}</td>" -f (Cloud-Bg $r.low), $r.low }
-    Row "気温℃"   { param($r) "<td class=""temp"">{0}</td>" -f [int][math]::Ceiling([double]$r.temp) }
+    Row "気温℃"   { param($r) "<td class=""temp"">{0}</td>" -f [int][math]::Ceiling([double]$r.tempAdj) }
     Row "風速m/s"  { param($r)
         $wbg = if ($r.wind -ge 6) { ' style="background:#ffe0b2"' } elseif ($r.wind -ge 3) { ' style="background:#fff9c4"' } else { '' }
         "<td{0}>{1:0.0}</td>" -f $wbg, $r.wind
@@ -694,7 +698,7 @@ th.rl .lcl{font-size:9px;font-weight:600;}
             [void]$sb.Append(("<div class=""{0}""><div class=""dow"">{1}</div><div class=""dt"">{2}/{3}</div>" -f $cls, $wd, $r.date.Month, $r.date.Day))
             [void]$sb.Append((Get-WeatherSvg $r.wcode))
             [void]$sb.Append(("<div class=""wt"">{0}</div>" -f $r.weather))
-            [void]$sb.Append(("<div><span class=""tmax"">{0}°</span> <span class=""tmin"">{1}°</span></div>" -f [int][math]::Ceiling([double]$r.tmax), [int][math]::Ceiling([double]$r.tmin)))
+            [void]$sb.Append(("<div><span class=""tmax"">{0}°</span> <span class=""tmin"">{1}°</span></div>" -f [int][math]::Ceiling([double]$r.tmax + 2.0), [int][math]::Ceiling([double]$r.tmin)))
             [void]$sb.Append(("<div class=""pop""><span style=""font-size:11px;color:#888"">降水</span> <span style=""color:{0}"">{1}</span><span style=""color:#1c7ed6;font-size:11px"">{2}</span></div>" -f $popColor, $popTxt, $mmTxt))
             # 日の出・日の入り
             [void]$sb.Append(("<div class=""sunrow"">🌅{0}　🌇{1}</div>" -f $r.sunrise, $r.sunset))
