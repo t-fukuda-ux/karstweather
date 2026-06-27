@@ -422,7 +422,7 @@ function Build-Rows {
 
 function Format-Pct    { param($v); if ($null -eq $v) { "--" } else { "$v%" } }
 function Format-Precip { param($v); if ($null -eq $v) { "--" } else { ("{0:0.0}mm" -f [double]$v) } }
-function Format-Temp   { param($v); if ($null -eq $v) { "--" } else { ("{0}°" -f $v) } }
+function Format-Temp   { param($v); if ($null -eq $v) { "--" } else { ("{0}°" -f [int][math]::Ceiling([double]$v)) } }   # 0捨1入(切り上げ)
 function Format-Wind   { param($v); if ($null -eq $v) { "--" } else { ("{0:0.0}" -f [double]$v) } }
 
 function Get-DisplayWidth {
@@ -575,6 +575,7 @@ td.moonband{border-left:none;border-right:none;font-size:10px;padding:2px 1px;co
 b.arUp{color:#e8590c;font-size:13px;font-weight:900;}
 b.arDn{color:#1565c0;font-size:13px;font-weight:900;}
 td.starcell{font-weight:700;color:#3a3f7a;}
+th.rl .lcl{font-size:9px;font-weight:600;}
 </style>
 '@)
     [void]$sb.AppendLine('</head><body><div class="wrap">')
@@ -615,8 +616,8 @@ td.starcell{font-weight:700;color:#3a3f7a;}
     }
 
     Row "天気"     { param($r) "<td class=""ico"">{0}<div class=""wt"">{1}</div></td>" -f (Get-WeatherSvg $r.wcode), $r.weather }
-    Row "低層雲%"  { param($r) "<td class=""low"" style=""{0}"">{1}</td>" -f (Cloud-Bg $r.low), $r.low }
-    Row "気温℃"   { param($r) "<td class=""temp"">{0}</td>" -f $r.temp }
+    Row '<span class="lcl">低層雲</span> 霧'  { param($r) "<td class=""low"" style=""{0}"">{1}</td>" -f (Cloud-Bg $r.low), $r.low }
+    Row "気温℃"   { param($r) "<td class=""temp"">{0}</td>" -f [int][math]::Ceiling([double]$r.temp) }
     Row "風速m/s"  { param($r)
         $wbg = if ($r.wind -ge 6) { ' style="background:#ffe0b2"' } elseif ($r.wind -ge 3) { ' style="background:#fff9c4"' } else { '' }
         "<td{0}>{1:0.0}</td>" -f $wbg, $r.wind
@@ -677,7 +678,7 @@ td.starcell{font-weight:700;color:#3a3f7a;}
     }
 
     [void]$sb.AppendLine('</table></div>')
-    [void]$sb.AppendLine('<p class="legend">セルの色: 雲量・雨量は濃いほど多い（雨量は20mmで最濃、30mm以上は橙）。低層雲が当プロジェクトの主目的の指標です。<br>月の欄: 月が出ている時間帯を薄黄で表示（濃いほど明るい）。出／南中／入りの時刻と月齢を記載。<br>星空指数(0〜100, 5単位): 夜間のみ算出。大きいほど星空観測に好条件。雲量・月明かり(月齢・高度)・薄明・降水量から計算。</p>')
+    [void]$sb.AppendLine('<p class="legend">※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。今後風が強まるのか弱まるのか傾向を見るのに使ってください。<br>※雨量は少し離れた場所が大雨予報の時に、(雨雲がズレるリスクを考慮して）大きく出る事が有ります。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。</p>')
 
     # ---- 週間予報 ----
     if ($daily -and $daily.Count -gt 0) {
@@ -693,7 +694,7 @@ td.starcell{font-weight:700;color:#3a3f7a;}
             [void]$sb.Append(("<div class=""{0}""><div class=""dow"">{1}</div><div class=""dt"">{2}/{3}</div>" -f $cls, $wd, $r.date.Month, $r.date.Day))
             [void]$sb.Append((Get-WeatherSvg $r.wcode))
             [void]$sb.Append(("<div class=""wt"">{0}</div>" -f $r.weather))
-            [void]$sb.Append(("<div><span class=""tmax"">{0}°</span> <span class=""tmin"">{1}°</span></div>" -f $r.tmax, $r.tmin))
+            [void]$sb.Append(("<div><span class=""tmax"">{0}°</span> <span class=""tmin"">{1}°</span></div>" -f [int][math]::Ceiling([double]$r.tmax), [int][math]::Ceiling([double]$r.tmin)))
             [void]$sb.Append(("<div class=""pop""><span style=""font-size:11px;color:#888"">降水</span> <span style=""color:{0}"">{1}</span><span style=""color:#1c7ed6;font-size:11px"">{2}</span></div>" -f $popColor, $popTxt, $mmTxt))
             # 日の出・日の入り
             [void]$sb.Append(("<div class=""sunrow"">🌅{0}　🌇{1}</div>" -f $r.sunrise, $r.sunset))
