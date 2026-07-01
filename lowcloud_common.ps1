@@ -426,14 +426,14 @@ function Render-AlertHtml {
     [void]$sb.Append('<div class="alertwrap">')
     foreach ($a in $alerts) {
         if ($a.items.Count -eq 0) {
-            [void]$sb.Append(("<div class=""alertnone"">{0}: 発表なし</div>" -f $a.name))
+            [void]$sb.Append(("<span class=""alertnone"">{0}: 発表なし</span>" -f $a.name))
         } else {
             $maxLevel = if ($a.items | Where-Object { $_.level -eq "特別警報" }) { "特別警報" }
                         elseif ($a.items | Where-Object { $_.level -eq "警報" })   { "警報" }
                         else { "注意報" }
             $cls = switch ($maxLevel) { "特別警報" { "alertspecial" }; "警報" { "alertwarn" }; default { "alertcaution" } }
             $names = ($a.items | ForEach-Object { $_.name }) -join "・"
-            [void]$sb.Append(("<div class=""alertbanner {0}"">⚠ {1}: {2}</div>" -f $cls, $a.name, $names))
+            [void]$sb.Append(("<span class=""alertbanner {0}"">⚠ {1}: {2}</span>" -f $cls, $a.name, $names))
         }
     }
     [void]$sb.Append('</div>')
@@ -458,10 +458,10 @@ function Render-AlertConsole {
 
 # 警報バナー用CSS（HTML側で埋め込む）
 $AlertCss = @'
-.alertwrap{margin:8px 16px 4px;}
-.alertbanner{border-radius:6px;padding:6px 10px;font-size:13px;font-weight:600;margin-bottom:4px;}
+.alertwrap{margin:8px 16px 4px;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;overflow-x:auto;}
+.alertbanner{display:inline-block;flex:0 0 auto;white-space:nowrap;border-radius:6px;padding:6px 10px;font-size:13px;font-weight:600;}
 .alertbanner.alertcaution{background:#fff3bf;color:#7a5c00;}
 .alertbanner.alertwarn{background:#ffe3e3;color:#a61e1e;}
 .alertbanner.alertspecial{background:#8b0000;color:#fff;}
-.alertnone{font-size:11px;color:#aaa;margin-bottom:4px;}
+.alertnone{display:inline-block;flex:0 0 auto;white-space:nowrap;font-size:11px;color:#aaa;}
 '@
