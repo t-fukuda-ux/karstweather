@@ -1,4 +1,4 @@
-name: Update weather forecast
+﻿name: Update weather forecast
 
 on:
   schedule:
@@ -16,19 +16,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: lowcloud.ps1 を実行して最新のHTML/CSVを生成
+      - name: lowcloud.ps1 を実行（規定版）
         shell: pwsh
         run: ./lowcloud.ps1
 
-      - name: index.html を更新（GitHub Pagesのルート）
+      - name: lowcloud_ec.ps1 を実行（EC版）
         shell: pwsh
-        run: Copy-Item lowcloud.html index.html -Force
+        run: ./lowcloud_ec.ps1
+
+      - name: lowcloud_avg.ps1 を実行（平均版＝WEB公開のメイン）
+        shell: pwsh
+        run: ./lowcloud_avg.ps1
+
+      - name: index.html を更新（GitHub Pagesのルート、平均版を反映）
+        shell: pwsh
+        run: Copy-Item lowcloud_avg.html index.html -Force
 
       - name: 変更があればコミット・push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add lowcloud.html index.html
+          git add lowcloud.html lowcloud_ec.html lowcloud_avg.html index.html
           if git diff --cached --quiet; then
             echo "変更なし。スキップします。"
           else

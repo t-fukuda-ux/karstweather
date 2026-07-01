@@ -1,11 +1,13 @@
 ﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
-  lowcloud.html を生成して GitHub Pages に push する。
+  lowcloud_avg.html（平均版）を生成し、WEB公開用 index.html として GitHub Pages に push する。
 
 .DESCRIPTION
-  タスクスケジューラから呼び出す用。
+  タスクスケジューラから呼び出す用（現在はGitHub Actionsが主担当。ローカル手動実行用に残置）。
   初回セットアップは setup-github.ps1 を先に実行すること。
+  規定版(lowcloud.ps1)・EC版(lowcloud_ec.ps1)は比較用に手元で個別実行すること
+  （WEB公開のindex.htmlには反映されない）。
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File ".\publish.ps1"
@@ -23,12 +25,12 @@ function Write-Log {
 }
 
 try {
-    # Step 1: 天気予報HTML生成
-    Write-Log "lowcloud.ps1 を実行中..."
-    & powershell -ExecutionPolicy Bypass -File (Join-Path $dir "lowcloud.ps1")
+    # Step 1: 天気予報HTML生成（平均版＝WEB公開のメイン）
+    Write-Log "lowcloud_avg.ps1 を実行中..."
+    & powershell -ExecutionPolicy Bypass -File (Join-Path $dir "lowcloud_avg.ps1")
 
     # Step 2: index.html としてコピー（GitHub Pages のルートファイル）
-    $src  = Join-Path $dir "lowcloud.html"
+    $src  = Join-Path $dir "lowcloud_avg.html"
     $dest = Join-Path $dir "index.html"
     Copy-Item -Path $src -Destination $dest -Force
     Write-Log "index.html を更新しました。"
@@ -40,7 +42,7 @@ try {
     $prevEAP = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
-        git add index.html lowcloud.html 2>$null
+        git add index.html lowcloud_avg.html 2>$null
         $changed = git status --porcelain
         if ($changed) {
             $ts = Get-Date -Format "yyyy-MM-dd HH:mm"
