@@ -1,0 +1,37 @@
+name: Update weather forecast
+
+on:
+  schedule:
+    # JST 02/05/08/11/14/17/20/23時 = UTC 02/05/08/11/14/17/20/23時（9時間シフトは3で割り切れるため同じ時刻集合になる）
+    - cron: '0 2,5,8,11,14,17,20,23 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: lowcloud.ps1 を実行して最新のHTML/CSVを生成
+        shell: pwsh
+        run: ./lowcloud.ps1
+
+      - name: index.html を更新（GitHub Pagesのルート）
+        shell: pwsh
+        run: Copy-Item lowcloud.html index.html -Force
+
+      - name: 変更があればコミット・push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add lowcloud.html index.html
+          if git diff --cached --quiet; then
+            echo "変更なし。スキップします。"
+          else
+            git commit -m "update: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
