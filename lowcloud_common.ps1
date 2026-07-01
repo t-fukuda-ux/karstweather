@@ -59,6 +59,13 @@ function Get-WeatherSvg {
     return $WeatherSvg[$key]
 }
 
+# 現在時刻をJST(UTC+9、DSTなし)で返す。
+# GitHub Actions等、実行サーバーのローカルタイムゾーンがJSTでない環境でも
+# 正しくJSTの「現在時刻」を得るため、Get-Dateの結果をUTC経由でJSTに変換する。
+function Get-JstNow {
+    return (Get-Date).ToUniversalTime().AddHours(9)
+}
+
 # ---- 天文計算（月の出入り・月相） ----
 
 # ユリウス日（UTC datetime から）

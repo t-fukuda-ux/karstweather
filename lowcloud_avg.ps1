@@ -395,7 +395,7 @@ function Build-AvgDaily {
 function Show-AvgTable {
     param($rows, $alerts)
     Write-Host ("地点: 緯度 {0} / 経度 {1} / 標高 {2}m(指定)  (タイムゾーン: {3})  {4}" -f $Latitude, $Longitude, $Elevation, $Timezone, $ModelLabel)
-    Write-Host ("取得時刻: {0:yyyy-MM-dd HH:mm}   気温=°C / 風速=m/s" -f (Get-Date))
+    Write-Host ("取得時刻: {0:yyyy-MM-dd HH:mm} JST   気温=°C / 風速=m/s" -f (Get-JstNow))
     foreach ($line in (Render-AlertConsole $alerts)) { Write-Host $line }
     Write-Host ""
     $header = (Pad "日時" 18 -Left) + (Pad "天気" 12 -Left) + (Pad "気温" 7) + (Pad "風速" 7) +
@@ -442,7 +442,7 @@ function Save-AvgCsv {
 function Save-AvgHtml {
     param($rows, $daily, [string]$path, $alerts)
 
-    $generated = "{0:yyyy-MM-dd HH:mm}" -f (Get-Date)
+    $generated = "{0:yyyy-MM-dd HH:mm} JST" -f (Get-JstNow)
     $startTime = if ($rows.Count -gt 0) { $rows[0].time } else { "--" }
     $endTime   = if ($rows.Count -gt 0) { $rows[-1].time } else { "--" }
 
@@ -666,7 +666,8 @@ try {
     exit 1
 }
 $allRows = Build-AvgRows -hA $hA -hB $hB
-$nowHour = (Get-Date).Date.AddHours((Get-Date).Hour)
+$jstNow = Get-JstNow
+$nowHour = $jstNow.Date.AddHours($jstNow.Hour)
 $rows = @($allRows | Where-Object { [datetime]$_.time -ge $nowHour })
 
 try {
