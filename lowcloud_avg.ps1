@@ -338,6 +338,8 @@ function Build-AvgRows {
             moonBright = $mBri
             moonAge    = [int][math]::Round($mPhase * 29.53)
             moonEmoji  = $mEmoji
+            isPast     = $false
+            isNow      = $false
         })
     }
     return $rows
@@ -492,6 +494,7 @@ b.arUp{color:#e8590c;font-size:13px;font-weight:900;}
 b.arDn{color:#1565c0;font-size:13px;font-weight:900;}
 td.starcell{font-weight:700;color:#3a3f7a;}
 th.rl .lcl{font-size:9px;font-weight:600;}
+th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
 '@)
     [void]$sb.AppendLine($AlertCss)
     [void]$sb.AppendLine('</style>')
@@ -500,6 +503,16 @@ th.rl .lcl{font-size:9px;font-weight:600;}
     [void]$sb.AppendLine(("<p class=""meta"">緯度 {0} / 経度 {1} / 標高 {2}m(指定)　|　取得: {3}　|　{4} ～ {5}　|　出典: Open-Meteo(best_match+ECMWF平均)</p>" -f $Latitude, $Longitude, $Elevation, $generated, $startTime, $endTime))
     [void]$sb.AppendLine((Render-AlertHtml $alerts))
     [void]$sb.AppendLine('<div class="scroll"><table>')
+
+    # 過去の時刻のセルを薄く表示するため、td/thタグに opacity を後付けする
+    function Dim-IfPast {
+        param([string]$html, [bool]$isPast)
+        if (-not $isPast) { return $html }
+        if ($html -match '<(td|th)([^>]*)style="([^"]*)"') {
+            return ($html -replace '<(td|th)([^>]*)style="([^"]*)"', '<$1$2style="opacity:.4;$3"')
+        }
+        return ($html -replace '<(td|th)([^>]*)>', '<$1$2 style="opacity:.4;">')
+    }
 
     [void]$sb.Append('<tr class="date"><th class="rl">日付</th>')
     $idx = 0
@@ -520,14 +533,15 @@ th.rl .lcl{font-size:9px;font-weight:600;}
     [void]$sb.Append('<tr class="hour"><th class="rl">時刻</th>')
     foreach ($r in $rows) {
         $dt = [datetime]$r.time
-        [void]$sb.Append(("<th>{0}</th>" -f $dt.Hour))
+        $th = if ($r.isNow) { "<th id=""nowcol"" class=""nowcol"">{0}</th>" -f $dt.Hour } else { "<th>{0}</th>" -f $dt.Hour }
+        [void]$sb.Append((Dim-IfPast -html $th -isPast $r.isPast))
     }
     [void]$sb.AppendLine('</tr>')
 
     function Row {
         param([string]$label, [scriptblock]$cell)
         [void]$sb.Append(("<tr><th class=""rl"">{0}</th>" -f $label))
-        foreach ($r in $rows) { [void]$sb.Append((& $cell $r)) }
+        foreach ($r in $rows) { [void]$sb.Append((Dim-IfPast -html (& $cell $r) -isPast $r.isPast)) }
         [void]$sb.AppendLine('</tr>')
     }
 
@@ -585,7 +599,8 @@ th.rl .lcl{font-size:9px;font-weight:600;}
             $L = 100 - [math]::Round([double]$r.moonBright * 0.35)
             $style = " style=""background:hsl(50,90%,{0}%)""" -f $L
         }
-        [void]$sb.Append(("<td class=""moonband""{0}>{1}</td>" -f $style, $label))
+        $td = "<td class=""moonband""{0}>{1}</td>" -f $style, $label
+        [void]$sb.Append((Dim-IfPast -html $td -isPast $r.isPast))
     }
     [void]$sb.AppendLine('</tr>')
 
@@ -646,6 +661,22 @@ th.rl .lcl{font-size:9px;font-weight:600;}
     new ResizeObserver(postHeight).observe(document.body);
   }
   setTimeout(postHeight, 300);
+
+  // 毎時テーブルを開いた時、現在時刻の列を左端の固定見出し列のすぐ右に来るようにスクロール
+  // （左へスクロールすると当日0時までの過去分が見える）。見出し列の実幅を測ってその分だけ余分にずらす。
+  function scrollToNow() {
+    var nowCol = document.getElementById('nowcol');
+    var scrollDiv = document.querySelector('.scroll');
+    var labelCell = document.querySelector('th.rl');
+    if (!nowCol || !scrollDiv) return;
+    var labelWidth = labelCell ? labelCell.getBoundingClientRect().width : 0;
+    var nowRect = nowCol.getBoundingClientRect();
+    var scrollRect = scrollDiv.getBoundingClientRect();
+    var target = (nowRect.left - scrollRect.left + scrollDiv.scrollLeft) - labelWidth;
+    scrollDiv.scrollLeft = Math.max(0, target);
+  }
+  window.addEventListener('load', scrollToNow);
+  setTimeout(scrollToNow, 300);
 })();
 </script>
 '@
@@ -668,7 +699,14 @@ try {
 $allRows = Build-AvgRows -hA $hA -hB $hB
 $jstNow = Get-JstNow
 $nowHour = $jstNow.Date.AddHours($jstNow.Hour)
-$rows = @($allRows | Where-Object { [datetime]$_.time -ge $nowHour })
+$todayMidnight = $jstNow.Date
+# 当日0時以降をすべて残す（過去分はHTMLで薄く表示するため）。コンソール/CSV用は現在時刻以降のみ絞り込む
+$rows = @($allRows | Where-Object { [datetime]$_.time -ge $todayMidnight })
+foreach ($r in $rows) {
+    $r.isPast = ([datetime]$r.time -lt $nowHour)
+    $r.isNow  = ([datetime]$r.time -eq $nowHour)
+}
+$futureRows = @($rows | Where-Object { -not $_.isPast })
 
 try {
     $alerts = Get-Alerts -areas $AlertAreas
@@ -677,7 +715,7 @@ try {
     $alerts = $null
 }
 
-Show-AvgTable -rows $rows -alerts $alerts
+Show-AvgTable -rows $futureRows -alerts $alerts
 
 try {
     $sunMap = Get-SunTimes
@@ -691,7 +729,7 @@ if ([string]::IsNullOrWhiteSpace($CsvPath)) {
     $CsvPath = Join-Path $PSScriptRoot "$OutName.csv"
 }
 try {
-    Save-AvgCsv -rows $rows -path $CsvPath
+    Save-AvgCsv -rows $futureRows -path $CsvPath
 } catch {
     Write-Warning ("CSV を保存できませんでした（Excel等で開いていませんか？）: {0}" -f $_.Exception.Message)
 }

@@ -141,12 +141,20 @@ function Build-Rows {
             moonBright = $mBri
             moonAge    = [int][math]::Round($mPhase * 29.53)
             moonEmoji  = $mEmoji
+            isPast     = $false
+            isNow      = $false
         })
     }
-    # 現在時刻の時以降をすべて返す（4日分の末尾まで）
+    # 当日0時以降をすべて返す（過去分はHTMLで薄く表示するため残す。4日分の末尾まで）
     $jstNow = Get-JstNow
     $nowHour = $jstNow.Date.AddHours($jstNow.Hour)
-    return ($rows | Where-Object { [datetime]$_.time -ge $nowHour })
+    $todayMidnight = $jstNow.Date
+    $kept = @($rows | Where-Object { [datetime]$_.time -ge $todayMidnight })
+    foreach ($r in $kept) {
+        $r.isPast = ([datetime]$r.time -lt $nowHour)
+        $r.isNow  = ([datetime]$r.time -eq $nowHour)
+    }
+    return $kept
 }
 
 # ---- コンソール表示 ----
@@ -256,6 +264,7 @@ b.arUp{color:#e8590c;font-size:13px;font-weight:900;}
 b.arDn{color:#1565c0;font-size:13px;font-weight:900;}
 td.starcell{font-weight:700;color:#3a3f7a;}
 th.rl .lcl{font-size:9px;font-weight:600;}
+th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
 '@)
     [void]$sb.AppendLine($AlertCss)
     [void]$sb.AppendLine('</style>')
@@ -265,6 +274,16 @@ th.rl .lcl{font-size:9px;font-weight:600;}
     [void]$sb.AppendLine(("<p class=""meta"">緯度 {0} / 経度 {1} / 標高 {2}　|　取得: {3}　|　{4} ～ {5}　|　出典: Open-Meteo{6}</p>" -f $Latitude, $Longitude, $elevLabel, $generated, $startTime, $endTime, $modelSuffix))
     [void]$sb.AppendLine((Render-AlertHtml $alerts))
     [void]$sb.AppendLine('<div class="scroll"><table>')
+
+    # 過去の時刻のセルを薄く表示するため、td/thタグに opacity を後付けする
+    function Dim-IfPast {
+        param([string]$html, [bool]$isPast)
+        if (-not $isPast) { return $html }
+        if ($html -match '<(td|th)([^>]*)style="([^"]*)"') {
+            return ($html -replace '<(td|th)([^>]*)style="([^"]*)"', '<$1$2style="opacity:.4;$3"')
+        }
+        return ($html -replace '<(td|th)([^>]*)>', '<$1$2 style="opacity:.4;">')
+    }
 
     # 日付行: 各日を colspan でまとめ、ラベルを sticky にして横スクロール時も左に表示
     [void]$sb.Append('<tr class="date"><th class="rl">日付</th>')
@@ -283,18 +302,19 @@ th.rl .lcl{font-size:9px;font-weight:600;}
     }
     [void]$sb.AppendLine('</tr>')
 
-    # 時刻行
+    # 時刻行（現在時刻のセルは強調し、id="nowcol"を付けて読み込み時にスクロール位置の目印にする）
     [void]$sb.Append('<tr class="hour"><th class="rl">時刻</th>')
     foreach ($r in $rows) {
         $dt = [datetime]$r.time
-        [void]$sb.Append(("<th>{0}</th>" -f $dt.Hour))
+        $th = if ($r.isNow) { "<th id=""nowcol"" class=""nowcol"">{0}</th>" -f $dt.Hour } else { "<th>{0}</th>" -f $dt.Hour }
+        [void]$sb.Append((Dim-IfPast -html $th -isPast $r.isPast))
     }
     [void]$sb.AppendLine('</tr>')
 
     function Row {
         param([string]$label, [scriptblock]$cell)
         [void]$sb.Append(("<tr><th class=""rl"">{0}</th>" -f $label))
-        foreach ($r in $rows) { [void]$sb.Append((& $cell $r)) }
+        foreach ($r in $rows) { [void]$sb.Append((Dim-IfPast -html (& $cell $r) -isPast $r.isPast)) }
         [void]$sb.AppendLine('</tr>')
     }
 
@@ -351,7 +371,8 @@ th.rl .lcl{font-size:9px;font-weight:600;}
             $L = 100 - [math]::Round([double]$r.moonBright * 0.35)   # 明るいほど濃い黄
             $style = " style=""background:hsl(50,90%,{0}%)""" -f $L
         }
-        [void]$sb.Append(("<td class=""moonband""{0}>{1}</td>" -f $style, $label))
+        $td = "<td class=""moonband""{0}>{1}</td>" -f $style, $label
+        [void]$sb.Append((Dim-IfPast -html $td -isPast $r.isPast))
     }
     [void]$sb.AppendLine('</tr>')
 
@@ -415,6 +436,22 @@ th.rl .lcl{font-size:9px;font-weight:600;}
   }
   // フォント描画やレイアウト確定後の取りこぼし防止
   setTimeout(postHeight, 300);
+
+  // 毎時テーブルを開いた時、現在時刻の列を左端の固定見出し列のすぐ右に来るようにスクロール
+  // （左へスクロールすると当日0時までの過去分が見える）。見出し列の実幅を測ってその分だけ余分にずらす。
+  function scrollToNow() {
+    var nowCol = document.getElementById('nowcol');
+    var scrollDiv = document.querySelector('.scroll');
+    var labelCell = document.querySelector('th.rl');
+    if (!nowCol || !scrollDiv) return;
+    var labelWidth = labelCell ? labelCell.getBoundingClientRect().width : 0;
+    var nowRect = nowCol.getBoundingClientRect();
+    var scrollRect = scrollDiv.getBoundingClientRect();
+    var target = (nowRect.left - scrollRect.left + scrollDiv.scrollLeft) - labelWidth;
+    scrollDiv.scrollLeft = Math.max(0, target);
+  }
+  window.addEventListener('load', scrollToNow);
+  setTimeout(scrollToNow, 300);
 })();
 </script>
 '@
@@ -434,6 +471,7 @@ try {
     exit 1
 }
 $rows = Build-Rows -data $data
+$futureRows = @($rows | Where-Object { -not $_.isPast })   # コンソール/CSV用（現在時刻以降のみ）
 
 try {
     $alerts = Get-Alerts -areas $AlertAreas
@@ -442,7 +480,7 @@ try {
     $alerts = $null
 }
 
-Show-Table -rows $rows -ApiElevation $data.elevation -alerts $alerts
+Show-Table -rows $futureRows -ApiElevation $data.elevation -alerts $alerts
 
 try {
     $daily = Get-DailyRows
@@ -455,7 +493,7 @@ if ([string]::IsNullOrWhiteSpace($CsvPath)) {
     $CsvPath = Join-Path $PSScriptRoot "$OutName.csv"
 }
 try {
-    Save-Csv -rows $rows -path $CsvPath
+    Save-Csv -rows $futureRows -path $CsvPath
 } catch {
     Write-Warning ("CSV を保存できませんでした（Excel等で開いていませんか？）: {0}" -f $_.Exception.Message)
 }
