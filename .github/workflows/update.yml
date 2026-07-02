@@ -3,6 +3,8 @@
 on:
   schedule:
     # 1時間ごと（JSTはUTC+9のため、時刻集合は変わらず毎時0分に実行される）
+    # 2026-07-02: scheduled cronが22:07 UTC以降発火しなくなったため、本ファイルへの
+    # 再pushでGitHub側のスケジュール再登録を促す（ローカルタスクスケジューラも保険として併用）
     - cron: '0 * * * *'
   workflow_dispatch: {}
 
