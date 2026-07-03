@@ -18,7 +18,9 @@ param(
     [int]   $ForecastDays = 4,
     [int]   $WeeklyDays  = 7,
     [string]$Timezone    = "Asia/Tokyo",
-    [string]$CsvPath     = ""
+    [string]$CsvPath     = "",
+    [object]$Bundle      = $null,         # generate_all.ps1 から渡される取得済みデータ
+    [object]$PrefetchedAlerts = $null
 )
 
 & (Join-Path $PSScriptRoot "lowcloud.ps1") @PSBoundParameters `

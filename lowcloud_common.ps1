@@ -66,6 +66,59 @@ function Get-JstNow {
     return (Get-Date).ToUniversalTime().AddHours(9)
 }
 
+# ---- API取得（リトライ付き） ----
+
+# URLをGETしJSONとして返す。一時的な失敗（タイムアウト・5xx等）に備え最大$MaxTriesまでリトライする。
+# 2026-07-02にOpen-Meteoの30秒タイムアウトでActionsが2回失敗したため導入（タイムアウトも60秒に延長）。
+function Invoke-JsonWithRetry {
+    param(
+        [string]$Uri,
+        [int]$MaxTries = 3,
+        [int]$TimeoutSec = 60,
+        [int[]]$DelaysSec = @(5, 15)
+    )
+    for ($try = 1; $try -le $MaxTries; $try++) {
+        try {
+            return Invoke-RestMethod -Uri $Uri -TimeoutSec $TimeoutSec
+        } catch {
+            if ($try -ge $MaxTries) { throw }
+            $delay = if ($try -le $DelaysSec.Count) { $DelaysSec[$try - 1] } else { $DelaysSec[-1] }
+            Write-Warning ("API取得失敗（{0}/{1}回目）: {2} — {3}秒後に再試行" -f $try, $MaxTries, $_.Exception.Message, $delay)
+            Start-Sleep -Seconds $delay
+        }
+    }
+}
+
+# Open-Meteo forecast API を hourly+daily まとめて1回で取得する。
+# 3版（規定/EC/平均）が必要とする変数の和集合を常に取得し、各版は必要な列だけ使う。
+$OpenMeteoHourlyVars = "weather_code,temperature_2m,wind_speed_10m,precipitation_probability,precipitation,snowfall,cloud_cover_low,cloud_cover_mid,cloud_cover_high,cloud_cover"
+$OpenMeteoDailyVars  = "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,sunrise,sunset"
+
+function Get-ForecastBundle {
+    param(
+        [double]$Latitude,
+        [double]$Longitude,
+        [Nullable[double]]$Elevation,
+        [string]$Model,
+        [int]$ForecastDays = 7,
+        [string]$Timezone = "Asia/Tokyo"
+    )
+    $query = @{
+        latitude        = $Latitude
+        longitude       = $Longitude
+        hourly          = $OpenMeteoHourlyVars
+        daily           = $OpenMeteoDailyVars
+        timezone        = $Timezone
+        forecast_days   = $ForecastDays
+        wind_speed_unit = "ms"
+    }
+    if ($null -ne $Elevation) { $query["elevation"] = $Elevation }
+    if (-not [string]::IsNullOrWhiteSpace($Model)) { $query["models"] = $Model }
+    $pairs = $query.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, [uri]::EscapeDataString([string]$_.Value) }
+    $url = "https://api.open-meteo.com/v1/forecast?" + ($pairs -join "&")
+    return Invoke-JsonWithRetry -Uri $url
+}
+
 # ---- 天文計算（月の出入り・月相） ----
 
 # ユリウス日（UTC datetime から）
@@ -391,10 +444,7 @@ function Get-Alerts {
         $items = New-Object System.Collections.Generic.List[object]
         try {
             if (-not $prefCache.ContainsKey($a.pref)) {
-                $wc = New-Object System.Net.WebClient
-                $wc.Encoding = [System.Text.Encoding]::UTF8
-                $json = $wc.DownloadString("https://www.jma.go.jp/bosai/warning/data/warning/$($a.pref).json")
-                $prefCache[$a.pref] = $json | ConvertFrom-Json
+                $prefCache[$a.pref] = Invoke-JsonWithRetry -Uri "https://www.jma.go.jp/bosai/warning/data/warning/$($a.pref).json" -MaxTries 2 -TimeoutSec 30
             }
             $doc = $prefCache[$a.pref]
             $area = $null

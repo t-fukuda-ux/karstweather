@@ -23,7 +23,10 @@ param(
     [int]   $ForecastDays = 7,    # 平均版は毎時7日分を取得し、週間もそこから算出する
     [int]   $WeeklyDays  = 7,
     [string]$Timezone    = "Asia/Tokyo",
-    [string]$CsvPath     = ""
+    [string]$CsvPath     = "",
+    [object]$BundleA     = $null,         # generate_all.ps1 から渡される取得済みデータ（best_match）
+    [object]$BundleB     = $null,         # 同（ecmwf_ifs025）
+    [object]$PrefetchedAlerts = $null     # 同・取得済みの警報一覧
 )
 
 $ErrorActionPreference = "Stop"
@@ -50,28 +53,12 @@ function Avg2 {
 }
 
 # ---- データ取得 ----
+# hourly+daily は Get-ForecastBundle（lowcloud_common.ps1）でモデルごとに1回のAPI呼び出しにまとめる。
+# generate_all.ps1 から呼ばれる場合は -BundleA/-BundleB で取得済みデータを受け取り、API呼び出しを行わない。
 
-$AvgHourlyVars = "weather_code,temperature_2m,wind_speed_10m,precipitation_probability,precipitation,snowfall,cloud_cover_low,cloud_cover_mid,cloud_cover_high,cloud_cover"
-
-function Get-ModelHourly {
-    param([string]$model)
-    $query = @{
-        latitude = $Latitude; longitude = $Longitude; hourly = $AvgHourlyVars
-        timezone = $Timezone; forecast_days = $ForecastDays; wind_speed_unit = "ms"; models = $model
-    }
-    if ($null -ne $Elevation) { $query["elevation"] = $Elevation }
-    $pairs = $query.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, [uri]::EscapeDataString([string]$_.Value) }
-    $url = "https://api.open-meteo.com/v1/forecast?" + ($pairs -join "&")
-    return (Invoke-RestMethod -Uri $url -TimeoutSec 30).hourly
-}
-
-# 日の出・日の入りだけは best_match の日別API から取得する（モデル間差がほぼ無いため）
+# 日の出・日の入りは best_match バンドルの daily から取り出す（モデル間差がほぼ無いため）
 function Get-SunTimes {
-    $query = @{ latitude = $Latitude; longitude = $Longitude; daily = "sunrise,sunset"; timezone = $Timezone; forecast_days = $WeeklyDays }
-    if ($null -ne $Elevation) { $query["elevation"] = $Elevation }
-    $pairs = $query.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, [uri]::EscapeDataString([string]$_.Value) }
-    $url = "https://api.open-meteo.com/v1/forecast?" + ($pairs -join "&")
-    $d = (Invoke-RestMethod -Uri $url -TimeoutSec 30).daily
+    param($d)   # バンドルの daily 部分
     $map = @{}
     for ($i = 0; $i -lt $d.time.Count; $i++) {
         $sr = if ($d.sunrise[$i]) { ($d.sunrise[$i] -replace '^.+T', '') } else { "--" }
@@ -690,12 +677,20 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
 
 # ---- メイン ----
 try {
-    $hA = Get-ModelHourly -model "best_match"
-    $hB = Get-ModelHourly -model "ecmwf_ifs025"
+    if ($null -eq $BundleA) {
+        $BundleA = Get-ForecastBundle -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
+                     -Model "best_match" -ForecastDays $ForecastDays -Timezone $Timezone
+    }
+    if ($null -eq $BundleB) {
+        $BundleB = Get-ForecastBundle -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
+                     -Model "ecmwf_ifs025" -ForecastDays $ForecastDays -Timezone $Timezone
+    }
 } catch {
-    Write-Error ("取得に失敗しました: {0}" -f $_.Exception.Message)
-    exit 1
+    # exitではなくthrow: generate_all.ps1からのプロセス内呼び出しでも呼び出し元を巻き込まない
+    throw ("取得に失敗しました: {0}" -f $_.Exception.Message)
 }
+$hA = $BundleA.hourly
+$hB = $BundleB.hourly
 $allRows = Build-AvgRows -hA $hA -hB $hB
 $jstNow = Get-JstNow
 $nowHour = $jstNow.Date.AddHours($jstNow.Hour)
@@ -708,17 +703,21 @@ foreach ($r in $rows) {
 }
 $futureRows = @($rows | Where-Object { -not $_.isPast })
 
-try {
-    $alerts = Get-Alerts -areas $AlertAreas
-} catch {
-    Write-Warning ("警報・注意報の取得に失敗しました: {0}" -f $_.Exception.Message)
-    $alerts = $null
+if ($null -ne $PrefetchedAlerts) {
+    $alerts = $PrefetchedAlerts
+} else {
+    try {
+        $alerts = Get-Alerts -areas $AlertAreas
+    } catch {
+        Write-Warning ("警報・注意報の取得に失敗しました: {0}" -f $_.Exception.Message)
+        $alerts = $null
+    }
 }
 
 Show-AvgTable -rows $futureRows -alerts $alerts
 
 try {
-    $sunMap = Get-SunTimes
+    $sunMap = Get-SunTimes -d $BundleA.daily
     $daily = Build-AvgDaily -allRows $allRows -sunMap $sunMap -days $WeeklyDays
 } catch {
     Write-Warning ("週間予報の算出に失敗しました: {0}" -f $_.Exception.Message)

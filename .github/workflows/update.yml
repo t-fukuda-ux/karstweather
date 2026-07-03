@@ -2,37 +2,32 @@
 
 on:
   schedule:
-    # 1時間ごと（JSTはUTC+9のため、時刻集合は変わらず毎時0分に実行される）
-    # 2026-07-02: scheduled cronが22:07 UTC以降発火しなくなったため、本ファイルへの
-    # 再pushでGitHub側のスケジュール再登録を促す（ローカルタスクスケジューラも保険として併用）
-    - cron: '0 * * * *'
+    # 毎時11分・41分。毎時0分はGitHub全体で最混雑のため回避（公式も遅延・ドロップを明記）。
+    # scheduledトリガーは理由不明で発火しないことがあるため（2026-07-01/02に発生）、
+    # 毎時2回スケジュールして片方がドロップされても更新が続く保険とする。
+    # ローカルのタスクスケジューラ(publish.ps1)も二重化バックアップとして併用。
+    - cron: '11,41 * * * *'
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
+# 遅延したschedule実行が重なった場合の多重起動を防ぐ（後発は先発の完了を待つ）
+concurrency:
+  group: update-weather
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: lowcloud.ps1 を実行（規定版）
+      - name: 3版すべて生成（規定/EC/平均、1版失敗でも他は継続）
         shell: pwsh
-        run: ./lowcloud.ps1
-
-      - name: lowcloud_ec.ps1 を実行（EC版）
-        shell: pwsh
-        run: ./lowcloud_ec.ps1
-
-      - name: lowcloud_avg.ps1 を実行（平均版＝WEB公開のメイン）
-        shell: pwsh
-        run: ./lowcloud_avg.ps1
-
-      - name: index.html を更新（GitHub Pagesのルート、平均版を反映）
-        shell: pwsh
-        run: Copy-Item lowcloud_avg.html index.html -Force
+        run: ./generate_all.ps1
 
       - name: 変更があればコミット・push
         run: |
@@ -41,7 +36,18 @@ jobs:
           git add lowcloud.html lowcloud_ec.html lowcloud_avg.html index.html
           if git diff --cached --quiet; then
             echo "変更なし。スキップします。"
-          else
-            git commit -m "update: $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push
+            exit 0
           fi
+          git commit -m "update: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # ローカルタスクのpushと競合した場合に備え、rebaseして最大3回再試行する。
+          # rebase中の -X theirs は「再適用する自分のコミット側」＝今生成した最新HTMLを優先する。
+          for i in 1 2 3; do
+            if git pull --rebase -X theirs origin main && git push origin main; then
+              exit 0
+            fi
+            echo "push失敗（${i}回目）。10秒後に再試行します。"
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          echo "pushに3回失敗しました。"
+          exit 1

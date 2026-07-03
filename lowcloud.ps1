@@ -32,13 +32,13 @@ param(
     [string]$CsvPath     = "",
     [string]$Models      = "best_match",  # Open-Meteoのモデル系統（best_match/ecmwf_ifs025 等）
     [string]$OutName     = "lowcloud",    # 出力ファイル名のベース（拡張子なし）
-    [string]$ModelLabel  = ""             # HTML見出しに付記するモデル表記（例 "[ECMWF]"）
+    [string]$ModelLabel  = "",            # HTML見出しに付記するモデル表記（例 "[ECMWF]"）
+    [object]$Bundle      = $null,         # generate_all.ps1 から渡される取得済みデータ（省略時は自前で取得）
+    [object]$PrefetchedAlerts = $null     # 同・取得済みの警報一覧
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "lowcloud_common.ps1")
-
-$HourlyVars = "weather_code,temperature_2m,wind_speed_10m,precipitation_probability,precipitation,cloud_cover_low,cloud_cover_mid,cloud_cover_high,cloud_cover"
 
 # 気象警報・注意報の対象区域（区域コード＝全国地方公共団体コード(5桁)×100）
 $AlertAreas = @(
@@ -47,41 +47,14 @@ $AlertAreas = @(
 )
 
 # ---- データ取得 ----
-
-function Get-WeatherData {
-    $query = @{
-        latitude      = $Latitude
-        longitude     = $Longitude
-        hourly        = $HourlyVars
-        timezone      = $Timezone
-        forecast_days = $ForecastDays
-        wind_speed_unit = "ms"
-    }
-    if ($null -ne $Elevation) { $query["elevation"] = $Elevation }
-    if (-not [string]::IsNullOrWhiteSpace($Models)) { $query["models"] = $Models }
-    $pairs = $query.GetEnumerator() | ForEach-Object {
-        "{0}={1}" -f $_.Key, [uri]::EscapeDataString([string]$_.Value)
-    }
-    $url = "https://api.open-meteo.com/v1/forecast?" + ($pairs -join "&")
-    return Invoke-RestMethod -Uri $url -TimeoutSec 30
-}
+# hourly+daily は Get-ForecastBundle（lowcloud_common.ps1）で1回のAPI呼び出しにまとめる。
+# generate_all.ps1 から呼ばれる場合は -Bundle で取得済みデータを受け取り、API呼び出しを行わない。
 
 function Get-DailyRows {
-    $query = @{
-        latitude      = $Latitude
-        longitude     = $Longitude
-        daily         = "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,sunrise,sunset"
-        timezone      = $Timezone
-        forecast_days = $WeeklyDays
-    }
-    if ($null -ne $Elevation) { $query["elevation"] = $Elevation }
-    if (-not [string]::IsNullOrWhiteSpace($Models)) { $query["models"] = $Models }
-    $pairs = $query.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, [uri]::EscapeDataString([string]$_.Value) }
-    $url = "https://api.open-meteo.com/v1/forecast?" + ($pairs -join "&")
-    $d = (Invoke-RestMethod -Uri $url -TimeoutSec 30).daily
-
+    param($d)   # バンドルの daily 部分
     $rows = New-Object System.Collections.Generic.List[object]
-    for ($i = 0; $i -lt $d.time.Count; $i++) {
+    $days = [math]::Min($WeeklyDays, $d.time.Count)
+    for ($i = 0; $i -lt $days; $i++) {
         $dt = [datetime]$d.time[$i]
         $moonRS = Get-MoonRiseSet -localDate $dt -lat $Latitude -lon $Longitude
         $moonPI = Get-MoonPhaseInfo -localDate $dt
@@ -145,11 +118,13 @@ function Build-Rows {
             isNow      = $false
         })
     }
-    # 当日0時以降をすべて返す（過去分はHTMLで薄く表示するため残す。4日分の末尾まで）
+    # 当日0時以降・$ForecastDays日分を返す（過去分はHTMLで薄く表示するため残す。
+    # バンドルは週間予報用に7日分あるため、毎時テーブルは従来どおり4日分に切り詰める）
     $jstNow = Get-JstNow
     $nowHour = $jstNow.Date.AddHours($jstNow.Hour)
     $todayMidnight = $jstNow.Date
-    $kept = @($rows | Where-Object { [datetime]$_.time -ge $todayMidnight })
+    $hourlyLimit = $todayMidnight.AddDays($ForecastDays)
+    $kept = @($rows | Where-Object { ([datetime]$_.time) -ge $todayMidnight -and ([datetime]$_.time) -lt $hourlyLimit })
     foreach ($r in $kept) {
         $r.isPast = ([datetime]$r.time -lt $nowHour)
         $r.isNow  = ([datetime]$r.time -eq $nowHour)
@@ -465,27 +440,37 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
 
 # ---- メイン ----
 try {
-    $data = Get-WeatherData
+    if ($null -eq $Bundle) {
+        $fetchDays = [math]::Max($ForecastDays, $WeeklyDays)
+        $Bundle = Get-ForecastBundle -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
+                    -Model $Models -ForecastDays $fetchDays -Timezone $Timezone
+    }
 } catch {
-    Write-Error ("取得に失敗しました: {0}" -f $_.Exception.Message)
-    exit 1
+    # exitではなくthrow: generate_all.ps1からのプロセス内呼び出しでも呼び出し元を巻き込まない
+    # （powershell -File での単体実行時は未捕捉エラーとして終了コード1になる）
+    throw ("取得に失敗しました: {0}" -f $_.Exception.Message)
 }
+$data = $Bundle
 $rows = Build-Rows -data $data
 $futureRows = @($rows | Where-Object { -not $_.isPast })   # コンソール/CSV用（現在時刻以降のみ）
 
-try {
-    $alerts = Get-Alerts -areas $AlertAreas
-} catch {
-    Write-Warning ("警報・注意報の取得に失敗しました: {0}" -f $_.Exception.Message)
-    $alerts = $null
+if ($null -ne $PrefetchedAlerts) {
+    $alerts = $PrefetchedAlerts
+} else {
+    try {
+        $alerts = Get-Alerts -areas $AlertAreas
+    } catch {
+        Write-Warning ("警報・注意報の取得に失敗しました: {0}" -f $_.Exception.Message)
+        $alerts = $null
+    }
 }
 
 Show-Table -rows $futureRows -ApiElevation $data.elevation -alerts $alerts
 
 try {
-    $daily = Get-DailyRows
+    $daily = Get-DailyRows -d $data.daily
 } catch {
-    Write-Warning ("週間予報の取得に失敗しました: {0}" -f $_.Exception.Message)
+    Write-Warning ("週間予報の算出に失敗しました: {0}" -f $_.Exception.Message)
     $daily = $null
 }
 
