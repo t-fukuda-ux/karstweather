@@ -412,30 +412,76 @@ function Rain-Bg {
 
 $JpWeek = @("日", "月", "火", "水", "木", "金", "土")
 
-# ---- 気象警報・注意報（気象庁 防災情報XML互換JSON） ----
+# ---- 気象警報・注意報（気象庁「新たな防災気象情報」2026-05-29運用開始・r8形式JSON） ----
+# ⚠ 旧URL(bosai/warning/data/warning/*.json)は2026-05-28で更新停止のまま残置されている。
+#   現行は bosai/warning/data/r8/{県コード}.json。中身は電文種別(dataTypeCode)ごとの配列:
+#   VPWW55=大雨・氾濫 / VPWW56=土砂災害 / VPWW57=高潮 / VPWW58=風 / VPWW59=波浪 / VPWW60=雪 / VPWW61=その他注意報
+#   レベル体系は4段階: 注意報 → 警報 → 危険警報(新設) → 特別警報
+#   コード番号は電文種別ごとに意味が異なる（例: 20はVPWW55では氾濫注意報、VPWW61では濃霧注意報）ため、
+#   電文種別×コードの2段引きで解決する（対応表は気象庁 bosai/warning ページのフロントエンド定義から採取）。
 
-# 警報・注意報コード→名称（気象庁「警報等情報要素コード」に基づく。網羅的ではないベストエフォート）
-$WarnNames = @{
-    "02" = "暴風雪警報";   "03" = "大雨警報";     "04" = "洪水警報";     "05" = "暴風警報"
-    "06" = "大雪警報";     "07" = "波浪警報";     "08" = "高潮警報";     "09" = "土砂災害警報"
-    "10" = "大雨注意報";   "11" = "洪水注意報";   "12" = "大雪注意報";   "13" = "風雪注意報"
-    "14" = "雷注意報";     "15" = "強風注意報";   "16" = "波浪注意報";   "17" = "融雪注意報"
-    "18" = "高潮注意報";   "20" = "濃霧注意報";   "21" = "乾燥注意報";   "22" = "なだれ注意報"
-    "23" = "低温注意報";   "24" = "霜注意報";     "25" = "着氷注意報";   "26" = "着雪注意報"
-    "32" = "暴風雪特別警報"; "33" = "大雨特別警報"; "35" = "暴風特別警報"
-    "36" = "大雪特別警報";   "37" = "波浪特別警報"; "38" = "高潮特別警報"; "39" = "土砂災害特別警報"
-}
-
-function Get-WarnLevel {
-    param([string]$code)
-    if ($code -in @("32","33","35","36","37","38","39")) { return "特別警報" }
-    if ($code -match '^0[2-9]$') { return "警報" }
-    return "注意報"
+$WarnKindTables = @{
+    "VPWW55" = @{  # 大雨・氾濫
+        "10" = @{ name = "大雨注意報";     level = "注意報" }
+        "03" = @{ name = "大雨警報";       level = "警報" }
+        "43" = @{ name = "大雨危険警報";   level = "危険警報" }
+        "33" = @{ name = "大雨特別警報";   level = "特別警報" }
+        "20" = @{ name = "氾濫注意報";     level = "注意報" }
+        "21" = @{ name = "氾濫注意報";     level = "注意報" }
+        "22" = @{ name = "氾濫注意報";     level = "注意報" }
+        "30" = @{ name = "氾濫警報";       level = "警報" }
+        "31" = @{ name = "氾濫警報";       level = "警報" }
+        "40" = @{ name = "氾濫危険警報";   level = "危険警報" }
+        "41" = @{ name = "氾濫危険警報";   level = "危険警報" }
+        "51" = @{ name = "氾濫特別警報";   level = "特別警報" }
+        "53" = @{ name = "氾濫特別警報";   level = "特別警報" }
+    }
+    "VPWW56" = @{  # 土砂災害
+        "29" = @{ name = "土砂災害注意報";   level = "注意報" }
+        "09" = @{ name = "土砂災害警報";     level = "警報" }
+        "49" = @{ name = "土砂災害危険警報"; level = "危険警報" }
+        "39" = @{ name = "土砂災害特別警報"; level = "特別警報" }
+    }
+    "VPWW57" = @{  # 高潮
+        "19" = @{ name = "高潮注意報";     level = "注意報" }
+        "08" = @{ name = "高潮警報";       level = "警報" }
+        "48" = @{ name = "高潮危険警報";   level = "危険警報" }
+        "38" = @{ name = "高潮特別警報";   level = "特別警報" }
+    }
+    "VPWW58" = @{  # 風・風雪
+        "15" = @{ name = "強風注意報";     level = "注意報" }
+        "05" = @{ name = "暴風警報";       level = "警報" }
+        "35" = @{ name = "暴風特別警報";   level = "特別警報" }
+        "13" = @{ name = "風雪注意報";     level = "注意報" }
+        "02" = @{ name = "暴風雪警報";     level = "警報" }
+        "32" = @{ name = "暴風雪特別警報"; level = "特別警報" }
+    }
+    "VPWW59" = @{  # 波浪
+        "16" = @{ name = "波浪注意報";     level = "注意報" }
+        "07" = @{ name = "波浪警報";       level = "警報" }
+        "37" = @{ name = "波浪特別警報";   level = "特別警報" }
+    }
+    "VPWW60" = @{  # 雪
+        "12" = @{ name = "大雪注意報";     level = "注意報" }
+        "06" = @{ name = "大雪警報";       level = "警報" }
+        "36" = @{ name = "大雪特別警報";   level = "特別警報" }
+    }
+    "VPWW61" = @{  # その他注意報
+        "14" = @{ name = "雷注意報";       level = "注意報" }
+        "17" = @{ name = "融雪注意報";     level = "注意報" }
+        "20" = @{ name = "濃霧注意報";     level = "注意報" }
+        "21" = @{ name = "乾燥注意報";     level = "注意報" }
+        "22" = @{ name = "なだれ注意報";   level = "注意報" }
+        "23" = @{ name = "低温注意報";     level = "注意報" }
+        "24" = @{ name = "霜注意報";       level = "注意報" }
+        "25" = @{ name = "着氷注意報";     level = "注意報" }
+        "26" = @{ name = "着雪注意報";     level = "注意報" }
+    }
 }
 
 # 対象区域の発表中警報・注意報を取得する。
 # $areas: @(@{name="久万高原町"; code="3838600"; pref="380000"}, ...)
-# 戻り値: @(@{ name="久万高原町"; items=@(@{code="10"; name="大雨注意報"; level="注意報"}, ...) }, ...) （発表なしの町は items=@()）
+# 戻り値: @(@{ name="久万高原町"; items=@(@{code="14"; name="雷注意報"; level="注意報"}, ...) }, ...) （発表なしの町は items=@()）
 function Get-Alerts {
     param($areas)
     $result = New-Object System.Collections.Generic.List[object]
@@ -444,19 +490,21 @@ function Get-Alerts {
         $items = New-Object System.Collections.Generic.List[object]
         try {
             if (-not $prefCache.ContainsKey($a.pref)) {
-                $prefCache[$a.pref] = Invoke-JsonWithRetry -Uri "https://www.jma.go.jp/bosai/warning/data/warning/$($a.pref).json" -MaxTries 2 -TimeoutSec 30
+                $prefCache[$a.pref] = Invoke-JsonWithRetry -Uri "https://www.jma.go.jp/bosai/warning/data/r8/$($a.pref).json" -MaxTries 2 -TimeoutSec 30
             }
-            $doc = $prefCache[$a.pref]
-            $area = $null
-            foreach ($at in $doc.areaTypes) {
-                $hit = $at.areas | Where-Object { $_.code -eq $a.code }
-                if ($hit) { $area = $hit; break }
-            }
-            if ($area) {
-                foreach ($w in $area.warnings) {
-                    if ($w.code -and $w.status -ne "解除") {
-                        $name = if ($WarnNames.ContainsKey($w.code)) { $WarnNames[$w.code] } else { "警報等($($w.code))" }
-                        $items.Add(@{ code = $w.code; name = $name; level = (Get-WarnLevel $w.code) })
+            foreach ($doc in @($prefCache[$a.pref])) {
+                $table = $WarnKindTables[[string]$doc.dataTypeCode]
+                $item = @($doc.warning.class20Items | Where-Object { $_.areaCode -eq $a.code }) | Select-Object -First 1
+                if (-not $item -or -not $item.kinds) { continue }
+                foreach ($k in $item.kinds) {
+                    if (-not $k.code) { continue }                                # 「発表警報・注意報はなし」はcode空
+                    if ($k.status -eq "解除") { continue }
+                    if ($table -and $table.ContainsKey([string]$k.code)) {
+                        $def = $table[[string]$k.code]
+                        $items.Add(@{ code = $k.code; name = $def.name; level = $def.level })
+                    } else {
+                        # 未知の電文種別・コードでも表示は落とさない（レベルは警報扱いで目立たせる）
+                        $items.Add(@{ code = $k.code; name = "警報等($($k.code))"; level = "警報" })
                     }
                 }
             }
@@ -479,9 +527,10 @@ function Render-AlertHtml {
             [void]$sb.Append(("<span class=""alertnone"">{0}: 発表なし</span>" -f $a.name))
         } else {
             $maxLevel = if ($a.items | Where-Object { $_.level -eq "特別警報" }) { "特別警報" }
+                        elseif ($a.items | Where-Object { $_.level -eq "危険警報" }) { "危険警報" }
                         elseif ($a.items | Where-Object { $_.level -eq "警報" })   { "警報" }
                         else { "注意報" }
-            $cls = switch ($maxLevel) { "特別警報" { "alertspecial" }; "警報" { "alertwarn" }; default { "alertcaution" } }
+            $cls = switch ($maxLevel) { "特別警報" { "alertspecial" }; "危険警報" { "alertdanger" }; "警報" { "alertwarn" }; default { "alertcaution" } }
             $names = ($a.items | ForEach-Object { $_.name }) -join "・"
             [void]$sb.Append(("<span class=""alertbanner {0}"">⚠ {1}: {2}</span>" -f $cls, $a.name, $names))
         }
@@ -512,6 +561,7 @@ $AlertCss = @'
 .alertbanner{display:inline-block;flex:0 0 auto;white-space:nowrap;border-radius:6px;padding:6px 10px;font-size:13px;font-weight:600;}
 .alertbanner.alertcaution{background:#fff3bf;color:#7a5c00;}
 .alertbanner.alertwarn{background:#ffe3e3;color:#a61e1e;}
+.alertbanner.alertdanger{background:#f3d9fa;color:#862e9c;}
 .alertbanner.alertspecial{background:#8b0000;color:#fff;}
 .alertnone{display:inline-block;flex:0 0 auto;white-space:nowrap;font-size:11px;color:#aaa;}
 '@
