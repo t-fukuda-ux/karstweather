@@ -3,7 +3,8 @@
   Open-Meteo の best_match と ECMWF(ecmwf_ifs025) を平均した「平均版」天気予報を出力する。
 
 .DESCRIPTION
-  - 数値（気温/風速/降水確率/降水量/各雲量）は best_match と ECMWF の単純平均。
+  - 数値は best_match と ECMWF の平均。ただし降水量・全雲量のみ 規定版0.6+ECMWF0.4 の
+    加重平均（2026-07-14〜）、その他（気温/風速/降水確率/低中高層雲）は単純平均。
   - 天気コードは平均できないため、平均した降水量・降雪量・雲量から毎時の天気を再判定する
     （Derive-HourlyWeather）。雷雨は両モデルいずれかが雷雨コードなら最優先。
   - 週間予報は日別APIを使わず、平均した毎時7日分から複合表現（のち/時々/一時）を組み立てる
@@ -50,6 +51,14 @@ function Avg2 {
     if ($null -eq $a) { return [double]$b }
     if ($null -eq $b) { return [double]$a }
     return ([double]$a + [double]$b) / 2.0
+}
+# 加重平均（片方欠損時はもう片方をそのまま使う）。全雲量の 規定版0.6:ECMWF0.4 用（2026-07-14追加）
+function AvgW {
+    param($a, $b, [double]$wa, [double]$wb)
+    if ($null -eq $a -and $null -eq $b) { return $null }
+    if ($null -eq $a) { return [double]$b }
+    if ($null -eq $b) { return [double]$a }
+    return ([double]$a * $wa + [double]$b * $wb)
 }
 
 # ---- データ取得 ----
@@ -286,12 +295,14 @@ function Build-AvgRows {
         $tempAvg = Avg2 $hA.temperature_2m[$i] $bTemp
         $windAvg = Avg2 $hA.wind_speed_10m[$i] $bWind
         $popAvg  = Avg2 $hA.precipitation_probability[$i] $bPop
-        $precAvg = Avg2 $hA.precipitation[$i] $bPrec
+        # 降水量は規定版(best_match)を重視した加重平均（規定版0.6 + ECMWF0.4。2026-07-14変更）
+        $precAvg = AvgW $hA.precipitation[$i] $bPrec 0.6 0.4
         $snowAvg = Avg2 $hA.snowfall[$i] $bSnow
         $lowAvg  = Avg2 $hA.cloud_cover_low[$i] $bLow
         $midAvg  = Avg2 $hA.cloud_cover_mid[$i] $bMid
         $highAvg = Avg2 $hA.cloud_cover_high[$i] $bHigh
-        $totAvg  = Avg2 $hA.cloud_cover[$i] $bTot
+        # 全雲量のみ規定版(best_match)を重視した加重平均（規定版0.6 + ECMWF0.4。2026-07-14変更）
+        $totAvg  = AvgW $hA.cloud_cover[$i] $bTot 0.6 0.4
         $codeA   = $hA.weather_code[$i]
 
         $derived = Derive-HourlyWeather -codeA $codeA -codeB $codeB -precip (Or0 $precAvg) -snow (Or0 $snowAvg) -total (Or0 $totAvg)
@@ -300,6 +311,9 @@ function Build-AvgRows {
         $jd  = Get-JD -utc $dt.AddHours(-9)
         $hh  = $dt.Hour
         $tAdj = if ($hh -ge 8 -and $hh -le 10) { 1 } elseif ($hh -ge 11 -and $hh -le 15) { 2 } elseif ($hh -ge 16 -and $hh -le 17) { 1 } else { 0 }
+        # 7〜9月の8〜18時は、晴れ・快晴の時のみさらに+1℃（夏の晴天日はより低く出るため。2026-07-14追加）
+        if ($dt.Month -ge 7 -and $dt.Month -le 9 -and $hh -ge 8 -and $hh -le 18 -and
+            ($derived.key -eq "clear" -or $derived.key -eq "mclear")) { $tAdj += 1 }
         $star = Get-StarIndex -jd $jd -lat $Latitude -lon $Longitude -totalCloud $totAvg -precip $precAvg
         $mAlt = Get-MoonAlt -jd $jd -lat $Latitude -lon $Longitude
         $mBri = Get-MoonBrightness -jd $jd -lat $Latitude -lon $Longitude
@@ -388,7 +402,7 @@ function Show-AvgTable {
     foreach ($line in (Render-AlertConsole $alerts)) { Write-Host $line }
     Write-Host ""
     $header = (Pad "日時" 18 -Left) + (Pad "天気" 12 -Left) + (Pad "気温" 7) + (Pad "風速" 7) +
-              (Pad "降水" 6) + (Pad "雨量" 8) +
+              (Pad "雨量" 8) +
               (Pad "低層" 6) + (Pad "中層" 6) + (Pad "高層" 6) + (Pad "全雲量" 7) + (Pad "星空" 6)
     Write-Host $header
     Write-Host ("-" * (Get-DisplayWidth $header))
@@ -398,7 +412,6 @@ function Show-AvgTable {
                 (Pad $r.weather 12 -Left) +
                 (Pad (Format-Temp $r.tempAdj) 7) +
                 (Pad (Format-Wind $r.wind) 7) +
-                (Pad (Format-Pct $r.pop) 6) +
                 (Pad (Format-Precip $r.precip) 8) +
                 (Pad (Format-Pct $r.low) 6) +
                 (Pad (Format-Pct $r.mid) 6) +
@@ -414,11 +427,11 @@ function Show-AvgTable {
 function Save-AvgCsv {
     param($rows, [string]$path)
     $sb = New-Object System.Text.StringBuilder
-    [void]$sb.AppendLine("日時,天気,気温℃,風速m/s,降水確率%,雨量mm,低層雲%,中層雲%,高層雲%,全雲量%,星空指数")
+    [void]$sb.AppendLine("日時,天気,気温℃,風速m/s,雨量mm,低層雲%,中層雲%,高層雲%,全雲量%,星空指数")
     foreach ($r in $rows) {
         $starCsv = if ($null -eq $r.star) { "" } else { [string]$r.star }
-        [void]$sb.AppendLine(("{0},{1},{2:0.0},{3:0.0},{4},{5:0.0},{6:0},{7:0},{8:0},{9:0},{10}" -f `
-            $r.time, $r.weather, $r.temp, $r.wind, $r.pop, $r.precip, $r.low, $r.mid, $r.high, $r.total, $starCsv))
+        [void]$sb.AppendLine(("{0},{1},{2:0.0},{3:0.0},{4:0.0},{5:0},{6:0},{7:0},{8:0},{9}" -f `
+            $r.time, $r.weather, $r.temp, $r.wind, $r.precip, $r.low, $r.mid, $r.high, $r.total, $starCsv))
     }
     $enc = New-Object System.Text.UTF8Encoding($true)
     [System.IO.File]::WriteAllText($path, $sb.ToString(), $enc)
@@ -538,9 +551,6 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
     Row "風速m/s" { param($r)
         $wbg = if ($r.wind -ge 6) { ' style="background:#ffe0b2"' } elseif ($r.wind -ge 3) { ' style="background:#fff9c4"' } else { '' }
         "<td{0}>{1:0.0}</td>" -f $wbg, $r.wind
-    }
-    Row "降水確率" { param($r)
-        if ($null -eq $r.pop) { '<td>--</td>' } else { "<td style=""{0}"">{1:0}%</td>" -f (Pop-Bg $r.pop), $r.pop }
     }
     Row "雨量mm" { param($r) "<td style=""{0}"">{1:0.0}</td>" -f (Rain-Bg $r.precip), $r.precip }
     Row "全雲量%" { param($r) "<td style=""{0}"">{1:0}</td>" -f (Cloud-Bg $r.total), $r.total }

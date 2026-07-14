@@ -91,6 +91,10 @@ function Build-Rows {
         # 晴れた昼間は実気温より低く出がちなため時間帯ごとに気温を補正（表示用）
         $hh = $dt.Hour
         $tAdj = if ($hh -ge 8 -and $hh -le 10) { 1 } elseif ($hh -ge 11 -and $hh -le 15) { 2 } elseif ($hh -ge 16 -and $hh -le 17) { 1 } else { 0 }
+        # 7〜9月の8〜18時は、晴れ・快晴（weather_code 0/1）の時のみさらに+1℃（夏の晴天日はより低く出るため。2026-07-14追加）
+        $wcode = $h.weather_code[$i]
+        if ($dt.Month -ge 7 -and $dt.Month -le 9 -and $hh -ge 8 -and $hh -le 18 -and
+            $null -ne $wcode -and ([int]$wcode -eq 0 -or [int]$wcode -eq 1)) { $tAdj += 1 }
         $star = Get-StarIndex -jd $jd -lat $Latitude -lon $Longitude -totalCloud $h.cloud_cover[$i] -precip $h.precipitation[$i]
         $mAlt = Get-MoonAlt -jd $jd -lat $Latitude -lon $Longitude
         $mBri = Get-MoonBrightness -jd $jd -lat $Latitude -lon $Longitude
