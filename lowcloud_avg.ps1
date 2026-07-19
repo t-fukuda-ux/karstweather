@@ -82,6 +82,8 @@ function Get-SunTimes {
 # 毎時の天気（判定順 ⓪雷雨 → ①雪・みぞれ → ②雨 → ③晴れ/曇り）
 function Derive-HourlyWeather {
     param($codeA, $codeB, [double]$precip, [double]$snow, [double]$total)
+    # 降水量は表示（0.1mm単位）と同じ丸め後の値で判定する（表示0.2mmなのに雨、という矛盾を防ぐ）
+    $precip = [math]::Round($precip, 1)
     $thunderCodes = @(95, 96, 99)
     if (($null -ne $codeA -and $thunderCodes -contains [int]$codeA) -or
         ($null -ne $codeB -and $thunderCodes -contains [int]$codeB)) {
@@ -93,7 +95,7 @@ function Derive-HourlyWeather {
         if ($snow -lt 2)     { return @{ key = "snow"; label = "雪" } }
         return @{ key = "snow_heavy"; label = "大雪" }
     }
-    if ($precip -ge 0.1) {
+    if ($precip -gt 0.2) {
         if ($precip -lt 1)  { return @{ key = "drizzle"; label = "霧雨" } }
         if ($precip -lt 3)  { return @{ key = "rain_weak"; label = "弱い雨" } }
         if ($precip -lt 10) { return @{ key = "rain"; label = "雨" } }
@@ -103,6 +105,8 @@ function Derive-HourlyWeather {
         if ($precip -lt 80) { return @{ key = "rain_veryheavy"; label = "非常に激しい雨" } }
         return @{ key = "rain_violent"; label = "猛烈な雨" }
     }
+    # 降水量0.2mm以下は雨とせず「曇り」扱い（2026-07-19変更。ごく僅かな降水で雨表示になるのを防ぐ）
+    if ($precip -gt 0) { return @{ key = "cloudy"; label = "曇り" } }
     if ($total -le 15) { return @{ key = "clear";   label = "快晴" } }
     if ($total -le 50) { return @{ key = "mclear";  label = "晴れ" } }
     if ($total -le 80) { return @{ key = "pcloudy"; label = "薄曇" } }
