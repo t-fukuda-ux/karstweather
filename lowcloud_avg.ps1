@@ -3,10 +3,11 @@
   Open-Meteo の best_match と ECMWF(ecmwf_ifs025) を平均した「平均版」天気予報を出力する。
 
 .DESCRIPTION
-  - 数値は best_match と ECMWF の平均。ただし降水量・全雲量のみ 規定版0.6+ECMWF0.4 の
-    加重平均（2026-07-14〜）、その他（気温/風速/降水確率/低中高層雲）は単純平均。
+  - 数値は best_match と ECMWF の平均。ただし降水量・全雲量のみ 規定版0.7+ECMWF0.3 の
+    加重平均（2026-07-20〜）、その他（気温/風速/降水確率/低中高層雲）は単純平均。
   - 天気コードは平均できないため、平均した降水量・降雪量・雲量から毎時の天気を再判定する
-    （Derive-HourlyWeather）。雷雨は両モデルいずれかが雷雨コードなら最優先。
+    （Derive-HourlyWeather）。雷雨は規定版(best_match)が雷雨コードの時のみ最優先
+    （ECMWFは雷雨予想が過多なため不使用。2026-07-20〜）。
   - 週間予報は日別APIを使わず、平均した毎時7日分から複合表現（のち/時々/一時）を組み立てる
     （Build-CompoundWeekly / Weekly-IconCode）。ただし日の出・日の入りはモデル差がないため
     best_match の日別APIから取得する。
@@ -84,9 +85,9 @@ function Derive-HourlyWeather {
     param($codeA, $codeB, [double]$precip, [double]$snow, [double]$total)
     # 降水量は表示（0.1mm単位）と同じ丸め後の値で判定する（表示0.2mmなのに雨、という矛盾を防ぐ）
     $precip = [math]::Round($precip, 1)
+    # 雷雨は規定版(best_match=codeA)のみで判定（2026-07-20変更。ECMWFは雷雨予想が過多なため不使用。codeBは判定に使わない）
     $thunderCodes = @(95, 96, 99)
-    if (($null -ne $codeA -and $thunderCodes -contains [int]$codeA) -or
-        ($null -ne $codeB -and $thunderCodes -contains [int]$codeB)) {
+    if ($null -ne $codeA -and $thunderCodes -contains [int]$codeA) {
         return @{ key = "thunder"; label = "雷雨" }
     }
     if ($snow -gt 0) {
@@ -299,14 +300,14 @@ function Build-AvgRows {
         $tempAvg = Avg2 $hA.temperature_2m[$i] $bTemp
         $windAvg = Avg2 $hA.wind_speed_10m[$i] $bWind
         $popAvg  = Avg2 $hA.precipitation_probability[$i] $bPop
-        # 降水量は規定版(best_match)を重視した加重平均（規定版0.6 + ECMWF0.4。2026-07-14変更）
-        $precAvg = AvgW $hA.precipitation[$i] $bPrec 0.6 0.4
+        # 降水量は規定版(best_match)を重視した加重平均（規定版0.7 + ECMWF0.3。2026-07-20変更）
+        $precAvg = AvgW $hA.precipitation[$i] $bPrec 0.7 0.3
         $snowAvg = Avg2 $hA.snowfall[$i] $bSnow
         $lowAvg  = Avg2 $hA.cloud_cover_low[$i] $bLow
         $midAvg  = Avg2 $hA.cloud_cover_mid[$i] $bMid
         $highAvg = Avg2 $hA.cloud_cover_high[$i] $bHigh
-        # 全雲量のみ規定版(best_match)を重視した加重平均（規定版0.6 + ECMWF0.4。2026-07-14変更）
-        $totAvg  = AvgW $hA.cloud_cover[$i] $bTot 0.6 0.4
+        # 全雲量のみ規定版(best_match)を重視した加重平均（規定版0.7 + ECMWF0.3。2026-07-20変更）
+        $totAvg  = AvgW $hA.cloud_cover[$i] $bTot 0.7 0.3
         $codeA   = $hA.weather_code[$i]
 
         $derived = Derive-HourlyWeather -codeA $codeA -codeB $codeB -precip (Or0 $precAvg) -snow (Or0 $snowAvg) -total (Or0 $totAvg)
