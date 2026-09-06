@@ -479,7 +479,11 @@ try {
     throw ("取得に失敗しました: {0}" -f $_.Exception.Message)
 }
 $data = $Bundle
+# 呼び出し元から渡されたバンドルも必ず検証する（generate_all.ps1 経由では自前取得しないため）
+Assert-BundleUsable -Bundle $data -Model $Models
 $rows = Build-Rows -data $data
+# ここで止めれば HTML/CSV は書き換わらず、前回の内容が残る
+Assert-RowsUsable -Rows $rows -Label ("{0} ({1})" -f $OutName, $Models)
 $futureRows = @($rows | Where-Object { -not $_.isPast })   # コンソール/CSV用（現在時刻以降のみ）
 
 # ---- 雲海指数 ----

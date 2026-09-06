@@ -116,7 +116,36 @@ function Get-ForecastBundle {
     if (-not [string]::IsNullOrWhiteSpace($Model)) { $query["models"] = $Model }
     $pairs = $query.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, [uri]::EscapeDataString([string]$_.Value) }
     $url = "https://api.open-meteo.com/v1/forecast?" + ($pairs -join "&")
-    return Invoke-JsonWithRetry -Uri $url
+    $res = Invoke-JsonWithRetry -Uri $url
+    Assert-BundleUsable -Bundle $res -Model $Model
+    return $res
+}
+
+# 毎時データの最低本数。これを下回るバンドルは「取得できたが中身が無い」とみなす。
+# 毎時テーブルは当日0時から数日分あるので、正常なら常に72本以上になる。
+$MinHourlyRows = 24
+
+# APIが200を返しても中身が空・極端に短いことがある（2026-09-06 21:50UTC に best_match で発生し、
+# 空の予報ページが公開された）。例外にして呼び出し元に失敗と伝え、前回のHTMLを残す。
+function Assert-BundleUsable {
+    param($Bundle, [string]$Model)
+    $label = if ([string]::IsNullOrWhiteSpace($Model)) { "best_match" } else { $Model }
+    if ($null -eq $Bundle -or $null -eq $Bundle.hourly -or $null -eq $Bundle.hourly.time) {
+        throw ("{0}: 毎時データが空です（APIは応答しましたが中身がありません）。" -f $label)
+    }
+    $n = @($Bundle.hourly.time).Count
+    if ($n -lt $MinHourlyRows) {
+        throw ("{0}: 毎時データが{1}本しかありません（最低{2}本必要）。" -f $label, $n, $MinHourlyRows)
+    }
+}
+
+# 生成直前の最終確認。日付の絞り込み後に0本になっている場合もここで止める。
+function Assert-RowsUsable {
+    param($Rows, [string]$Label)
+    $n = @($Rows).Count
+    if ($n -lt $MinHourlyRows) {
+        throw ("{0}: 表示できる毎時データが{1}本しかありません（最低{2}本必要）。HTMLは更新せず前回のものを残します。" -f $Label, $n, $MinHourlyRows)
+    }
 }
 
 # ---- 天文計算（月の出入り・月相） ----

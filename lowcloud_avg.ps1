@@ -728,6 +728,10 @@ try {
     # exitではなくthrow: generate_all.ps1からのプロセス内呼び出しでも呼び出し元を巻き込まない
     throw ("取得に失敗しました: {0}" -f $_.Exception.Message)
 }
+# 呼び出し元から渡されたバンドルも必ず検証する（generate_all.ps1 経由では自前取得しないため）。
+# 平均版は両モデルを使うので、片方が空なら平均も出せない。
+Assert-BundleUsable -Bundle $BundleA -Model "best_match"
+Assert-BundleUsable -Bundle $BundleB -Model "ecmwf_ifs025"
 $hA = $BundleA.hourly
 $hB = $BundleB.hourly
 $allRows = Build-AvgRows -hA $hA -hB $hB
@@ -741,6 +745,8 @@ foreach ($r in $rows) {
     $r.isNow  = ([datetime]$r.time -eq $nowHour)
 }
 $futureRows = @($rows | Where-Object { -not $_.isPast })
+# ここで止めれば HTML/CSV は書き換わらず、前回の内容が残る
+Assert-RowsUsable -Rows $rows -Label $OutName
 
 # ---- 雲海指数 ----
 # F は両モデルの平均、V は best_match 由来（ECMWF は視程が全欠測で気圧面も粗いため）。
