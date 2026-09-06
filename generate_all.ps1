@@ -55,6 +55,34 @@ try {
     Write-Warning ("警報・注意報の取得に失敗しました: {0}" -f $_.Exception.Message)
 }
 
+# ---- 雲海指数 ----
+# 展望地点(姫鶴平)＋見下ろす谷4地点をモデルごとに1回ずつ取得する（天気予報本体とは別リクエスト）。
+# 失敗しても天気予報3版は生成できるよう、警告のうえ null のまま進める。
+$unkaiA = $null   # best_match
+$unkaiB = $null   # ecmwf_ifs025
+$unkaiM = $null   # 平均版（F は両モデル平均・V は best_match 由来）
+$unkaiBundleA = $null   # 検証用ページの地点一覧で使うので保持しておく
+try {
+    $unkaiBundleA = Get-UnkaiBundle -Model "best_match" -ForecastDays 7 -Timezone $Timezone
+    $unkaiA = Get-UnkaiTable -Bundle $unkaiBundleA
+} catch {
+    Write-Warning ("雲海指数(best_match)の算出に失敗しました: {0}" -f $_.Exception.Message)
+}
+try {
+    $unkaiB = Get-UnkaiTable -Bundle (Get-UnkaiBundle -Model "ecmwf_ifs025" -ForecastDays 7 -Timezone $Timezone)
+} catch {
+    Write-Warning ("雲海指数(ECMWF)の算出に失敗しました: {0}" -f $_.Exception.Message)
+}
+if ($null -ne $unkaiA -and $null -ne $unkaiB) {
+    try {
+        $unkaiM = Get-UnkaiTableAverage -TableA $unkaiA -TableB $unkaiB
+    } catch {
+        Write-Warning ("雲海指数(平均)の算出に失敗しました: {0}" -f $_.Exception.Message)
+    }
+} elseif ($null -ne $unkaiA) {
+    $unkaiM = $unkaiA   # ECMWFが欠けたときは best_match をそのまま使う
+}
+
 # ---- 3版の生成（1版の失敗で他を止めない） ----
 
 $results = [ordered]@{ "規定版" = $false; "EC版" = $false; "平均版" = $false }
@@ -62,7 +90,7 @@ $results = [ordered]@{ "規定版" = $false; "EC版" = $false; "平均版" = $fa
 if ($null -ne $bundleA) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
-            -Timezone $Timezone -Bundle $bundleA -PrefetchedAlerts $alerts
+            -Timezone $Timezone -Bundle $bundleA -PrefetchedAlerts $alerts -UnkaiHours $unkaiA
         $results["規定版"] = $true
     } catch {
         Write-Warning ("規定版の生成に失敗しました: {0}" -f $_.Exception.Message)
@@ -75,7 +103,7 @@ if ($null -ne $bundleB) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
             -Timezone $Timezone -Models "ecmwf_ifs025" -OutName "lowcloud_ec" -ModelLabel "[ECMWF]" `
-            -Bundle $bundleB -PrefetchedAlerts $alerts
+            -Bundle $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiB
         $results["EC版"] = $true
     } catch {
         Write-Warning ("EC版の生成に失敗しました: {0}" -f $_.Exception.Message)
@@ -87,13 +115,30 @@ if ($null -ne $bundleB) {
 if ($null -ne $bundleA -and $null -ne $bundleB) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud_avg.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
-            -Timezone $Timezone -BundleA $bundleA -BundleB $bundleB -PrefetchedAlerts $alerts
+            -Timezone $Timezone -BundleA $bundleA -BundleB $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiM
         $results["平均版"] = $true
     } catch {
         Write-Warning ("平均版の生成に失敗しました: {0}" -f $_.Exception.Message)
     }
 } else {
     Write-Warning "平均版は両モデルのデータが揃わないためスキップします。"
+}
+
+# ---- 雲海の検証用ページ（非公開） ----
+# publish.ps1 と GitHub Actions はいずれも git add の対象を4ファイルに限定しており、
+# .gitignore にも入れてあるので公開されない。失敗しても3版の生成結果には影響させない。
+if ($null -ne $unkaiA -and $null -ne $unkaiBundleA) {
+    try {
+        $byModel = [ordered]@{}
+        $byModel["規定(best_match)"] = $unkaiA
+        if ($null -ne $unkaiB) { $byModel["ECMWF"] = $unkaiB }
+        if ($null -ne $unkaiM) { $byModel["平均"]  = $unkaiM }
+        $lab = Save-UnkaiLab -ByModel $byModel -Bundle $unkaiBundleA `
+                 -Dir $PSScriptRoot -Generated ((Get-JstNow).ToString("yyyy-MM-dd HH:mm"))
+        Write-Host ("雲海の検証用ページを更新しました: {0}" -f $lab.lab)
+    } catch {
+        Write-Warning ("雲海の検証用ページの生成に失敗しました: {0}" -f $_.Exception.Message)
+    }
 }
 
 # ---- index.html（WEB公開のルート）は平均版が成功した時だけ更新 ----

@@ -34,7 +34,8 @@ param(
     [string]$OutName     = "lowcloud",    # 出力ファイル名のベース（拡張子なし）
     [string]$ModelLabel  = "",            # HTML見出しに付記するモデル表記（例 "[ECMWF]"）
     [object]$Bundle      = $null,         # generate_all.ps1 から渡される取得済みデータ（省略時は自前で取得）
-    [object]$PrefetchedAlerts = $null     # 同・取得済みの警報一覧
+    [object]$PrefetchedAlerts = $null,    # 同・取得済みの警報一覧
+    [object]$UnkaiHours  = $null          # 同・計算済みの雲海指数（省略時は自前で取得・計算）
 )
 
 $ErrorActionPreference = "Stop"
@@ -148,11 +149,12 @@ function Show-Table {
     Write-Host ""
     $header = (Pad "日時" 18 -Left) + (Pad "天気" 10 -Left) + (Pad "気温" 7) + (Pad "風速" 7) +
               (Pad "雨量" 8) +
-              (Pad "低層" 6) + (Pad "中層" 6) + (Pad "高層" 6) + (Pad "全雲量" 7) + (Pad "星空" 6)
+              (Pad "低層" 6) + (Pad "中層" 6) + (Pad "高層" 6) + (Pad "全雲量" 7) + (Pad "星空" 6) + (Pad "雲海" 6)
     Write-Host $header
     Write-Host ("-" * (Get-DisplayWidth $header))
     foreach ($r in $rows) {
         $starTxt = if ($null -eq $r.star) { "--" } else { [string]$r.star }
+        $unkaiTxt = if ($null -eq $r.unkai) { "--" } else { [string]$r.unkai }
         $line = (Pad $r.time 18 -Left) +
                 (Pad $r.weather 10 -Left) +
                 (Pad (Format-Temp $r.tempAdj) 7) +
@@ -162,7 +164,8 @@ function Show-Table {
                 (Pad (Format-Pct $r.mid) 6) +
                 (Pad (Format-Pct $r.high) 6) +
                 (Pad (Format-Pct $r.total) 7) +
-                (Pad $starTxt 6)
+                (Pad $starTxt 6) +
+                (Pad $unkaiTxt 6)
         Write-Host $line
     }
 }
@@ -172,11 +175,12 @@ function Show-Table {
 function Save-Csv {
     param($rows, [string]$path)
     $sb = New-Object System.Text.StringBuilder
-    [void]$sb.AppendLine("日時,天気,気温℃,風速m/s,雨量mm,低層雲%,中層雲%,高層雲%,全雲量%,星空指数")
+    [void]$sb.AppendLine("日時,天気,気温℃,風速m/s,雨量mm,低層雲%,中層雲%,高層雲%,全雲量%,星空指数,雲海期待度,雲海状態")
     foreach ($r in $rows) {
         $starCsv = if ($null -eq $r.star) { "" } else { [string]$r.star }
-        [void]$sb.AppendLine(("{0},{1},{2},{3:0.0},{4:0.0},{5},{6},{7},{8},{9}" -f `
-            $r.time, $r.weather, $r.temp, $r.wind, $r.precip, $r.low, $r.mid, $r.high, $r.total, $starCsv))
+        $unkaiCsv = if ($null -eq $r.unkai) { "" } else { [string]$r.unkai }
+        [void]$sb.AppendLine(("{0},{1},{2},{3:0.0},{4:0.0},{5},{6},{7},{8},{9},{10},{11}" -f `
+            $r.time, $r.weather, $r.temp, $r.wind, $r.precip, $r.low, $r.mid, $r.high, $r.total, $starCsv, $unkaiCsv, $r.unkaiLabel))
     }
     $enc = New-Object System.Text.UTF8Encoding($true)
     [System.IO.File]::WriteAllText($path, $sb.ToString(), $enc)
@@ -242,6 +246,10 @@ td.moonband{border-left:none;border-right:none;font-size:10px;padding:2px 1px;co
 b.arUp{color:#e8590c;font-size:13px;font-weight:900;}
 b.arDn{color:#1565c0;font-size:13px;font-weight:900;}
 td.starcell{font-weight:700;color:#3a3f7a;}
+td.unkaicell{font-weight:700;color:#2b6b4f;}
+.unkairow{font-size:11px;color:#2b6b4f;margin-top:2px;}
+.unkairow b{font-size:13px;}
+.unkaiw{color:#777;font-size:10px;}
 th.rl .lcl{font-size:9px;font-weight:600;}
 th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
 '@)
@@ -360,8 +368,17 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
         else { "<td class=""starcell"">{0}</td>" -f $r.star }
     }
 
+    # 雲海は日の出前後の限られた時間帯だけの現象なので、その4時刻以外は「--」になる。
+    Row "雲海期待度" { param($r)
+        if ($null -eq $r.unkai) { '<td class="unkaicell">--</td>' }
+        else {
+            $bg = if ($r.unkai -ge 60) { ' style="background:#d3f9d8"' } elseif ($r.unkai -ge 40) { ' style="background:#f4fce3"' } else { '' }
+            "<td class=""unkaicell""{0}>{1}</td>" -f $bg, $r.unkai
+        }
+    }
+
     [void]$sb.AppendLine('</table></div>')
-    [void]$sb.AppendLine('<p class="legend">※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。今後風が強まるのか弱まるのか傾向を見るのに使ってください。<br>※雨量は少し離れた場所が大雨予報の時に、(雨雲がズレるリスクを考慮して）大きく出る事が有ります。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。</p>')
+    [void]$sb.AppendLine('<p class="legend">※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。今後風が強まるのか弱まるのか傾向を見るのに使ってください。<br>※雨量は少し離れた場所が大雨予報の時に、(雨雲がズレるリスクを考慮して）大きく出る事が有ります。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。<br>※雲海期待度は、日の出前後の4時間のみ計算します。麓の谷（美川・面河・梼原・津野町）で霧ができる条件と、姫鶴平が雲の上に出る条件を掛け合わせた目安で、発生確率ではありません。試作中の指標のため、現地の実績と照らして今後調整します。</p>')
 
     # ---- 週間予報 ----
     if ($daily -and $daily.Count -gt 0) {
@@ -388,7 +405,14 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
                 default { "月齢{0}日" -f $ageInt }
             }
             [void]$sb.Append(("<div class=""moonrow"">{0} {1}</div>" -f $r.moonEmoji, $moonLabel))
-            [void]$sb.AppendLine(("<div class=""moonrs"">🌙<b class=""arUp"">↑</b>{0}　<b class=""arDn"">↓</b>{1}</div></div>" -f $r.moonRise, $r.moonSet))
+            [void]$sb.Append(("<div class=""moonrs"">🌙<b class=""arUp"">↑</b>{0}　<b class=""arDn"">↓</b>{1}</div>" -f $r.moonRise, $r.moonSet))
+            # 雲海期待度（見頃時刻・方角・4地点中いくつで条件が揃うか）
+            $u = $unkaiByDate[("{0:yyyy-MM-dd}" -f $r.date)]
+            if ($null -ne $u -and $null -ne $u.idx) {
+                [void]$sb.Append(("<div class=""unkairow"">雲海 <b>{0}</b> {1} {2}<div class=""unkaiw"">{3}　{4}/{5}地点</div></div>" -f `
+                    $u.idx, $u.dir, $u.peak_time, $u.label, $u.spread, $u.spread_total))
+            }
+            [void]$sb.AppendLine('</div>')
         }
         [void]$sb.AppendLine('</div>')
     }
@@ -457,6 +481,31 @@ try {
 $data = $Bundle
 $rows = Build-Rows -data $data
 $futureRows = @($rows | Where-Object { -not $_.isPast })   # コンソール/CSV用（現在時刻以降のみ）
+
+# ---- 雲海指数 ----
+# 展望地点(姫鶴平)と見下ろす谷4地点を別に取得するため、天気予報本体とは別リクエストになる。
+# generate_all.ps1 から呼ばれる場合は計算済みのものを受け取り、再取得しない。
+# 失敗しても天気予報本体は出せるように、握りつぶさず警告して null のまま進む。
+$unkaiHours = $UnkaiHours
+if ($null -eq $unkaiHours) {
+    try {
+        $unkaiHours = Get-UnkaiTable -Bundle (Get-UnkaiBundle -Model $Models -ForecastDays $WeeklyDays -Timezone $Timezone)
+    } catch {
+        Write-Warning ("雲海指数の算出に失敗しました: {0}" -f $_.Exception.Message)
+        $unkaiHours = $null
+    }
+}
+$unkaiByTime = @{}
+$unkaiByDate = @{}
+if ($null -ne $unkaiHours) {
+    foreach ($u in $unkaiHours) { $unkaiByTime[[string]$u.time] = $u }
+    foreach ($u in (Get-UnkaiDaily -Hours $unkaiHours)) { $unkaiByDate[[string]$u.date] = $u }
+}
+foreach ($r in $rows) {
+    $u = $unkaiByTime[[string]$r.time]
+    $r | Add-Member -NotePropertyName unkai      -NotePropertyValue (&{ if ($null -eq $u) { $null } else { $u.idx } })
+    $r | Add-Member -NotePropertyName unkaiLabel -NotePropertyValue (&{ if ($null -eq $u) { "" }   else { $u.label } })
+}
 
 if ($null -ne $PrefetchedAlerts) {
     $alerts = $PrefetchedAlerts

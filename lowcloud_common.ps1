@@ -565,3 +565,10 @@ $AlertCss = @'
 .alertbanner.alertspecial{background:#8b0000;color:#fff;}
 .alertnone{display:inline-block;flex:0 0 auto;white-space:nowrap;font-size:11px;color:#aaa;}
 '@
+
+# ---- 雲海指数 ----
+# 別ファイルに分離している。取得・計算ともに Invoke-JsonWithRetry に依存するため末尾で読み込む。
+. (Join-Path $PSScriptRoot "unkai_common.ps1")
+
+# 雲海の検証用出力（非公開）
+. (Join-Path $PSScriptRoot "unkai_report.ps1")
