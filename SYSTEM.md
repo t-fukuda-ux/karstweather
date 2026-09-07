@@ -4,6 +4,10 @@
 
 このファイル1つでシステム全体を把握できるようにしてある。旧 `引き継ぎ書.md` の内容はすべてここに取り込んだ。
 
+- このPCの作業リポジトリ: `C:\Users\mezuru\Documents\Codex\天気予報`
+- 正本: `https://github.com/t-fukuda-ux/karstweather` の `main` ブランチ
+- 他のPCでもGitHubから各PCのローカルディスクへcloneし、作業前に `git pull --rebase`、作業後にcommit・pushする。クラウド同期フォルダへリポジトリのコピーを置かない。
+
 ---
 
 ## 1. 概要
@@ -84,7 +88,7 @@ WordPress 等には トップページを iframe で埋め込む。埋め込み�
 ## 4. 実行方法
 
 ```powershell
-cd "C:\Users\user\Claude\Projects\weather-lowclouds"
+cd "C:\Users\mezuru\Documents\Codex\天気予報"
 
 # 3版すべて生成（API取得は最小回数、index.html更新まで。git操作なし）
 powershell -ExecutionPolicy Bypass -File ".\generate_all.ps1"
@@ -432,7 +436,7 @@ Enable-ScheduledTask  -TaskName "KarstWeatherWorkflowTrigger"
 1. **UTF-8 BOM 必須**（`.ps1`・`.yml` とも）
    Windows PowerShell 5.1 は BOM無しUTF-8 を Shift-JIS として読む。編集したら必ず再付与する。
    ```powershell
-   $p="C:\Users\user\Claude\Projects\weather-lowclouds\lowcloud.ps1"
+   $p="C:\Users\mezuru\Documents\Codex\天気予報\lowcloud.ps1"
    $t=[IO.File]::ReadAllText($p,[Text.UTF8Encoding]::new($false))
    [IO.File]::WriteAllText($p,$t,[Text.UTF8Encoding]::new($true))
    ```
@@ -535,7 +539,7 @@ Enable-ScheduledTask  -TaskName "KarstWeatherWorkflowTrigger"
 ## 付録: クイックリファレンス
 
 ```powershell
-cd "C:\Users\user\Claude\Projects\weather-lowclouds"
+cd "C:\Users\mezuru\Documents\Codex\天気予報"
 
 # 3版すべて生成＋公開
 powershell -ExecutionPolicy Bypass -File ".\publish.ps1"
