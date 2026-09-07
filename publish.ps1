@@ -60,7 +60,8 @@ try {
     # Step 1: 3版生成（generate_all.ps1 が index.html の更新まで担当）
     Write-Log "generate_all.ps1 を実行中..."
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $dir "generate_all.ps1")
-    if ($LASTEXITCODE -ne 0) {
+    $generationExit = $LASTEXITCODE
+    if ($generationExit -eq 1) {
         Write-Log "全版の生成に失敗しました（終了コード $LASTEXITCODE）。pushをスキップします。"
         exit 1
     }
@@ -68,7 +69,7 @@ try {
 
     # Step 2: git commit & push（競合時はrebaseして最大3回再試行）
     Invoke-GitBlock {
-        git add index.html lowcloud.html lowcloud_ec.html lowcloud_avg.html unkai_lab.html 2>$null
+        git add index.html lowcloud.html lowcloud_ec.html lowcloud_avg.html unkai_lab.html forecast-history 2>$null
         git diff --cached --quiet 2>$null
         if ($LASTEXITCODE -eq 0) {
             Write-Log "変更なし。スキップします。"
@@ -92,6 +93,9 @@ try {
             Write-Log "push に3回失敗しました。資格情報・ネットワークを確認してください。"
         }
     }
+
+    & (Join-Path $dir "check_forecast.ps1")
+    if ($generationExit -ne 0) { throw "予報履歴の保存に失敗しました。ログを確認してください。" }
 
 } catch {
     Write-Log ("エラー: {0}" -f $_.Exception.Message)

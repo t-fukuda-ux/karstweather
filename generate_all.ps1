@@ -8,7 +8,7 @@
     気象庁警報JSONを県ごとに1回だけ取得し、3版すべて同じデータから生成する。
     （従来は3スクリプトが個別に取得しており、1回の更新でOpen-Meteo計7回・気象庁計6回だった）
   - 1版の生成に失敗しても他の版は継続する。平均版が成功した時だけ index.html を更新する。
-  - 全版失敗した場合のみ終了コード1（GitHub Actionsの失敗通知は本当の異常時だけ届く）。
+  - 全版失敗は終了コード1、履歴保存失敗は2。公開後に平均版の鮮度も別途確認する。
   - git操作は行わない。commit/pushは GitHub Actions(update.yml) または publish.ps1 が担当。
 
 .EXAMPLE
@@ -125,9 +125,8 @@ if ($null -ne $bundleA -and $null -ne $bundleB) {
     Write-Warning "平均版は両モデルのデータが揃わないためスキップします。"
 }
 
-# ---- 雲海の検証用ページ（非公開） ----
-# publish.ps1 と GitHub Actions はいずれも git add の対象を4ファイルに限定しており、
-# .gitignore にも入れてあるので公開されない。失敗しても3版の生成結果には影響させない。
+# ---- 雲海の検証用ページ（リンクなし・noindexで公開） ----
+# 失敗しても3版の生成結果には影響させない。
 if ($null -ne $unkaiA -and $null -ne $unkaiBundleA -and (Test-UnkaiLabDue -Dir $PSScriptRoot -Force:$ForceUnkaiLab)) {
     try {
         $byModel = [ordered]@{}
@@ -151,11 +150,30 @@ if ($results["平均版"]) {
     Write-Warning "平均版が生成できなかったため index.html は前回のまま維持します。"
 }
 
+# ---- 発表時刻付きの雲海予報履歴（検証ページの3時間間隔とは独立） ----
+$historyFailed = $false
+try {
+    . (Join-Path $PSScriptRoot 'forecast_history.ps1')
+    $historyModels = [ordered]@{}
+    if ($null -ne $unkaiA) { $historyModels['best_match'] = $unkaiA }
+    if ($null -ne $unkaiB) { $historyModels['ecmwf_ifs025'] = $unkaiB }
+    if ($null -ne $unkaiM) { $historyModels['average'] = $unkaiM }
+    $averageMode = if ($null -ne $unkaiB) { 'F=mean; V=best_match' } else { 'best_match fallback' }
+    $revision = (git -C $PSScriptRoot rev-parse HEAD)
+    if ($LASTEXITCODE -ne 0) { throw '履歴に記録するソースのリビジョンを取得できません。' }
+    if (git -C $PSScriptRoot diff --name-only -- '*.ps1') { $revision += '+working-tree' }
+    Save-ForecastHistory -ByModel $historyModels -Dir $PSScriptRoot -IssuedAt (Get-JstNow) -SourceRevision $revision -AverageMode $averageMode
+} catch {
+    Write-Warning ('予報履歴の保存に失敗しました: {0}' -f $_.Exception.Message)
+    $historyFailed = $true
+}
+
 # ---- 結果まとめ ----
 
 $okCount = @($results.Values | Where-Object { $_ }).Count
 $summary = ($results.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, $(if ($_.Value) { "OK" } else { "失敗" }) }) -join " / "
 Write-Host ("生成結果: {0}" -f $summary)
+if ($historyFailed -and $okCount -gt 0) { exit 2 }
 if ($okCount -eq 0) {
     Write-Warning "全版の生成に失敗しました。"
     exit 1

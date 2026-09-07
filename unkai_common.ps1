@@ -509,12 +509,12 @@ function Get-UnkaiLabel {
     if ($null -eq $V) { return "判定不能" }
     if ([double]$F -lt 0.40) { return "雲海の条件なし" }
     # 「現地も霧」は断定ではなく、展望高度帯が湿っているという疑いを示す。
-    if ($SummitStatus -eq "summit_in_layer") { return "雲海あり・現地も霧の疑い" }
-    if ($TopStatus -eq "straddles_summit")   { return "雲海あり・雲頂不確実" }
-    if ($SummitStatus -eq "insufficient")    { return "雲海あり・展望は判定材料不足" }
-    if ([double]$V -ge 0.60) { return "雲海あり・展望良好" }
-    if ([double]$V -ge 0.30) { return "雲海あり・展望不良" }
-    return "雲海あり・現地も霧の疑い"
+    if ($SummitStatus -eq "summit_in_layer") { return "雲海期待・霧の恐れ" }
+    if ($TopStatus -eq "straddles_summit")   { return "雲海期待・雲頂不明" }
+    if ($SummitStatus -eq "insufficient")    { return "雲海期待・視界不明" }
+    if ([double]$V -ge 0.60) { return "雲海期待・視界良好" }
+    if ([double]$V -ge 0.30) { return "雲海期待・視界不良" }
+    return "雲海期待・霧の恐れ"
 }
 
 function Get-UnkaiIdx {

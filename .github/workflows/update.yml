@@ -27,13 +27,15 @@ jobs:
 
       - name: 3版すべて生成（規定/EC/平均、1版失敗でも他は継続）
         shell: pwsh
+        id: generate
+        continue-on-error: true
         run: ./generate_all.ps1
 
       - name: 変更があればコミット・push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add lowcloud.html lowcloud_ec.html lowcloud_avg.html index.html unkai_lab.html
+          git add lowcloud.html lowcloud_ec.html lowcloud_avg.html index.html unkai_lab.html forecast-history
           if git diff --cached --quiet; then
             echo "変更なし。スキップします。"
             exit 0
@@ -51,3 +53,14 @@ jobs:
           done
           echo "pushに3回失敗しました。"
           exit 1
+
+      # 成功した版をpushした後で判定するため、警告が他版の公開を妨げない。
+      - name: 平均版の更新停止を確認（3時間）
+        if: always()
+        shell: pwsh
+        run: ./check_forecast.ps1
+
+      - name: 生成・履歴保存の失敗を通知
+        if: always() && steps.generate.outcome == 'failure'
+        shell: bash
+        run: exit 1

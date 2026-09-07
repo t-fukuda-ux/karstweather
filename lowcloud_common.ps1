@@ -613,3 +613,17 @@ $AlertCss = @'
 
 # 雲海の検証用出力（非公開）
 . (Join-Path $PSScriptRoot "unkai_report.ps1")
+
+# 毎時表示と週間集計で同じ補正済み気温を使う。欠測は0℃に変換しない。
+function Format-DisplayTemperature {
+    param($Value)
+    if ($null -eq $Value) { return '--' }
+    return [string][int][math]::Ceiling([double]$Value)
+}
+function Get-DisplayTemperatureRange {
+    param($Rows)
+    $values = @($Rows | ForEach-Object { $_.tempAdj } | Where-Object { $null -ne $_ })
+    if ($values.Count -eq 0) { return @{ max = $null; min = $null } }
+    $range = $values | Measure-Object -Maximum -Minimum
+    return @{ max = $range.Maximum; min = $range.Minimum }
+}

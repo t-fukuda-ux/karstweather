@@ -367,9 +367,9 @@ function Build-AvgDaily {
         $cw = Build-CompoundWeekly -dayRowsAll $dayRows
         $icon = Weekly-IconCode -cw $cw
 
-        $rawTemps = @($dayRows | ForEach-Object { $_.temp } | Where-Object { $null -ne $_ })
-        $tmaxRaw = if ($rawTemps.Count -gt 0) { ($rawTemps | Measure-Object -Maximum).Maximum } else { $null }
-        $tminRaw = if ($rawTemps.Count -gt 0) { ($rawTemps | Measure-Object -Minimum).Minimum } else { $null }
+        $displayTemps = @($dayRows | ForEach-Object { $_.tempAdj } | Where-Object { $null -ne $_ })
+        $tmaxDisplay = if ($displayTemps.Count -gt 0) { ($displayTemps | Measure-Object -Maximum).Maximum } else { $null }
+        $tminDisplay = if ($displayTemps.Count -gt 0) { ($displayTemps | Measure-Object -Minimum).Minimum } else { $null }
 
         $pops = @($dayRows | ForEach-Object { $_.pop } | Where-Object { $null -ne $_ })
         $popMax = if ($pops.Count -gt 0) { ($pops | Measure-Object -Maximum).Maximum } else { $null }
@@ -383,8 +383,8 @@ function Build-AvgDaily {
             date      = $date
             icon      = $icon
             weather   = $cw.text
-            tmax      = $tmaxRaw
-            tmin      = $tminRaw
+            tmax      = $tmaxDisplay
+            tmin      = $tminDisplay
             pop       = $popMax
             precip    = $cw.rainSum
             sunrise   = $sun.sunrise
@@ -560,7 +560,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
 
     Row "天気" { param($r) "<td class=""ico"">{0}<div class=""wt"">{1}</div></td>" -f $WeatherSvg[(Get-AvgIconKey $r.wkey)], $r.weather }
     Row '<span class="lcl">低層雲</span> 霧' { param($r) "<td class=""low"" style=""{0}"">{1:0}</td>" -f (Cloud-Bg $r.low), $r.low }
-    Row "気温℃" { param($r) "<td class=""temp"">{0}</td>" -f [int][math]::Ceiling([double]$r.tempAdj) }
+    Row "気温℃" { param($r) "<td class=""temp"">{0}</td>" -f (Format-DisplayTemperature $r.tempAdj) }
     Row "風速m/s" { param($r)
         $wbg = if ($r.wind -ge 6) { ' style="background:#ffe0b2"' } elseif ($r.wind -ge 3) { ' style="background:#fff9c4"' } else { '' }
         "<td{0}>{1:0.0}</td>" -f $wbg, $r.wind
@@ -644,7 +644,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
             [void]$sb.Append(("<div class=""{0}""><div class=""dow"">{1}</div><div class=""dt"">{2}/{3}</div>" -f $cls, $wd, $r.date.Month, $r.date.Day))
             [void]$sb.Append($WeatherSvg[$r.icon])
             [void]$sb.Append(("<div class=""wt"">{0}</div>" -f $r.weather))
-            $tmaxTxt = if ($null -eq $r.tmax) { "--" } else { "{0}°" -f [int][math]::Ceiling([double]$r.tmax + 2.0) }
+            $tmaxTxt = if ($null -eq $r.tmax) { "--" } else { "{0}°" -f [int][math]::Ceiling([double]$r.tmax) }
             $tminTxt = if ($null -eq $r.tmin) { "--" } else { "{0}°" -f [int][math]::Ceiling([double]$r.tmin) }
             [void]$sb.Append(("<div><span class=""tmax"">{0}</span> <span class=""tmin"">{1}</span></div>" -f $tmaxTxt, $tminTxt))
             [void]$sb.Append(("<div class=""pop""><span style=""font-size:11px;color:#888"">降水</span> <span style=""color:{0}"">{1}</span><span style=""color:#1c7ed6;font-size:11px"">{2}</span></div>" -f $popColor, $popTxt, $mmTxt))
@@ -806,5 +806,5 @@ try {
 try {
     Save-AvgHtml -rows $rows -daily $daily -path (Join-Path $PSScriptRoot "$OutName.html") -alerts $alerts
 } catch {
-    Write-Warning ("HTML を保存できませんでした: {0}" -f $_.Exception.Message)
+    throw ("HTML を保存できませんでした: {0}" -f $_.Exception.Message)
 }
