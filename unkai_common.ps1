@@ -189,9 +189,18 @@ function Get-UnkaiVTop {
 #   下側 = 展望地点の地上湿度 RH_2m（高度 = 返却標高）
 #   上側 = 展望地点の有効面のうち H_S より上で最も低いもの
 #
-# 0/0.4/0.7/1.0 はいずれも仮の係数。0 は「確実に霧」ではなく、濃い霧の可能性を重く見た
-# 暫定的な強い減点。上下の湿度だけでは 0.4 と 0.7 の差を物理的に確定できない。
+# 係数はいずれも仮の値。0 は「確実に霧」ではなく、濃い霧の可能性を重く見た強い減点。
 # 上下どちらかが欠ける場合は 1.0 にせず null（補正を適用しない）とし、良好と区別して記録する。
+#
+# 2026-09-07 の実測で係数を見直した。上側(850hPa≒1412m)を主役にしている。
+# 当初は 上側のみ湿り = 0.70 と軽く扱っていたが、実際に霧だった全時刻がこの区分に落ちた。
+#   時刻   地上(1296m)  850hPa(1412m)  実測
+#   07-08時   87-90%       96%         霧
+#   12時       90%         93%         薄い霧
+#   15-16時  《76-79%》     96-97%      濃霧    ← 地上湿度はまったく捉えていない
+#   17時       86%         98%         濃霧
+# 850hPa は展望地点の高度 1400m とほぼ同じで、格子の地表(1296m)より 100m 以上高い。
+# 実際に立っている場所に近いほうを重く見るのが正しい、というのが実測の結論。
 function Get-UnkaiVSummit {
     param($RhBelow, $ElevBelow, $Levels, [double]$SummitElev)
     $res = [ordered]@{
@@ -215,8 +224,8 @@ function Get-UnkaiVSummit {
     $wetBelow = ([double]$RhBelow    -ge 90.0)
     $wetAbove = ([double]$above.rh -ge 90.0)
     if     ($wetBelow -and $wetAbove) { $res.v = 0.00; $res.status = "summit_in_layer" }
-    elseif ($wetBelow)                { $res.v = 0.40; $res.status = "below_wet" }
-    elseif ($wetAbove)                { $res.v = 0.70; $res.status = "above_wet" }
+    elseif ($wetAbove)                { $res.v = 0.15; $res.status = "above_wet" }
+    elseif ($wetBelow)                { $res.v = 0.50; $res.status = "below_wet" }
     else                              { $res.v = 1.00; $res.status = "summit_dry" }
     return $res
 }
@@ -646,11 +655,15 @@ function Get-UnkaiTable {
                         -TMaxPrev $vd.temperature_2m_max[$j - 1] -TMinToday $vd.temperature_2m_min[$j] `
                         -SummitElev $SummitElev
 
-                # V_dir = min(V_top_fog_dir, V_summit, V_vis_S)
+                # V_dir = min(V_top_fog_dir, V_summit)
                 # 適用できた補正だけの最小値をとる。すべて適用できなければ null（指数は "--"）。
                 # 補正を適用しないことと「良好(1.0)」は区別して記録する。
+                #
+                # V_vis（予報視程）は 2026-09-07 に V から外した。同日の実測で3回外し、
+                # 15〜16時は濃霧のさなかに 41,000m を出していた。min に入れていると
+                # V_summit の減点を打ち消しかねないため、記録だけ残して計算には使わない。
                 $vTop = $row.top.v_top
-                $V = Get-UnkaiVCombine -Values @($vTop, $summit.v, $vVis)
+                $V = Get-UnkaiVCombine -Values @($vTop, $summit.v)
 
                 # 谷で降っていれば放射霧ではない。山上で降っていれば展望も利かない。
                 $gateF = Get-UnkaiGate -Precip $row.precip
