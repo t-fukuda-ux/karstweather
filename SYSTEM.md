@@ -391,6 +391,7 @@ scheduled cron が理由不明で発火しなくなる現象を確認してい�
 - タスク名 `KarstWeatherWorkflowTrigger`。**毎時20分**に起動する。
 - 2026-09-07時点でこのサーバーPCへ登録・有効化済み。旧 `LowCloudForecast` タスクは存在せず、使用しない。
 - PCでは予報計算やgit操作を行わない。公開ページの取得日時を確認し、**50分以内に更新済みなら約数秒で終了**する。
+- 毎時20分は「更新が必要か確認する時刻」であり、毎回GitHubに新しい更新を作る時刻ではない。直前のActionsで更新済みなら起動を省略する。
 - 50分以上古い、または公開日時を取得できない時だけGitHub Actionsへ `workflow_dispatch` を送り、Actions成功後に公開ページの取得日時が更新されたことまで確認する。
 - タスク優先度7、PowerShellはBelowNormal、非表示・低権限、重複起動は無視、20分で打ち切る。
 - Starlink等の一時切断で失敗した場合は、10分間隔で最大3回再実行する。各HTTPS要求は15秒で打ち切る。
@@ -413,7 +414,8 @@ Disable-ScheduledTask -TaskName "KarstWeatherWorkflowTrigger"
 Enable-ScheduledTask  -TaskName "KarstWeatherWorkflowTrigger"
 ```
 
-導入前の実測では、Actions起動から公開確認まで79.5秒、ローカルCPU時間4.875秒、最大メモリ93.7MB。登録タスク経由の起動・公開確認と、14:20の自動実行（更新済みのため省略）が終了コード0であることを確認した。
+導入前の実測では、Actions起動から公開確認まで79.5秒、ローカルCPU時間4.875秒、最大メモリ93.7MB。登録タスク経由で14:16 JSTの公開反映を確認した。その後の14:20自動実行は、公開ページが4分前に更新済みだったためGitHub起動を省略し、終了コード0で正常終了した。次回実行時刻が15:20へ進むことも確認済み。
+
 ### 9-4. GitHub Pages 公開設定
 
 | 項目 | 値 |
