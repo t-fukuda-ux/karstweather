@@ -59,7 +59,9 @@ WordPress 等には トップページを iframe で埋め込む。埋め込み�
 | `publish.ps1` | ローカルタスク用。origin追従 → `generate_all.ps1` → commit・push |
 | `.github/workflows/update.yml` | GitHub Actions。毎時11分・41分に実行し自動push |
 | `setup-github.ps1` | 初回のみ。リポジトリの初期設定 |
-| `setup-localtask.ps1` | ローカルタスクをそのPCに登録する（別PCへの移設用） |
+| `setup-localtask.ps1` | 軽量バックアップタスクの登録入口 |
+| `local-trigger/invoke-weather-update.ps1` | 公開ページが古い時だけActionsを起動し、公開反映まで確認 |
+| `local-trigger/install-weather-trigger.ps1` | 毎時20分・低優先度のWindowsタスクを安全なACLで登録 |
 | `windy_compare.ps1` | 検証用。Windy(GFS) vs Open-Meteo 比較（要APIキー・git未追跡） |
 
 ### 生成物
@@ -384,40 +386,34 @@ scheduled cron が理由不明で発火しなくなる現象を確認してい�
 - 対策②: ローカルタスクを二重化バックアップとして併用（9-3）
 - 定期的に Actions タブで schedule 実行が続いているか確認する。長期間止まっていたら `workflow_dispatch` で手動起動するか、ワークフローファイルに軽微な変更を加えて再push（再登録を促す経験則）
 
-### 9-3. ローカルタスクスケジューラ（バックアップ）
+### 9-3. ローカル軽量トリガー（Actionsのバックアップ）
 
-- タスク名 `LowCloudForecast`。1時間ごとの繰り返しトリガーで `publish.ps1` を実行する
-- **2026-09-07 時点で `Disabled`（最終実行 2026-07-11）。現在の更新はすべて GitHub Actions から**
-- PC起動中（かつログオン中）はこちらも並行して動く。Actions と内容が重複しても実害はない（push競合は双方の rebase 再試行で自動解決する）
-- `publish.ps1` は実行前に origin/main へ追従する。旧版は pull せず push していたため、Actions側のコミットが1つでも挟まると以後 push が永久に失敗する構造バグがあった（2026-07-03 根治）
-
-```powershell
-# 状態確認
-Get-ScheduledTask -TaskName "LowCloudForecast" | Select-Object State
-Get-ScheduledTaskInfo -TaskName "LowCloudForecast" | Select-Object LastRunTime, LastTaskResult
-
-# 有効化 / 無効化（削除ではないのでいつでも戻せる）
-Enable-ScheduledTask  -TaskName "LowCloudForecast"
-Disable-ScheduledTask -TaskName "LowCloudForecast"
-```
-
-#### 別PCへの移設手順
+- タスク名 `KarstWeatherWorkflowTrigger`。**毎時20分**に起動する。
+- 2026-09-07時点でこのサーバーPCへ登録・有効化済み。旧 `LowCloudForecast` タスクは存在せず、使用しない。
+- PCでは予報計算やgit操作を行わない。公開ページの取得日時を確認し、**50分以内に更新済みなら約数秒で終了**する。
+- 50分以上古い、または公開日時を取得できない時だけGitHub Actionsへ `workflow_dispatch` を送り、Actions成功後に公開ページの取得日時が更新されたことまで確認する。
+- タスク優先度7、PowerShellはBelowNormal、非表示・低権限、重複起動は無視、20分で打ち切る。
+- Starlink等の一時切断で失敗した場合は、10分間隔で最大3回再実行する。各HTTPS要求は15秒で打ち切る。
+- 実体とログは `C:\ProgramData\KarstWeatherTrigger`。フォルダは現在ユーザー・SYSTEM・管理者だけが変更できるACLにする。
+- GitHub認証はWindowsに保存されたGit Credential Managerの資格情報を実行中だけ使用し、ログやファイルには保存しない。
+- ログは `C:\ProgramData\KarstWeatherTrigger\weather-trigger.log`。1MBを超えたら直近約2000行へ縮小する。
+- タスクは現在ユーザーのログオン中に実行する。宿泊管理で常時ログオンしているサーバーPCを前提とする。
 
 ```powershell
-# 1) git をインストール（未導入なら https://git-scm.com/ ）
-# 2) リポジトリを clone
-git clone https://github.com/t-fukuda-ux/karstweather.git
-cd karstweather
-# 3) タスクを登録（毎時20分実行。Actionsの11分・41分とずらしてある）
+# 管理者PowerShellで登録・更新
 powershell -ExecutionPolicy Bypass -File .\setup-localtask.ps1
-# 4) 手動で1回実行して動作確認（初回pushでブラウザのGitHub認証が出る）
-powershell -ExecutionPolicy Bypass -File .\publish.ps1
+
+# 状態確認
+Get-ScheduledTask -TaskName "KarstWeatherWorkflowTrigger" | Select-Object State
+Get-ScheduledTaskInfo -TaskName "KarstWeatherWorkflowTrigger" | Select-Object LastRunTime,LastTaskResult,NextRunTime
+Get-Content "C:\ProgramData\KarstWeatherTrigger\weather-trigger.log" -Tail 20
+
+# 一時停止 / 再開
+Disable-ScheduledTask -TaskName "KarstWeatherWorkflowTrigger"
+Enable-ScheduledTask  -TaskName "KarstWeatherWorkflowTrigger"
 ```
 
-移設元では、移設先の動作を確認してから `Disable-ScheduledTask` する。タスクはログオン中のユーザー権限で動く（push認証が資格情報マネージャーに入るため）。PCがスリープ・電源断の間は動かないが、Actions が主担当なので問題ない。
-
-`-RepetitionDuration` に `[TimeSpan]::MaxValue` を渡すとXMLエラーになるため、実用上十分な長期間（例: 3650日）を指定する。
-
+導入前の実測では、Actions起動から公開確認まで79.5秒、ローカルCPU時間4.875秒、最大メモリ93.7MB。登録タスク経由の起動・公開確認と、14:20の自動実行（更新済みのため省略）が終了コード0であることを確認した。
 ### 9-4. GitHub Pages 公開設定
 
 | 項目 | 値 |
@@ -542,8 +538,8 @@ start ".\unkai_lab.html"    # 雲海の検証ページ
 git fetch origin; git log origin/main --oneline -5; git status --short
 
 # ローカルタスクの状態確認
-Get-ScheduledTask -TaskName "LowCloudForecast" | Select-Object State
-Get-ScheduledTaskInfo -TaskName "LowCloudForecast" | Select-Object LastRunTime, LastTaskResult
+Get-ScheduledTask -TaskName "KarstWeatherWorkflowTrigger" | Select-Object State
+Get-ScheduledTaskInfo -TaskName "KarstWeatherWorkflowTrigger" | Select-Object LastRunTime, LastTaskResult, NextRunTime
 
 # Windy比較（要APIキー）
 $env:WINDY_KEY="..."; .\windy_compare.ps1
