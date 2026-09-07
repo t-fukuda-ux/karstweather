@@ -569,7 +569,7 @@ Enable-ScheduledTask  -TaskName "KarstWeatherWorkflowTrigger"
 
 ### 検証ツール
 
-- `unkai_lab.html` … 雲海指数の検証ページ（7-3節）。3時間おきに自動更新、公開URLからも見られる
+- `unkai_lab.html` … 雲海指数の検証ページ（7-4節）。3時間おきに自動更新、公開URLからも見られる
 - `unkai_lab.ps1` … 検証ページを今すぐ最新化する
 - `windy_compare.ps1` … Windy(GFS) vs Open-Meteo の2者比較。**Windy Point Forecast APIキーが必要**（無料: https://api.windy.com/keys）。`$env:WINDY_KEY="..."` で渡す
 
