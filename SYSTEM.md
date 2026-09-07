@@ -536,6 +536,48 @@ Enable-ScheduledTask  -TaskName "KarstWeatherWorkflowTrigger"
 - `unkai_lab.ps1` … 検証ページを今すぐ最新化する
 - `windy_compare.ps1` … Windy(GFS) vs Open-Meteo の2者比較。**Windy Point Forecast APIキーが必要**（無料: https://api.windy.com/keys）。`$env:WINDY_KEY="..."` で渡す
 
+#### ライブカメラによる霧の記録（`camera/`）
+
+姫鶴平のライブカメラ画像から、距離帯ごとのコントラストを毎時記録する。**第1段階として記録のみで、霧かどうかの判定はしない。** 晴天時・霧天時のデータが溜まってから、現地の目視記録と突き合わせて基準値を決める。
+
+- 画像: `https://www.karst.co.jp/cam/mezuru01.jpg`（**姫鶴荘自身のカメラ**なので取得の規約上の問題はない）
+- 原理: 霧が出ると遠景のコントラスト（輝度の標準偏差）が落ちる。近景は霧の影響を受けにくいので、**遠景/近景の比**を見ると全体の明るさの変化を打ち消せる
+- 測定する帯（画像 960×540 前提。時刻・日付・ロゴの焼き込みと右手前の樹木は除外）
+
+  | 帯 | 領域 | 距離の目安 |
+  |---|---|---|
+  | 遠景 | x 270-700 / y 45-105 | 1km以上（奥の尾根） |
+  | 中景 | x 20-940 / y 110-240 | 100〜300m（建物・車） |
+  | 近景 | x 20-700 / y 300-470 | 50m以内（道路・柵） |
+
+- 2026-09-07 17:50 の実測（霧。数百m先は見えるが1km先は見えない）で **遠景 20.0 / 中景 29.6 / 近景 40.1、比 0.500**
+- ⚠ **カメラの向きや画角が変わったら帯を引き直すこと。** 画像サイズが 960×540 でないと `note` 列に `size_changed` を記録する
+
+| ファイル | git | 内容 |
+|---|---|---|
+| `camera/capture-mezuru.ps1` | 追跡 | 取得と測定の本体。失敗しても終了コード0（定期実行を失敗扱いにしない） |
+| `camera/install-camera-task.ps1` | 追跡 | 毎時50分のタスク `KarstCameraCapture` を登録（`-Remove` で削除） |
+| `camera/mezuru_contrast.csv` | **追跡** | 測定値の記録。他PCや解析で使うためgitに入れる |
+| `camera/images/` | 除外 | 保存した画像。既定90日で間引く。1枚約46KB・1日約1.1MB |
+| `camera/capture.log` | 除外 | 実行ログ |
+
+```powershell
+# 登録（サーバーPCで実行）
+powershell -ExecutionPolicy Bypass -File .\camera\install-camera-task.ps1
+# 1回だけ手動実行
+powershell -ExecutionPolicy Bypass -File .\camera\capture-mezuru.ps1
+# 状態確認
+Get-ScheduledTaskInfo -TaskName "KarstCameraCapture" | Select-Object LastRunTime,LastTaskResult,NextRunTime
+Get-Content .\camera\capture.log -Tail 10
+```
+
+**制約**
+
+- **夜間は使えない。** 画像が暗すぎるため、平均輝度40未満は `dark=1` を立てる。**日の出前の雲海（05〜06時）は判定できない**。夏の06時以降なら明るいが、冬は範囲が狭まる
+- レンズの水滴・汚れは霧と誤判定する。降水量とセットで見る必要がある
+- 画像処理に `System.Drawing` を使うため **GitHub Actions（Linux）では動かない。ローカルPCでの実行専用**
+- 同じ画像が返り続けるカメラ停止に気づけるよう、`sha1_8` と `http_last_modified` を記録している
+
 ### 今後の候補（未着手）
 
 - **雲海指数の係数調整**（最優先）。実績が溜まったら、経験則ベースラインと比較して M の湿度基準・案cの重み・V_summit の 0/0.4/0.7 を見直す。指数がベースラインに勝てないなら式を単純化する判断もありうる
