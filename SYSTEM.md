@@ -467,6 +467,20 @@ Enable-ScheduledTask  -TaskName "KarstWeatherWorkflowTrigger"
     生成物のpushは双方 `git pull --rebase -X theirs` ＋再試行で自動解決する（rebase中の `theirs` は「再適用する自分のコミット側」＝今生成した最新HTMLを優先する向きで正しい）。
     **ソースコードを手動でpushする時**は、必ず `git fetch && git log origin/main --oneline` で Actions側の自動更新コミットが挟まっていないか確認し、rebase してから push する。ローカルタスクを止めていると**数百コミット遅れていることがある**（2026-09-06に800コミット遅れを確認）。生成物が競合したら**手元のコードで再生成して解決**する（手で中身を編集しない）。
 
+12. **⚠ 作業リポジトリをクラウド同期フォルダに置かない**（Google Drive・OneDrive等）
+    Drive の同期は git の都合を知らないため、`.git` の中身が壊れる。2026-09-07 に
+    `H:\マイドライブ\...\karstweather` で実際に発生し、**Drive が `.git/refs` 以下に
+    `desktop.ini` を17個作成して `git fetch` が失敗**した。同期対象外に一時コピーを作って
+    回避する必要が生じた。2台から同時に触ればさらに危険。
+
+    **正しい形は、各PCが自分の C: ドライブに clone し、GitHub を唯一の正とすること。**
+    ```
+    各PC: C:\...\karstweather へ clone → 編集 → commit → push
+                        ↕  GitHub（唯一の正）
+    ```
+    仕様書（SYSTEM.md）もリポジトリ内にあるので、`git pull` すればどのPCでも最新が手に入る。
+    クラウド側にファイルのコピーを置くと、どちらが新しいか分からなくなるので置かない。
+
 ---
 
 ## 11. 障害の記録
