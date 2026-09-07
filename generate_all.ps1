@@ -20,7 +20,8 @@ param(
     [double]$Latitude    = 33.4666147,    # 四国カルスト 姫鶴荘
     [double]$Longitude   = 132.9610114,
     [Nullable[double]]$Elevation = 1380,
-    [string]$Timezone    = "Asia/Tokyo"
+    [string]$Timezone    = "Asia/Tokyo",
+    [switch]$ForceUnkaiLab                # 雲海の検証ページを間隔に関係なく生成する
 )
 
 $ErrorActionPreference = "Stop"
@@ -127,7 +128,7 @@ if ($null -ne $bundleA -and $null -ne $bundleB) {
 # ---- 雲海の検証用ページ（非公開） ----
 # publish.ps1 と GitHub Actions はいずれも git add の対象を4ファイルに限定しており、
 # .gitignore にも入れてあるので公開されない。失敗しても3版の生成結果には影響させない。
-if ($null -ne $unkaiA -and $null -ne $unkaiBundleA) {
+if ($null -ne $unkaiA -and $null -ne $unkaiBundleA -and (Test-UnkaiLabDue -Dir $PSScriptRoot -Force:$ForceUnkaiLab)) {
     try {
         $byModel = [ordered]@{}
         $byModel["規定(best_match)"] = $unkaiA

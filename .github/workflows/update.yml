@@ -33,7 +33,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add lowcloud.html lowcloud_ec.html lowcloud_avg.html index.html
+          git add lowcloud.html lowcloud_ec.html lowcloud_avg.html index.html unkai_lab.html
           if git diff --cached --quiet; then
             echo "変更なし。スキップします。"
             exit 0

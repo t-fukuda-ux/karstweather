@@ -4,9 +4,13 @@
   lowcloud_common.ps1 の末尾から dot-source される。
 
 .DESCRIPTION
-  ここで作るファイルは一般公開しない。publish.ps1 と GitHub Actions はいずれも
-  git add の対象を index.html と3版のHTMLに明示限定しているため、
-  .gitignore への追加とあわせて二重に公開を防いでいる。
+  unkai_lab.html はコミットして GitHub Pages に置く。ローカルの定期実行を止めている環境でも
+  スマートフォンなどから最新の検証内容を見られるようにするため（2026-09-07）。
+  予報ページからはリンクせず、noindex を入れてあるので検索には出ない。
+  ただしURLを知っていれば誰でも閲覧できる点は許容している（中身は予報の診断値のみ）。
+
+  検証用CSV（unkai_detail.csv / unkai_levels.csv / unkai_log.csv）はリポジトリが
+  肥大するため .gitignore のまま手元専用とする。内容は検証ページの表で確認できる。
 #>
 
 function Format-UnkaiNum {
@@ -157,7 +161,7 @@ function Get-UnkaiLabHtml {
     [void]$sb.AppendLine('<meta name="robots" content="noindex,nofollow">')
     [void]$sb.AppendLine('<title>雲海指数 検証用ページ（非公開）</title>')
     [void]$sb.AppendLine("<style>$UnkaiLabCss</style></head><body>")
-    [void]$sb.AppendLine('<h1>雲海指数 検証用ページ<span style="font-size:12px;color:#a00;">（非公開・公開ページとは別）</span></h1>')
+    [void]$sb.AppendLine('<h1>雲海指数 検証用ページ<span style="font-size:12px;color:#a00;">（予報ページとは別。どこからもリンクしていません）</span></h1>')
     [void]$sb.AppendLine(("<p class=""meta"">生成: {0}　|　展望地点の判定高度 H_S = {1}m　|　降水ゲート {2}mm　|　出典: Open-Meteo</p>" -f $Generated, [int]$UnkaiSummitElev, $UnkaiPrecipGate))
     [void]$sb.AppendLine('<p class="note">係数・しきい値はすべて試作値で、現地実績で検証された式ではありません。指数は「雲海期待度」であって発生確率ではありません。</p>')
 
@@ -258,7 +262,7 @@ function Get-UnkaiLabHtml {
             }
         }
         [void]$sb.AppendLine('</table></div>')
-        [void]$sb.AppendLine(("<p class=""note"">湿度90%以上の面を黄色で示します。地上気圧より下の面は地中として除外していますが、地上気圧自体も返却標高への補正を受けている可能性があるため、判別の妥当性を後から確認できるよう値を併記しています。<br>展望地点の判定高度 {0}m は 875hPa(約1215m)と850hPa(約1461m)の間にあり、この帯に雲頂が入る日は上下の判定ができません（状態「展望地点の高度を跨ぐ」）。ECMWF は 1000/925/850/700hPa しか返さないため、谷では実質2面しか使えず雲頂をほぼ評価できません。</p>" -f [int]$UnkaiSummitElev))
+        [void]$sb.AppendLine(("<p class=""note"">湿度90%以上の面を黄色で示します。地上気圧より下の面は地中として除外していますが、地上気圧自体も返却標高への補正を受けている可能性があるため、判別の妥当性を後から確認できるよう値を併記しています。<br>展望地点の判定高度 {0}m は 875hPa(約1215m)と850hPa(約1461m)の間にあり、この帯に雲頂が入る日は上下の判定ができません（状態「展望地点の高度を跨ぐ」）。ECMWF は 1000/925/850hPa しか返さないため、谷では実質2面しか使えず雲頂をほぼ評価できません（V_summit は 850hPa 1面で成立するので、EC版でも指数は出せます）。<br>取得する気圧面は 1000〜825hPa の8段です。谷でおよそ地表〜1720mにあたり、判定に必要な範囲を覆います。それより上は判定に使わないため取得していません。</p>" -f [int]$UnkaiSummitElev))
 
         # --- V の内訳 ---
         [void]$sb.AppendLine('<h3>V の内訳</h3>')
@@ -325,6 +329,30 @@ function Get-UnkaiLabHtml {
 }
 
 # ---- 保存 ----
+
+# 検証ページを今回生成すべきかを判定する。
+# 毎時作るとリポジトリの肥大が大きいので、前回の生成から $MinIntervalHours 以上
+# 経っている場合だけ作り直す。-Force で間隔に関係なく生成できる。
+#
+# 判定にファイルの更新日時は使えない。GitHub Actions ではチェックアウト時刻になってしまい、
+# 毎回「古い」と判定されるため。代わりにページ内に埋め込んだ生成時刻(JST)を読む。
+$UnkaiLabMinIntervalHours = 3
+
+function Test-UnkaiLabDue {
+    param([string]$Dir, [switch]$Force, [double]$MinIntervalHours = $UnkaiLabMinIntervalHours)
+    if ($Force) { return $true }
+    $path = Join-Path $Dir "unkai_lab.html"
+    if (-not (Test-Path -LiteralPath $path)) { return $true }
+    try {
+        $head = (Get-Content -LiteralPath $path -TotalCount 40) -join "`n"
+        $m = [regex]::Match($head, '生成: (\d{4}-\d{2}-\d{2} \d{2}:\d{2})')
+        if (-not $m.Success) { return $true }
+        $last = [datetime]::ParseExact($m.Groups[1].Value, "yyyy-MM-dd HH:mm", $null)
+        return ((((Get-JstNow) - $last)).TotalHours -ge $MinIntervalHours)
+    } catch {
+        return $true   # 読めなければ作り直す
+    }
+}
 
 function Save-UnkaiLab {
     param($ByModel, $Bundle, [string]$Dir, [string]$Generated)

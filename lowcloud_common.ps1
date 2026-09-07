@@ -70,16 +70,27 @@ function Get-JstNow {
 
 # URLをGETしJSONとして返す。一時的な失敗（タイムアウト・5xx等）に備え最大$MaxTriesまでリトライする。
 # 2026-07-02にOpen-Meteoの30秒タイムアウトでActionsが2回失敗したため導入（タイムアウトも60秒に延長）。
+# -Validate に検証用のスクリプトブロックを渡すと、応答の「中身」も再試行の対象にできる。
+# Open-Meteo はエラー時こそHTTP 400を返すが、200のまま毎時データが空の応答を返すことがあり
+# （2026-09-02・09-06 のいずれも 21:50頃UTC、best_matchのみ。気象庁モデルの入れ替わり時間帯）、
+# 例外にならないため従来は素通りして空の予報ページが公開されていた。
 function Invoke-JsonWithRetry {
     param(
         [string]$Uri,
         [int]$MaxTries = 3,
         [int]$TimeoutSec = 60,
-        [int[]]$DelaysSec = @(5, 15)
+        [int[]]$DelaysSec = @(5, 15),
+        [scriptblock]$Validate = $null,
+        $ValidateArg = $null
     )
     for ($try = 1; $try -le $MaxTries; $try++) {
         try {
-            return Invoke-RestMethod -Uri $Uri -TimeoutSec $TimeoutSec
+            $res = Invoke-RestMethod -Uri $Uri -TimeoutSec $TimeoutSec
+            # 不正なら throw され下の catch で再試行される。
+            # 検証に必要な値は引数で渡す（GetNewClosure() で束縛するとモジュールスコープになり、
+            # dot-source した関数を解決できなくなるため）。
+            if ($null -ne $Validate) { & $Validate $res $ValidateArg }
+            return $res
         } catch {
             if ($try -ge $MaxTries) { throw }
             $delay = if ($try -le $DelaysSec.Count) { $DelaysSec[$try - 1] } else { $DelaysSec[-1] }
@@ -116,9 +127,10 @@ function Get-ForecastBundle {
     if (-not [string]::IsNullOrWhiteSpace($Model)) { $query["models"] = $Model }
     $pairs = $query.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, [uri]::EscapeDataString([string]$_.Value) }
     $url = "https://api.open-meteo.com/v1/forecast?" + ($pairs -join "&")
-    $res = Invoke-JsonWithRetry -Uri $url
-    Assert-BundleUsable -Bundle $res -Model $Model
-    return $res
+    # 中身が空の応答も再試行の対象にする。一時的な事象であれば数秒後の再取得で復旧し、
+    # 3回とも空だった場合だけ例外になって呼び出し元が前回のページを残す。
+    return Invoke-JsonWithRetry -Uri $url `
+        -Validate { param($r, $m) Assert-BundleUsable -Bundle $r -Model $m } -ValidateArg $Model
 }
 
 # 毎時データの最低本数。これを下回るバンドルは「取得できたが中身が無い」とみなす。

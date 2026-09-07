@@ -49,7 +49,7 @@ try {
             Write-Log "git fetch に失敗（オフライン？）。追従せず生成のみ実施します。"
             return
         }
-        git checkout -- lowcloud.html lowcloud_ec.html lowcloud_avg.html index.html 2>$null
+        git checkout -- lowcloud.html lowcloud_ec.html lowcloud_avg.html index.html unkai_lab.html 2>$null
         git pull --rebase -X theirs origin main 2>$null | Out-Null
         if ($LASTEXITCODE -ne 0) {
             git rebase --abort 2>$null
@@ -68,7 +68,7 @@ try {
 
     # Step 2: git commit & push（競合時はrebaseして最大3回再試行）
     Invoke-GitBlock {
-        git add index.html lowcloud.html lowcloud_ec.html lowcloud_avg.html 2>$null
+        git add index.html lowcloud.html lowcloud_ec.html lowcloud_avg.html unkai_lab.html 2>$null
         git diff --cached --quiet 2>$null
         if ($LASTEXITCODE -eq 0) {
             Write-Log "変更なし。スキップします。"

@@ -1,0 +1,2276 @@
+﻿<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<title>雲海指数 検証用ページ（非公開）</title>
+<style>body{font-family:"Segoe UI","Yu Gothic UI",sans-serif;margin:16px;background:#fafafa;color:#222;font-size:13px;}
+h1{font-size:19px;margin:0 0 4px;}
+h2{font-size:15px;margin:22px 0 6px;border-left:5px solid #3a3f7a;padding-left:8px;}
+h3{font-size:13px;margin:14px 0 4px;color:#3a3f7a;}
+p.meta{color:#666;font-size:11px;margin:0 0 12px;}
+p.note{color:#555;font-size:11px;margin:4px 0 10px;line-height:1.6;}
+table{border-collapse:collapse;margin:6px 0 10px;background:#fff;}
+th,td{border:1px solid #d0d0d0;padding:2px 6px;text-align:right;white-space:nowrap;}
+th{background:#eef0f6;font-weight:600;}
+td.l,th.l{text-align:left;}
+td.prod{background:#eef6ee;font-weight:700;}
+th.prod{background:#dfeddf;}
+td.dim{color:#999;}
+td.bad{background:#fdecea;}
+td.warn{background:#fff6e0;}
+details{margin:6px 0;}
+summary{cursor:pointer;color:#3a3f7a;font-size:12px;padding:3px 0;}
+.wrap{overflow-x:auto;}
+.legend{font-size:11px;color:#555;line-height:1.7;}</style></head><body>
+<h1>雲海指数 検証用ページ<span style="font-size:12px;color:#a00;">（予報ページとは別。どこからもリンクしていません）</span></h1>
+<p class="meta">生成: 2026-09-07 09:24　|　展望地点の判定高度 H_S = 1400m　|　降水ゲート 0.5mm　|　出典: Open-Meteo</p>
+<p class="note">係数・しきい値はすべて試作値で、現地実績で検証された式ではありません。指数は「雲海期待度」であって発生確率ではありません。</p>
+<h2>地点</h2>
+<div class="wrap"><table><tr><th class="l">ID</th><th class="l">名称</th><th class="l">方角</th><th>要求緯度</th><th>要求経度</th><th>応答緯度</th><th>応答経度</th><th>返却標高</th></tr>
+<tr><td class="l">S</td><td class="l">姫鶴平</td><td class="l">-</td><td>33.4666147</td><td>132.9610114</td><td>33.45</td><td>132.9375</td><td>1296m</td></tr>
+<tr><td class="l">N_C</td><td class="l">美川</td><td class="l">北</td><td>33.63</td><td>133</td><td>33.65</td><td>133.0</td><td>457m</td></tr>
+<tr><td class="l">N_E</td><td class="l">面河</td><td class="l">北</td><td>33.6</td><td>133.13</td><td>33.6</td><td>133.125</td><td>659m</td></tr>
+<tr><td class="l">S_A</td><td class="l">梼原</td><td class="l">南</td><td>33.395</td><td>132.93</td><td>33.4</td><td>132.9375</td><td>530m</td></tr>
+<tr><td class="l">S_B</td><td class="l">津野町</td><td class="l">南</td><td>33.4</td><td>133.06</td><td>33.4</td><td>133.0625</td><td>562m</td></tr>
+</table></div>
+<p class="note">返却標高は要求座標のDEM由来で、モデルの地形標高でも実測標高でもありません。応答緯度経度が同じ地点は同一の格子セルを見ています。</p>
+<h2>規定(best_match)</h2>
+<h3>式バリアント比較（各時刻の最良地点）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th>現行(加算)</th><th>案b</th><th class="prod">案c 本番</th><th>当初案</th><th>簡易判定</th><th class="l">状態</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td class="l">美川</td><td>6</td><td>4</td><td class="prod">3</td><td>5</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td class="l">美川</td><td>25</td><td>18</td><td class="prod">14</td><td>22</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td class="l">美川</td><td>26</td><td>20</td><td class="prod">16</td><td>22</td><td>×</td><td class="l">雲海あり・展望不良</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">梼原</td><td>8</td><td>5</td><td class="prod">4</td><td>6</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td class="l">梼原</td><td>16</td><td>11</td><td class="prod">8</td><td>12</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td class="l">梼原</td><td>7</td><td>5</td><td class="prod">4</td><td>5</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td class="l">美川</td><td>1</td><td>1</td><td class="prod">1</td><td>1</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td class="l">美川</td><td>35</td><td>32</td><td class="prod">29</td><td>24</td><td>×</td><td class="l">雲海あり・展望不良</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td class="l">津野町</td><td>38</td><td>32</td><td class="prod">28</td><td>20</td><td>×</td><td class="l">雲海あり・展望良好</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+</table></div>
+<p class="note">現行(加算)=M×(.30+.30W+.25C+.15R)　案b=M×W×(.35+.45C+.20R)　案c=M×(.3+.7C)×(.35+.40W+.25R)　当初案=露点差ベース・定数0.50・全雲量C0。<br>簡易判定＝経験則（湿度80%以上・風3m/s未満・日較差8℃以上・中高層雲40%未満）。指数がこの判定に勝てなければ複雑な式を使う意味がありません。</p>
+<details><summary>M・R の比較（構造は案cで固定）</summary><div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th class="prod">M_rh 本番</th><th>M 露点差(線形)</th><th>M 露点差(曲線)</th><th>R 日較差版</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td class="l">美川</td><td class="prod">3</td><td>2</td><td>3</td><td>3</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td class="l">美川</td><td class="prod">14</td><td>10</td><td>11</td><td>13</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td class="l">美川</td><td class="prod">16</td><td>12</td><td>13</td><td>15</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">梼原</td><td class="prod">4</td><td>3</td><td>3</td><td>3</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td class="l">梼原</td><td class="prod">8</td><td>6</td><td>6</td><td>7</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td class="l">梼原</td><td class="prod">4</td><td>2</td><td>3</td><td>3</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td class="l">美川</td><td class="prod">1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td class="l">美川</td><td class="prod">29</td><td>19</td><td>22</td><td>24</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td class="l">津野町</td><td class="prod">28</td><td>14</td><td>19</td><td>28</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+</table></div></details>
+<h3>変数の生値</h3>
+<h3>美川（主軸）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>21.7</td><td>20.7</td><td>1.0</td><td>94</td><td>0.9</td><td>43</td><td>37</td><td>57</td><td>42</td><td>63</td><td>0.00</td><td>949.7</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.22</td><td>0.37</td><td>0.33</td><td class="prod">0.38</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>21.6</td><td>20.6</td><td>1.0</td><td>94</td><td>1.1</td><td>44</td><td>37</td><td>55</td><td>41</td><td>63</td><td>0.00</td><td>950.2</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.24</td><td>0.37</td><td>0.35</td><td class="prod">0.39</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>21.9</td><td>20.6</td><td>1.3</td><td>92</td><td>1.1</td><td>42</td><td>37</td><td>55</td><td>39</td><td>63</td><td>0.00</td><td>951.0</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.25</td><td>0.37</td><td>0.29</td><td class="prod">0.39</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>22.2</td><td>20.8</td><td>1.4</td><td>92</td><td>1.4</td><td>34</td><td>37</td><td>55</td><td>38</td><td>63</td><td>0.00</td><td>950.9</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.26</td><td>0.37</td><td>0.23</td><td class="prod">0.39</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>22.5</td><td>21.0</td><td>1.5</td><td>91</td><td>0.6</td><td>45</td><td>34</td><td>39</td><td>48</td><td>48</td><td>0.00</td><td>951.2</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.37</td><td>0.52</td><td>0.17</td><td class="prod">0.44</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>22.8</td><td>21.0</td><td>1.8</td><td>90</td><td>1.0</td><td>43</td><td>34</td><td>41</td><td>49</td><td>48</td><td>0.00</td><td>951.4</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.35</td><td>0.52</td><td>0.11</td><td class="prod">0.42</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.9</td><td>21.8</td><td>1.1</td><td>94</td><td>0.7</td><td>41</td><td>34</td><td>43</td><td>51</td><td>48</td><td class="bad">0.90</td><td>951.8</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.32</td><td>0.52</td><td>0.09</td><td class="prod">0.40</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>23.5</td><td>22.8</td><td>0.7</td><td>96</td><td>0.6</td><td>39</td><td>34</td><td>43</td><td>51</td><td>48</td><td class="bad">1.60</td><td>951.7</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.31</td><td>0.52</td><td>0.00</td><td class="prod">0.39</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.1</td><td>21.4</td><td>0.7</td><td>96</td><td>2.4</td><td>51</td><td>42</td><td>57</td><td>99</td><td>98</td><td>0.50</td><td>951.6</td><td>4.0</td><td>1.00</td><td>0.86</td><td>0.00</td><td>0.02</td><td>0.43</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>21.8</td><td>20.9</td><td>0.9</td><td>95</td><td>1.9</td><td>29</td><td>42</td><td>58</td><td>99</td><td>98</td><td>0.10</td><td>952.9</td><td>4.0</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.02</td><td>0.49</td><td class="prod">0.26</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>21.9</td><td>21.2</td><td>0.7</td><td>96</td><td>2.3</td><td>44</td><td>42</td><td>57</td><td>99</td><td>98</td><td>0.00</td><td>953.9</td><td>4.0</td><td>1.00</td><td>0.92</td><td>0.00</td><td>0.02</td><td>0.47</td><td class="prod">0.25</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>22.0</td><td>21.3</td><td>0.7</td><td>96</td><td>2.4</td><td>57</td><td>42</td><td>55</td><td>97</td><td>98</td><td>0.00</td><td>954.7</td><td>4.0</td><td>1.00</td><td>0.87</td><td>0.00</td><td>0.02</td><td>0.45</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>18.0</td><td>17.6</td><td>0.4</td><td>98</td><td>1.5</td><td>38</td><td>28</td><td>21</td><td>26</td><td>37</td><td>0.00</td><td>962.0</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.66</td><td>0.63</td><td>1.00</td><td class="prod">0.76</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>17.9</td><td>17.5</td><td>0.4</td><td>97</td><td>1.5</td><td>26</td><td>28</td><td>19</td><td>25</td><td>37</td><td>0.00</td><td>962.2</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.68</td><td>0.63</td><td>1.00</td><td class="prod">0.78</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>19.6</td><td>17.9</td><td>1.7</td><td>90</td><td>1.8</td><td>9</td><td>28</td><td>18</td><td>24</td><td>37</td><td>0.00</td><td>963.0</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.70</td><td>0.63</td><td>0.69</td><td class="prod">0.73</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>21.4</td><td>18.0</td><td>3.4</td><td>81</td><td>2.1</td><td>7</td><td>28</td><td>16</td><td>25</td><td>37</td><td>0.00</td><td>963.7</td><td>6.5</td><td>0.55</td><td>0.96</td><td>0.71</td><td>0.63</td><td>0.33</td><td class="prod">0.36</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>20.8</td><td>20.3</td><td>0.5</td><td>97</td><td>0.7</td><td>100</td><td>95</td><td>33</td><td>1</td><td>99</td><td>0.10</td><td>966.8</td><td>7.9</td><td>1.00</td><td>1.00</td><td>0.67</td><td>0.01</td><td>0.59</td><td class="prod">0.69</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>21.0</td><td>20.5</td><td>0.5</td><td>97</td><td>0.5</td><td>100</td><td>95</td><td>30</td><td>2</td><td>99</td><td>0.10</td><td>967.1</td><td>7.9</td><td>1.00</td><td>0.98</td><td>0.69</td><td>0.01</td><td>0.55</td><td class="prod">0.69</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>21.6</td><td>20.9</td><td>0.7</td><td>96</td><td>0.2</td><td>100</td><td>95</td><td>28</td><td>2</td><td>99</td><td>0.00</td><td>967.5</td><td>7.9</td><td>1.00</td><td>0.88</td><td>0.71</td><td>0.01</td><td>0.43</td><td class="prod">0.65</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>22.6</td><td>21.5</td><td>1.1</td><td>94</td><td>0.1</td><td>100</td><td>95</td><td>26</td><td>2</td><td>99</td><td>0.00</td><td>968.1</td><td>7.9</td><td>1.00</td><td>0.86</td><td>0.73</td><td>0.01</td><td>0.23</td><td class="prod">0.61</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>18.5</td><td>18.7</td><td>-0.2</td><td>100</td><td>1.0</td><td>95</td><td>98</td><td>2</td><td>2</td><td>87</td><td>0.00</td><td>967.7</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.97</td><td>0.13</td><td>0.81</td><td class="prod">0.94</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>18.9</td><td>18.9</td><td>0.0</td><td>100</td><td>1.1</td><td>98</td><td>98</td><td>2</td><td>2</td><td>87</td><td>0.00</td><td>968.0</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.97</td><td>0.13</td><td>0.73</td><td class="prod">0.92</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.5</td><td>19.9</td><td>0.6</td><td>96</td><td>1.2</td><td>99</td><td>98</td><td>2</td><td>2</td><td>87</td><td>0.00</td><td>968.7</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.97</td><td>0.13</td><td>0.41</td><td class="prod">0.84</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>22.9</td><td>21.3</td><td>1.6</td><td>90</td><td>1.3</td><td>100</td><td>98</td><td>2</td><td>2</td><td>87</td><td>0.00</td><td>969.6</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.97</td><td>0.13</td><td>0.00</td><td class="prod">0.74</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>23.0</td><td>22.9</td><td>0.1</td><td>99</td><td>1.2</td><td>97</td><td>77</td><td>4</td><td>51</td><td>100</td><td>0.40</td><td>969.4</td><td>5.1</td><td>1.00</td><td>1.00</td><td>0.71</td><td>0.00</td><td>0.13</td><td class="prod">0.62</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>23.2</td><td>23.0</td><td>0.2</td><td>99</td><td>1.3</td><td>94</td><td>77</td><td>4</td><td>49</td><td>100</td><td>0.40</td><td>969.5</td><td>5.1</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.09</td><td class="prod">0.62</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>23.4</td><td>23.2</td><td>0.2</td><td>99</td><td>1.3</td><td>92</td><td>77</td><td>4</td><td>47</td><td>100</td><td>0.40</td><td>969.6</td><td>5.1</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.05</td><td class="prod">0.61</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>23.6</td><td>23.4</td><td>0.2</td><td>99</td><td>1.3</td><td>90</td><td>77</td><td>5</td><td>47</td><td>100</td><td>0.40</td><td>969.8</td><td>5.1</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.01</td><td class="prod">0.60</td></tr>
+</table></div>
+
+<details><summary>面河（補助）</summary><div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>20.9</td><td>19.2</td><td>1.7</td><td>90</td><td>0.9</td><td>53</td><td>45</td><td>62</td><td>46</td><td>73</td><td>0.00</td><td>927.5</td><td>4.7</td><td>1.00</td><td>1.00</td><td>0.15</td><td>0.28</td><td>0.37</td><td class="prod">0.34</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>20.5</td><td>19.2</td><td>1.3</td><td>92</td><td>1.1</td><td>54</td><td>45</td><td>60</td><td>44</td><td>73</td><td>0.00</td><td>928.0</td><td>4.7</td><td>1.00</td><td>1.00</td><td>0.18</td><td>0.28</td><td>0.45</td><td class="prod">0.37</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>20.6</td><td>19.2</td><td>1.4</td><td>92</td><td>1.1</td><td>47</td><td>45</td><td>60</td><td>42</td><td>73</td><td>0.00</td><td>928.8</td><td>4.7</td><td>1.00</td><td>1.00</td><td>0.19</td><td>0.28</td><td>0.43</td><td class="prod">0.37</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>21.1</td><td>19.6</td><td>1.5</td><td>91</td><td>1.2</td><td>41</td><td>45</td><td>58</td><td>40</td><td>73</td><td>0.00</td><td>928.8</td><td>4.7</td><td>1.00</td><td>1.00</td><td>0.22</td><td>0.28</td><td>0.33</td><td class="prod">0.38</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>22.2</td><td>19.4</td><td>2.8</td><td>84</td><td>0.7</td><td>60</td><td>39</td><td>40</td><td>46</td><td>46</td><td>0.00</td><td>929.2</td><td>3.0</td><td>0.70</td><td>1.00</td><td>0.37</td><td>0.54</td><td>0.08</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>22.3</td><td>19.6</td><td>2.7</td><td>85</td><td>0.3</td><td>50</td><td>39</td><td>42</td><td>48</td><td>46</td><td class="bad">1.00</td><td>929.5</td><td>3.0</td><td>0.75</td><td>0.93</td><td>0.33</td><td>0.54</td><td>0.06</td><td class="prod">0.29</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.0</td><td>20.4</td><td>1.6</td><td>91</td><td>0.7</td><td>48</td><td>39</td><td>46</td><td>51</td><td>46</td><td class="bad">2.50</td><td>929.8</td><td>3.0</td><td>1.00</td><td>1.00</td><td>0.29</td><td>0.54</td><td>0.12</td><td class="prod">0.39</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>22.5</td><td>21.5</td><td>1.0</td><td>94</td><td>0.4</td><td>47</td><td>39</td><td>46</td><td>51</td><td>46</td><td class="bad">2.10</td><td>929.8</td><td>3.0</td><td>1.00</td><td>0.96</td><td>0.29</td><td>0.54</td><td>0.02</td><td class="prod">0.37</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>21.1</td><td>20.1</td><td>1.0</td><td>94</td><td>3.0</td><td>29</td><td>50</td><td>63</td><td>99</td><td>99</td><td>0.40</td><td>928.6</td><td>3.8</td><td>1.00</td><td>0.68</td><td>0.00</td><td>0.01</td><td>0.38</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>20.7</td><td>19.4</td><td>1.3</td><td>92</td><td>2.9</td><td>11</td><td>50</td><td>65</td><td>99</td><td>99</td><td>0.40</td><td>929.8</td><td>3.8</td><td>1.00</td><td>0.69</td><td>0.00</td><td>0.01</td><td>0.46</td><td class="prod">0.22</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>20.9</td><td>19.6</td><td>1.3</td><td>92</td><td>2.7</td><td>16</td><td>50</td><td>64</td><td>97</td><td>99</td><td>0.10</td><td>931.0</td><td>3.8</td><td>1.00</td><td>0.76</td><td>0.00</td><td>0.01</td><td>0.42</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>21.1</td><td>20.0</td><td>1.1</td><td>93</td><td>2.4</td><td>37</td><td>50</td><td>63</td><td>95</td><td>99</td><td>0.00</td><td>932.1</td><td>3.8</td><td>1.00</td><td>0.86</td><td>0.00</td><td>0.01</td><td>0.38</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>17.3</td><td>16.3</td><td>1.0</td><td>94</td><td>2.0</td><td>34</td><td>29</td><td>23</td><td>23</td><td>37</td><td>0.00</td><td>939.3</td><td>6.9</td><td>1.00</td><td>1.00</td><td>0.66</td><td>0.63</td><td>0.95</td><td class="prod">0.75</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>17.0</td><td>16.1</td><td>0.9</td><td>94</td><td>2.0</td><td>28</td><td>29</td><td>21</td><td>22</td><td>37</td><td>0.00</td><td>939.5</td><td>6.9</td><td>1.00</td><td>0.99</td><td>0.68</td><td>0.63</td><td>1.00</td><td class="prod">0.77</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>18.4</td><td>16.3</td><td>2.1</td><td>88</td><td>2.0</td><td>15</td><td>29</td><td>19</td><td>22</td><td>37</td><td>0.00</td><td>940.4</td><td>6.9</td><td>0.90</td><td>1.00</td><td>0.70</td><td>0.63</td><td>0.73</td><td class="prod">0.66</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>20.2</td><td>16.4</td><td>3.8</td><td>79</td><td>1.9</td><td>23</td><td>29</td><td>18</td><td>22</td><td>37</td><td>0.00</td><td>941.1</td><td>6.9</td><td>0.45</td><td>1.00</td><td>0.71</td><td>0.63</td><td>0.37</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>19.3</td><td>18.4</td><td>0.9</td><td>95</td><td>1.2</td><td>98</td><td>97</td><td>31</td><td>1</td><td>100</td><td>0.00</td><td>944.2</td><td>8.4</td><td>1.00</td><td>1.00</td><td>0.68</td><td>0.00</td><td>0.45</td><td class="prod">0.67</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>19.5</td><td>18.5</td><td>1.0</td><td>94</td><td>1.0</td><td>98</td><td>97</td><td>29</td><td>2</td><td>100</td><td>0.00</td><td>944.4</td><td>8.4</td><td>1.00</td><td>1.00</td><td>0.70</td><td>0.00</td><td>0.41</td><td class="prod">0.68</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>20.4</td><td>18.9</td><td>1.5</td><td>91</td><td>0.5</td><td>100</td><td>97</td><td>27</td><td>2</td><td>100</td><td>0.00</td><td>945.0</td><td>8.4</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.23</td><td class="prod">0.65</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>21.6</td><td>19.6</td><td>2.0</td><td>88</td><td>0.3</td><td>100</td><td>97</td><td>25</td><td>2</td><td>100</td><td>0.00</td><td>945.7</td><td>8.4</td><td>0.90</td><td>0.90</td><td>0.74</td><td>0.00</td><td>0.00</td><td class="prod">0.52</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>17.2</td><td>17.3</td><td>-0.1</td><td>100</td><td>0.5</td><td>98</td><td>97</td><td>1</td><td>2</td><td>87</td><td>0.00</td><td>945.0</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.98</td><td>0.13</td><td>0.74</td><td class="prod">0.92</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>17.5</td><td>17.4</td><td>0.1</td><td>100</td><td>0.4</td><td>98</td><td>97</td><td>1</td><td>2</td><td>87</td><td>0.00</td><td>945.3</td><td>5.6</td><td>1.00</td><td>0.96</td><td>0.98</td><td>0.13</td><td>0.68</td><td class="prod">0.89</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>19.1</td><td>18.4</td><td>0.7</td><td>96</td><td>0.1</td><td>100</td><td>97</td><td>1</td><td>2</td><td>87</td><td>0.00</td><td>946.1</td><td>5.6</td><td>1.00</td><td>0.84</td><td>0.98</td><td>0.13</td><td>0.36</td><td class="prod">0.77</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>21.3</td><td>19.9</td><td>1.4</td><td>91</td><td>0.9</td><td>100</td><td>97</td><td>1</td><td>3</td><td>87</td><td>0.00</td><td>947.1</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.98</td><td>0.13</td><td>0.00</td><td class="prod">0.74</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>21.3</td><td>21.2</td><td>0.1</td><td>99</td><td>0.9</td><td>100</td><td>97</td><td>4</td><td>48</td><td>100</td><td>0.30</td><td>946.8</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.10</td><td class="prod">0.62</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>21.5</td><td>21.4</td><td>0.1</td><td>99</td><td>1.1</td><td>100</td><td>97</td><td>4</td><td>45</td><td>100</td><td>0.30</td><td>947.1</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.73</td><td>0.00</td><td>0.06</td><td class="prod">0.62</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>21.6</td><td>21.5</td><td>0.1</td><td>99</td><td>1.2</td><td>100</td><td>97</td><td>4</td><td>44</td><td>100</td><td>0.30</td><td>947.2</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.74</td><td>0.00</td><td>0.04</td><td class="prod">0.62</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>21.8</td><td>21.6</td><td>0.2</td><td>99</td><td>1.4</td><td>100</td><td>97</td><td>4</td><td>43</td><td>100</td><td>0.30</td><td>947.2</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.74</td><td>0.00</td><td>0.00</td><td class="prod">0.61</td></tr>
+</table></div>
+</details>
+<h3>梼原（主軸）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>22.7</td><td>20.0</td><td>2.7</td><td>85</td><td>1.6</td><td>32</td><td>32</td><td>48</td><td>42</td><td>58</td><td>0.00</td><td>941.2</td><td>5.2</td><td>0.75</td><td>1.00</td><td>0.31</td><td>0.43</td><td>0.18</td><td class="prod">0.31</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>22.6</td><td>19.9</td><td>2.7</td><td>85</td><td>1.1</td><td>34</td><td>32</td><td>48</td><td>40</td><td>58</td><td>0.00</td><td>941.9</td><td>5.2</td><td>0.75</td><td>1.00</td><td>0.32</td><td>0.43</td><td>0.20</td><td class="prod">0.32</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>22.8</td><td>19.9</td><td>2.9</td><td>84</td><td>1.5</td><td>33</td><td>32</td><td>48</td><td>38</td><td>58</td><td>0.00</td><td>942.4</td><td>5.2</td><td>0.70</td><td>1.00</td><td>0.34</td><td>0.43</td><td>0.16</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>23.5</td><td>20.1</td><td>3.4</td><td>81</td><td>1.6</td><td>31</td><td>32</td><td>47</td><td>37</td><td>58</td><td>0.00</td><td>942.3</td><td>5.2</td><td>0.55</td><td>1.00</td><td>0.34</td><td>0.43</td><td>0.02</td><td class="prod">0.22</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>23.5</td><td>20.6</td><td>2.9</td><td>84</td><td>1.4</td><td>37</td><td>49</td><td>42</td><td>45</td><td>48</td><td>0.00</td><td>942.9</td><td>4.5</td><td>0.70</td><td>1.00</td><td>0.36</td><td>0.52</td><td>0.12</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>22.3</td><td>21.3</td><td>1.0</td><td>94</td><td>1.6</td><td>40</td><td>49</td><td>45</td><td>48</td><td>48</td><td class="bad">0.80</td><td>943.2</td><td>4.5</td><td>1.00</td><td>1.00</td><td>0.31</td><td>0.52</td><td>0.36</td><td class="prod">0.43</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.5</td><td>21.7</td><td>0.8</td><td>95</td><td>1.6</td><td>39</td><td>49</td><td>46</td><td>49</td><td>48</td><td class="bad">1.80</td><td>943.5</td><td>4.5</td><td>1.00</td><td>1.00</td><td>0.30</td><td>0.52</td><td>0.32</td><td class="prod">0.42</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>23.2</td><td>22.3</td><td>0.9</td><td>95</td><td>1.6</td><td>37</td><td>49</td><td>47</td><td>49</td><td>48</td><td class="bad">0.80</td><td>943.5</td><td>4.5</td><td>1.00</td><td>1.00</td><td>0.29</td><td>0.52</td><td>0.18</td><td class="prod">0.40</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.1</td><td>21.3</td><td>0.8</td><td>95</td><td>2.3</td><td>35</td><td>31</td><td>47</td><td>65</td><td>97</td><td>0.30</td><td>943.0</td><td>3.2</td><td>1.00</td><td>0.92</td><td>0.20</td><td>0.03</td><td>0.39</td><td class="prod">0.36</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>21.9</td><td>20.3</td><td>1.6</td><td>91</td><td>2.7</td><td>10</td><td>31</td><td>48</td><td>66</td><td>97</td><td>0.00</td><td>943.8</td><td>3.2</td><td>1.00</td><td>0.78</td><td>0.19</td><td>0.03</td><td>0.43</td><td class="prod">0.33</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>22.2</td><td>20.5</td><td>1.7</td><td>90</td><td>2.3</td><td>8</td><td>31</td><td>48</td><td>65</td><td>97</td><td>0.00</td><td>945.1</td><td>3.2</td><td>1.00</td><td>0.90</td><td>0.19</td><td>0.03</td><td>0.37</td><td class="prod">0.35</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>23.0</td><td>20.7</td><td>2.3</td><td>87</td><td>2.4</td><td>18</td><td>31</td><td>48</td><td>66</td><td>97</td><td>0.00</td><td>945.9</td><td>3.2</td><td>0.85</td><td>0.87</td><td>0.19</td><td>0.03</td><td>0.21</td><td class="prod">0.28</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>19.0</td><td>17.6</td><td>1.4</td><td>92</td><td>0.3</td><td>15</td><td>36</td><td>28</td><td>28</td><td>49</td><td>0.00</td><td>952.6</td><td>6.2</td><td>1.00</td><td>0.90</td><td>0.58</td><td>0.51</td><td>0.89</td><td class="prod">0.66</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>19.0</td><td>17.4</td><td>1.6</td><td>91</td><td>0.3</td><td>13</td><td>36</td><td>26</td><td>26</td><td>49</td><td>0.00</td><td>952.8</td><td>6.2</td><td>1.00</td><td>0.94</td><td>0.61</td><td>0.51</td><td>0.89</td><td class="prod">0.69</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>21.4</td><td>19.0</td><td>2.4</td><td>86</td><td>1.2</td><td>10</td><td>36</td><td>24</td><td>24</td><td>49</td><td>0.00</td><td>954.1</td><td>6.2</td><td>0.80</td><td>1.00</td><td>0.64</td><td>0.51</td><td>0.41</td><td class="prod">0.51</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>22.9</td><td>19.7</td><td>3.2</td><td>82</td><td>1.9</td><td>15</td><td>36</td><td>22</td><td>24</td><td>49</td><td>0.00</td><td>954.8</td><td>6.2</td><td>0.60</td><td>1.00</td><td>0.66</td><td>0.51</td><td>0.11</td><td class="prod">0.35</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>20.8</td><td>20.3</td><td>0.5</td><td>97</td><td>0.2</td><td>63</td><td>93</td><td>48</td><td>1</td><td>99</td><td>0.00</td><td>958.1</td><td>7.7</td><td>1.00</td><td>0.88</td><td>0.51</td><td>0.01</td><td>0.34</td><td class="prod">0.52</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>20.9</td><td>20.2</td><td>0.7</td><td>96</td><td>0.1</td><td>47</td><td>93</td><td>45</td><td>1</td><td>99</td><td>0.00</td><td>958.4</td><td>7.7</td><td>1.00</td><td>0.82</td><td>0.55</td><td>0.01</td><td>0.32</td><td class="prod">0.52</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>21.1</td><td>20.4</td><td>0.7</td><td>95</td><td>0.3</td><td>38</td><td>93</td><td>43</td><td>1</td><td>99</td><td>0.00</td><td>958.8</td><td>7.7</td><td>1.00</td><td>0.90</td><td>0.56</td><td>0.01</td><td>0.28</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>21.5</td><td>20.8</td><td>0.7</td><td>96</td><td>0.8</td><td>33</td><td>93</td><td>44</td><td>1</td><td>99</td><td>0.00</td><td>959.4</td><td>7.7</td><td>1.00</td><td>1.00</td><td>0.55</td><td>0.01</td><td>0.20</td><td class="prod">0.55</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>18.4</td><td>18.1</td><td>0.3</td><td>98</td><td>1.5</td><td>0</td><td>90</td><td>3</td><td>5</td><td>39</td><td>0.00</td><td>958.8</td><td>5.8</td><td>1.00</td><td>1.00</td><td>0.95</td><td>0.61</td><td>0.75</td><td class="prod">0.90</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>18.8</td><td>18.3</td><td>0.5</td><td>97</td><td>1.6</td><td>3</td><td>90</td><td>4</td><td>6</td><td>39</td><td>0.00</td><td>959.0</td><td>5.8</td><td>1.00</td><td>1.00</td><td>0.93</td><td>0.61</td><td>0.67</td><td class="prod">0.87</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.6</td><td>19.1</td><td>1.5</td><td>91</td><td>1.5</td><td>26</td><td>90</td><td>5</td><td>8</td><td>39</td><td>0.00</td><td>959.8</td><td>5.8</td><td>1.00</td><td>1.00</td><td>0.90</td><td>0.61</td><td>0.31</td><td class="prod">0.77</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>23.1</td><td>20.4</td><td>2.7</td><td>85</td><td>1.6</td><td>58</td><td>90</td><td>8</td><td>11</td><td>39</td><td>0.00</td><td>960.7</td><td>5.8</td><td>0.75</td><td>1.00</td><td>0.86</td><td>0.61</td><td>0.00</td><td class="prod">0.51</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>22.3</td><td>22.1</td><td>0.2</td><td>98</td><td>1.7</td><td>72</td><td>72</td><td>3</td><td>62</td><td>95</td><td>0.10</td><td>960.3</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.66</td><td>0.05</td><td>0.09</td><td class="prod">0.59</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>22.5</td><td>22.3</td><td>0.2</td><td>98</td><td>1.7</td><td>70</td><td>72</td><td>4</td><td>57</td><td>95</td><td>0.10</td><td>960.4</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.68</td><td>0.05</td><td>0.05</td><td class="prod">0.59</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>22.7</td><td>22.5</td><td>0.2</td><td>98</td><td>1.7</td><td>67</td><td>72</td><td>4</td><td>53</td><td>95</td><td>0.10</td><td>960.6</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.70</td><td>0.05</td><td>0.01</td><td class="prod">0.60</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>23.0</td><td>22.7</td><td>0.3</td><td>98</td><td>1.7</td><td>66</td><td>72</td><td>4</td><td>50</td><td>95</td><td>0.10</td><td>960.8</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.05</td><td>0.00</td><td class="prod">0.60</td></tr>
+</table></div>
+
+<details><summary>津野町（補助）</summary><div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>22.2</td><td>19.7</td><td>2.5</td><td>86</td><td>1.8</td><td>41</td><td>45</td><td>56</td><td>46</td><td>69</td><td>0.00</td><td>937.9</td><td>5.0</td><td>0.80</td><td>1.00</td><td>0.21</td><td>0.31</td><td>0.12</td><td class="prod">0.28</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>22.2</td><td>19.5</td><td>2.7</td><td>85</td><td>1.5</td><td>41</td><td>45</td><td>54</td><td>44</td><td>69</td><td>0.00</td><td>938.5</td><td>5.0</td><td>0.75</td><td>1.00</td><td>0.24</td><td>0.31</td><td>0.12</td><td class="prod">0.27</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>22.4</td><td>19.5</td><td>2.9</td><td>84</td><td>1.7</td><td>41</td><td>45</td><td>54</td><td>42</td><td>69</td><td>0.00</td><td>939.1</td><td>5.0</td><td>0.70</td><td>1.00</td><td>0.26</td><td>0.31</td><td>0.08</td><td class="prod">0.26</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>23.1</td><td>19.6</td><td>3.5</td><td>81</td><td>1.8</td><td>39</td><td>45</td><td>52</td><td>40</td><td>69</td><td>0.00</td><td>939.0</td><td>5.0</td><td>0.55</td><td>1.00</td><td>0.28</td><td>0.31</td><td>0.00</td><td class="prod">0.20</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>22.7</td><td>20.3</td><td>2.4</td><td>86</td><td>1.3</td><td>46</td><td>50</td><td>41</td><td>45</td><td>47</td><td>0.10</td><td>939.6</td><td>4.3</td><td>0.80</td><td>1.00</td><td>0.36</td><td>0.53</td><td>0.22</td><td class="prod">0.36</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>21.8</td><td>20.8</td><td>1.0</td><td>94</td><td>1.3</td><td>49</td><td>50</td><td>45</td><td>48</td><td>47</td><td class="bad">1.90</td><td>939.9</td><td>4.3</td><td>1.00</td><td>1.00</td><td>0.31</td><td>0.53</td><td>0.40</td><td class="prod">0.44</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.1</td><td>21.2</td><td>0.9</td><td>95</td><td>1.4</td><td>51</td><td>50</td><td>46</td><td>49</td><td>47</td><td class="bad">2.40</td><td>940.1</td><td>4.3</td><td>1.00</td><td>1.00</td><td>0.30</td><td>0.53</td><td>0.34</td><td class="prod">0.42</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>22.6</td><td>21.8</td><td>0.8</td><td>95</td><td>1.4</td><td>52</td><td>50</td><td>46</td><td>50</td><td>47</td><td class="bad">1.40</td><td>940.1</td><td>4.3</td><td>1.00</td><td>1.00</td><td>0.29</td><td>0.53</td><td>0.24</td><td class="prod">0.41</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.0</td><td>20.8</td><td>1.2</td><td>93</td><td>2.6</td><td>15</td><td>46</td><td>62</td><td>79</td><td>99</td><td class="bad">1.60</td><td>939.1</td><td>3.0</td><td>1.00</td><td>0.81</td><td>0.00</td><td>0.02</td><td>0.35</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>21.5</td><td>20.0</td><td>1.5</td><td>91</td><td>2.9</td><td>9</td><td>46</td><td>61</td><td>79</td><td>99</td><td class="bad">0.80</td><td>939.9</td><td>3.0</td><td>1.00</td><td>0.69</td><td>0.00</td><td>0.02</td><td>0.45</td><td class="prod">0.22</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>21.6</td><td>20.1</td><td>1.5</td><td>91</td><td>2.4</td><td>7</td><td>46</td><td>60</td><td>79</td><td>99</td><td>0.30</td><td>941.3</td><td>3.0</td><td>1.00</td><td>0.87</td><td>0.00</td><td>0.02</td><td>0.43</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>22.2</td><td>20.5</td><td>1.7</td><td>90</td><td>2.0</td><td>7</td><td>46</td><td>59</td><td>80</td><td>99</td><td>0.00</td><td>942.2</td><td>3.0</td><td>1.00</td><td>0.99</td><td>0.01</td><td>0.02</td><td>0.31</td><td class="prod">0.25</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>18.7</td><td>17.5</td><td>1.2</td><td>93</td><td>2.2</td><td>86</td><td>32</td><td>27</td><td>29</td><td>42</td><td>0.00</td><td>949.4</td><td>7.0</td><td>1.00</td><td>0.94</td><td>0.59</td><td>0.58</td><td>0.90</td><td class="prod">0.68</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>18.1</td><td>17.3</td><td>0.8</td><td>95</td><td>1.8</td><td>88</td><td>32</td><td>25</td><td>28</td><td>42</td><td>0.00</td><td>949.5</td><td>7.0</td><td>1.00</td><td>1.00</td><td>0.61</td><td>0.58</td><td>1.00</td><td class="prod">0.73</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>20.5</td><td>18.6</td><td>1.9</td><td>89</td><td>1.3</td><td>90</td><td>32</td><td>23</td><td>27</td><td>42</td><td>0.00</td><td>950.7</td><td>7.0</td><td>0.95</td><td>1.00</td><td>0.64</td><td>0.58</td><td>0.54</td><td class="prod">0.63</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>22.9</td><td>20.1</td><td>2.8</td><td>84</td><td>1.1</td><td>66</td><td>32</td><td>21</td><td>27</td><td>42</td><td>0.30</td><td>951.5</td><td>7.0</td><td>0.70</td><td>1.00</td><td>0.65</td><td>0.58</td><td>0.06</td><td class="prod">0.41</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>20.5</td><td>20.4</td><td>0.1</td><td>99</td><td>0.6</td><td>73</td><td>100</td><td>56</td><td>2</td><td>100</td><td>0.00</td><td>954.8</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.43</td><td>0.00</td><td>0.20</td><td class="prod">0.48</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>20.5</td><td>20.3</td><td>0.2</td><td>99</td><td>0.6</td><td>65</td><td>100</td><td>51</td><td>3</td><td>100</td><td>0.00</td><td>955.1</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.47</td><td>0.00</td><td>0.20</td><td class="prod">0.50</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>20.6</td><td>20.4</td><td>0.2</td><td>99</td><td>0.3</td><td>73</td><td>100</td><td>49</td><td>4</td><td>100</td><td>0.20</td><td>955.5</td><td>7.6</td><td>1.00</td><td>0.92</td><td>0.48</td><td>0.00</td><td>0.18</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>21.0</td><td>20.7</td><td>0.3</td><td>98</td><td>0.3</td><td>88</td><td>100</td><td>50</td><td>4</td><td>100</td><td>0.20</td><td>956.0</td><td>7.6</td><td>1.00</td><td>0.93</td><td>0.48</td><td>0.00</td><td>0.10</td><td class="prod">0.47</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>18.9</td><td>18.1</td><td>0.8</td><td>95</td><td>1.2</td><td>11</td><td>91</td><td>1</td><td>5</td><td>48</td><td>0.00</td><td>955.8</td><td>5.5</td><td>1.00</td><td>1.00</td><td>0.96</td><td>0.52</td><td>0.53</td><td class="prod">0.86</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>19.3</td><td>18.3</td><td>1.0</td><td>94</td><td>1.2</td><td>13</td><td>91</td><td>1</td><td>7</td><td>48</td><td>0.00</td><td>956.1</td><td>5.5</td><td>1.00</td><td>1.00</td><td>0.95</td><td>0.52</td><td>0.45</td><td class="prod">0.83</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.8</td><td>19.1</td><td>1.7</td><td>90</td><td>1.0</td><td>31</td><td>91</td><td>3</td><td>9</td><td>48</td><td>0.00</td><td>956.8</td><td>5.5</td><td>1.00</td><td>1.00</td><td>0.92</td><td>0.52</td><td>0.15</td><td class="prod">0.74</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>22.8</td><td>20.2</td><td>2.6</td><td>86</td><td>1.1</td><td>58</td><td>91</td><td>7</td><td>12</td><td>48</td><td>0.00</td><td>957.7</td><td>5.5</td><td>0.80</td><td>1.00</td><td>0.87</td><td>0.52</td><td>0.00</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>22.1</td><td>22.0</td><td>0.1</td><td>100</td><td>1.4</td><td>100</td><td>93</td><td>2</td><td>58</td><td>100</td><td>0.50</td><td>957.3</td><td>3.2</td><td>1.00</td><td>1.00</td><td>0.69</td><td>0.00</td><td>0.04</td><td class="prod">0.59</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>22.2</td><td>22.2</td><td>0.0</td><td>100</td><td>1.4</td><td>100</td><td>93</td><td>2</td><td>54</td><td>100</td><td>0.50</td><td>957.5</td><td>3.2</td><td>1.00</td><td>1.00</td><td>0.71</td><td>0.00</td><td>0.02</td><td class="prod">0.60</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>22.3</td><td>22.3</td><td>0.0</td><td>100</td><td>1.3</td><td>100</td><td>93</td><td>2</td><td>51</td><td>100</td><td>0.50</td><td>957.7</td><td>3.2</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.00</td><td class="prod">0.60</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>22.4</td><td>22.4</td><td>0.0</td><td>100</td><td>1.3</td><td>100</td><td>93</td><td>3</td><td>48</td><td>100</td><td>0.50</td><td>957.8</td><td>3.2</td><td>1.00</td><td>1.00</td><td>0.73</td><td>0.00</td><td>0.00</td><td class="prod">0.61</td></tr>
+</table></div>
+</details>
+<p class="note">日没時点の低層雲は「霧の発生を妨げる先在の雲」を捉えている可能性がある一方、その時点で既に霧や層雲が出ていることもあります。断定せず記録のみに留めています。降水ゲートで0になった行は赤背景です。</p>
+<h3>雲頂の内訳（気圧面プロファイル・日の出時刻のみ）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th>地上気圧</th>
+<th>1000</th>
+<th>975</th>
+<th>950</th>
+<th>925</th>
+<th>900</th>
+<th>875</th>
+<th>850</th>
+<th>825</th>
+<th class="l">状態</th><th>下端</th><th>上端</th><th class="prod">V_top</th></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td>950</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">91%<br>696m</td>
+<td class="warn">91%<br>932m</td>
+<td class="warn">99%<br>1173m</td>
+<td class="warn">93%<br>1422m</td>
+<td class="warn">96%<br>1676m</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1676</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">面河</td><td>928</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>932m</td>
+<td>89%<br>1171m</td>
+<td class="warn">94%<br>1422m</td>
+<td class="warn">98%<br>1676m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">梼原</td><td>942</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>82%<br>696m</td>
+<td>86%<br>932m</td>
+<td class="warn">91%<br>1170m</td>
+<td class="warn">93%<br>1422m</td>
+<td class="warn">97%<br>1676m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">津野町</td><td>939</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>84%<br>686m</td>
+<td>86%<br>932m</td>
+<td class="warn">91%<br>1170m</td>
+<td class="warn">93%<br>1422m</td>
+<td class="warn">97%<br>1676m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td>951</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>706m</td>
+<td>85%<br>951m</td>
+<td class="warn">98%<br>1197m</td>
+<td class="warn">96%<br>1442m</td>
+<td class="warn">90%<br>1703m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">面河</td><td>930</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>88%<br>951m</td>
+<td>88%<br>1197m</td>
+<td class="warn">99%<br>1442m</td>
+<td class="warn">99%<br>1703m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">梼原</td><td>943</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>706m</td>
+<td>89%<br>941m</td>
+<td>86%<br>1196m</td>
+<td class="warn">94%<br>1442m</td>
+<td class="warn">98%<br>1702m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">津野町</td><td>940</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">91%<br>706m</td>
+<td class="warn">92%<br>941m</td>
+<td>86%<br>1196m</td>
+<td class="warn">96%<br>1442m</td>
+<td class="warn">98%<br>1702m</td>
+<td class="l">雲頂を挟めた</td><td>941</td><td>1196</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">美川</td><td>953</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>716m</td>
+<td class="warn">97%<br>961m</td>
+<td class="warn">100%<br>1188m</td>
+<td class="warn">90%<br>1451m</td>
+<td class="warn">99%<br>1695m</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1695</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">面河</td><td>930</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>951m</td>
+<td>89%<br>1179m</td>
+<td>75%<br>1442m</td>
+<td class="warn">94%<br>1689m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">梼原</td><td>944</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>716m</td>
+<td>85%<br>951m</td>
+<td class="warn">98%<br>1183m</td>
+<td>73%<br>1442m</td>
+<td class="warn">97%<br>1690m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">津野町</td><td>940</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>88%<br>706m</td>
+<td>80%<br>941m</td>
+<td class="warn">98%<br>1183m</td>
+<td>68%<br>1442m</td>
+<td class="warn">97%<br>1690m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">美川</td><td>962</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>580m</td>
+<td>87%<br>807m</td>
+<td class="warn">91%<br>1039m</td>
+<td class="warn">97%<br>1267m</td>
+<td>58%<br>1524m</td>
+<td class="warn">99%<br>1769m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">面河</td><td>940</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>84%<br>806m</td>
+<td>86%<br>1039m</td>
+<td class="warn">94%<br>1267m</td>
+<td>57%<br>1524m</td>
+<td class="warn">100%<br>1771m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">梼原</td><td>953</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>78%<br>800m</td>
+<td class="warn">90%<br>1035m</td>
+<td class="warn">94%<br>1266m</td>
+<td>73%<br>1525m</td>
+<td class="warn">99%<br>1770m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">津野町</td><td>950</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>77%<br>800m</td>
+<td class="warn">90%<br>1036m</td>
+<td class="warn">94%<br>1266m</td>
+<td>89%<br>1525m</td>
+<td class="warn">99%<br>1770m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td>967</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>84%<br>612m</td>
+<td>77%<br>841m</td>
+<td>84%<br>1078m</td>
+<td class="warn">96%<br>1303m</td>
+<td class="warn">93%<br>1569m</td>
+<td class="warn">96%<br>1807m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">面河</td><td>944</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>80%<br>843m</td>
+<td class="warn">90%<br>1080m</td>
+<td class="warn">100%<br>1304m</td>
+<td class="warn">95%<br>1570m</td>
+<td class="warn">97%<br>1808m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">梼原</td><td>958</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>81%<br>611m</td>
+<td>89%<br>842m</td>
+<td class="warn">94%<br>1078m</td>
+<td class="warn">99%<br>1303m</td>
+<td>87%<br>1570m</td>
+<td class="warn">96%<br>1807m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">津野町</td><td>955</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>76%<br>612m</td>
+<td>87%<br>843m</td>
+<td class="warn">100%<br>1079m</td>
+<td class="warn">99%<br>1303m</td>
+<td>89%<br>1570m</td>
+<td class="warn">96%<br>1807m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">美川</td><td>968</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>614m</td>
+<td class="warn">93%<br>844m</td>
+<td class="warn">92%<br>1082m</td>
+<td class="warn">94%<br>1319m</td>
+<td>82%<br>1576m</td>
+<td class="warn">91%<br>1822m</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>1319</td><td>1576</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">面河</td><td>945</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">97%<br>847m</td>
+<td class="warn">96%<br>1084m</td>
+<td class="warn">94%<br>1318m</td>
+<td>87%<br>1577m</td>
+<td>78%<br>1822m</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>1318</td><td>1577</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">梼原</td><td>959</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">91%<br>613m</td>
+<td class="warn">93%<br>845m</td>
+<td class="warn">92%<br>1083m</td>
+<td class="warn">93%<br>1319m</td>
+<td>89%<br>1577m</td>
+<td>84%<br>1823m</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>1319</td><td>1577</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">津野町</td><td>956</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">93%<br>614m</td>
+<td class="warn">99%<br>846m</td>
+<td class="warn">97%<br>1084m</td>
+<td class="warn">93%<br>1319m</td>
+<td class="warn">90%<br>1577m</td>
+<td>84%<br>1823m</td>
+<td class="l">雲頂を挟めた</td><td>1577</td><td>1823</td><td class="prod">0.00</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td>970</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">97%<br>619m</td>
+<td class="warn">92%<br>849m</td>
+<td class="warn">92%<br>1087m</td>
+<td>83%<br>1326m</td>
+<td>82%<br>1581m</td>
+<td>80%<br>1830m</td>
+<td class="l">雲頂を挟めた</td><td>1087</td><td>1326</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">面河</td><td>947</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>851m</td>
+<td class="warn">96%<br>1089m</td>
+<td>82%<br>1326m</td>
+<td>87%<br>1582m</td>
+<td>72%<br>1830m</td>
+<td class="l">雲頂を挟めた</td><td>1089</td><td>1326</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">梼原</td><td>960</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">91%<br>617m</td>
+<td class="warn">93%<br>850m</td>
+<td class="warn">94%<br>1088m</td>
+<td>89%<br>1325m</td>
+<td>83%<br>1582m</td>
+<td>79%<br>1829m</td>
+<td class="l">雲頂を挟めた</td><td>1088</td><td>1325</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">津野町</td><td>958</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>619m</td>
+<td class="warn">98%<br>851m</td>
+<td class="warn">98%<br>1089m</td>
+<td>89%<br>1325m</td>
+<td>85%<br>1582m</td>
+<td>79%<br>1829m</td>
+<td class="l">雲頂を挟めた</td><td>1089</td><td>1325</td><td class="prod">1.00</td></tr>
+</table></div>
+<p class="note">湿度90%以上の面を黄色で示します。地上気圧より下の面は地中として除外していますが、地上気圧自体も返却標高への補正を受けている可能性があるため、判別の妥当性を後から確認できるよう値を併記しています。<br>展望地点の判定高度 1400m は 875hPa(約1215m)と850hPa(約1461m)の間にあり、この帯に雲頂が入る日は上下の判定ができません（状態「展望地点の高度を跨ぐ」）。ECMWF は 1000/925/850hPa しか返さないため、谷では実質2面しか使えず雲頂をほぼ評価できません（V_summit は 850hPa 1面で成立するので、EC版でも指数は出せます）。<br>取得する気圧面は 1000〜825hPa の8段です。谷でおよそ地表〜1720mにあたり、判定に必要な範囲を覆います。それより上は判定に使わないため取得していません。</p>
+<h3>V の内訳</h3>
+<div class="wrap"><table>
+<tr><th class="l" rowspan="2">日時</th><th colspan="6">V_summit（展望地点が雲の中にないか・主）</th><th colspan="3">V_vis（予報視程）</th><th colspan="3">記録のみ</th>
+<th colspan="2">美川</th>
+<th colspan="2">面河</th>
+<th colspan="2">梼原</th>
+<th colspan="2">津野町</th>
+</tr><tr><th>下側高度</th><th>下側湿度</th><th>上側面</th><th>上側高度</th><th>上側湿度</th><th class="prod">V_summit</th>
+<th>視程</th><th class="l">状態</th><th>V_vis</th><th>山上低層雲</th><th>V_sfc</th><th>山上降水</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+</tr>
+<tr><td class="l">2026-09-07 05:00</td><td>1296</td><td>90</td><td>850hPa</td><td>1422</td><td>95</td><td class="bad">0.00</td>
+<td>21160</td><td class="l">ok</td><td>1.00</td><td>33</td><td>0.80</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 06:00</td><td>1296</td><td>90</td><td>850hPa</td><td>1422</td><td>97</td><td class="bad">0.00</td>
+<td>7080</td><td class="l">ok</td><td>0.68</td><td>33</td><td>0.80</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 07:00</td><td>1296</td><td>88</td><td>850hPa</td><td>1422</td><td>95</td><td class="prod">0.70</td>
+<td>1740</td><td class="l">ok</td><td>0.08</td><td>32</td><td>1.00</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 08:00</td><td>1296</td><td>86</td><td>850hPa</td><td>1432</td><td>90</td><td class="prod">0.70</td>
+<td>4220</td><td class="l">ok</td><td>0.36</td><td>28</td><td>1.00</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 05:00</td><td>1296</td><td>87</td><td>850hPa</td><td>1442</td><td>96</td><td class="prod">0.70</td>
+<td>4320</td><td class="l">ok</td><td>0.37</td><td>41</td><td>0.98</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 06:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1442</td><td>98</td><td class="bad">0.00</td>
+<td>3800</td><td class="l">ok</td><td>0.31</td><td>40</td><td>0.40</td><td>0.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 07:00</td><td>1296</td><td>96</td><td>850hPa</td><td>1442</td><td>99</td><td class="bad">0.00</td>
+<td>3460</td><td class="l">ok</td><td>0.27</td><td>38</td><td>0.20</td><td class="bad">1.90</td>
+<td>1.00</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 08:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1442</td><td>98</td><td class="bad">0.00</td>
+<td>2820</td><td class="l">ok</td><td>0.20</td><td>39</td><td>0.10</td><td class="bad">1.10</td>
+<td>0.00</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-09 05:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1432</td><td>86</td><td class="prod">0.40</td>
+<td>900</td><td class="l">ok</td><td>0.00</td><td>56</td><td>0.00</td><td>0.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-09 06:00</td><td>1296</td><td>93</td><td>850hPa</td><td>1442</td><td>83</td><td class="prod">0.40</td>
+<td>2100</td><td class="l">ok</td><td>0.12</td><td>12</td><td>0.50</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-09 07:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1451</td><td>82</td><td class="prod">0.40</td>
+<td>3180</td><td class="l">ok</td><td>0.24</td><td>22</td><td>0.40</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-09 08:00</td><td>1296</td><td>93</td><td>850hPa</td><td>1461</td><td>82</td><td class="prod">0.40</td>
+<td>2180</td><td class="l">ok</td><td>0.13</td><td>37</td><td>0.50</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-10 05:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1519</td><td>88</td><td class="prod">0.40</td>
+<td>1120</td><td class="l">ok</td><td>0.01</td><td>88</td><td>0.00</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-10 06:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1524</td><td>87</td><td class="prod">0.40</td>
+<td>780</td><td class="l">ok</td><td>0.00</td><td>82</td><td>0.00</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-10 07:00</td><td>1296</td><td>92</td><td>850hPa</td><td>1531</td><td>87</td><td class="prod">0.40</td>
+<td>14420</td><td class="l">ok</td><td>1.00</td><td>55</td><td>0.60</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-10 08:00</td><td>1296</td><td>87</td><td>850hPa</td><td>1536</td><td>86</td><td class="prod">1.00</td>
+<td>7300</td><td class="l">ok</td><td>0.70</td><td>75</td><td>0.30</td><td>0.10</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1567</td><td>94</td><td class="bad">0.00</td>
+<td>600</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.10</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1570</td><td>92</td><td class="bad">0.00</td>
+<td>520</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.10</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 07:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1573</td><td>94</td><td class="bad">0.00</td>
+<td>1020</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.20</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 08:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1577</td><td>98</td><td class="bad">0.00</td>
+<td>1540</td><td class="l">ok</td><td>0.06</td><td>100</td><td>0.00</td><td>0.20</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 05:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1575</td><td>91</td><td class="bad">0.00</td>
+<td>680</td><td class="l">ok</td><td>0.00</td><td>36</td><td>0.00</td><td>0.00</td>
+<td>0.22</td><td>湿</td>
+<td>0.22</td><td>湿</td>
+<td>0.22</td><td>湿</td>
+<td>0.22</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 06:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1577</td><td>90</td><td class="bad">0.00</td>
+<td>880</td><td class="l">ok</td><td>0.00</td><td>20</td><td>0.10</td><td>0.00</td>
+<td>0.21</td><td>湿</td>
+<td>0.21</td><td>湿</td>
+<td>0.21</td><td>湿</td>
+<td>0.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 07:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1580</td><td>90</td><td class="bad">0.00</td>
+<td>1300</td><td class="l">ok</td><td>0.03</td><td>39</td><td>0.40</td><td>0.00</td>
+<td>1.00</td><td>湿</td>
+<td>0.20</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>0.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 08:00</td><td>1296</td><td>91</td><td>850hPa</td><td>1583</td><td>91</td><td class="bad">0.00</td>
+<td>1740</td><td class="l">ok</td><td>0.08</td><td>75</td><td>0.30</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-13 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1581</td><td>86</td><td class="prod">0.40</td>
+<td>360</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.50</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-13 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1582</td><td>85</td><td class="prod">0.40</td>
+<td>460</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.50</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-13 07:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1584</td><td>87</td><td class="prod">0.40</td>
+<td>540</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.50</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-13 08:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1586</td><td>91</td><td class="bad">0.00</td>
+<td>640</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.50</td>
+<td>--</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+</table></div>
+<p class="note"><b>V = min(V_top_fog, V_summit, V_vis)</b>。適用できた補正だけの最小値をとり、すべて適用できなければ「--」です。<b>補正を適用しないことと「良好(1.0)」は区別</b>しており、湿潤層を検出できない場合や上端が不明な場合を 1.0 にはしていません。<br>V_summit は展望地点の高度 1400m を挟む上下の湿り具合です。挟む面は固定せず、その時刻の geopotential_height から毎回選びます（上側の高度が時刻ごとに動くのはそのためです）。上下どちらかが欠ける場合は「判定材料不足」とし、1.0 にはしません。<br>0／0.4／0.7／1.0 はいずれも仮の係数です。<b>0 は「確実に霧」ではなく、濃い霧の可能性を重く見た暫定的な強い減点</b>です。上下の湿度だけでは 0.4 と 0.7 の差を物理的に確定できません（直上だけ湿っていても、層の下端が展望地点より下にある可能性があります）。<br>「谷上空」は谷側のプロファイルで展望高度帯が湿っているかの補助記録で、V には掛けていません。山上判定と食い違うときの手がかりとして残しています。<br>V_vis が「missing」の版は視程補正なしで、視界良好という意味ではありません。V_sfc（山上の低層雲）も記録のみです。山上格子の低層雲は「現地の霧」と「眼下の雲海が同じセルに含まれているだけ」を区別できないためです。</p>
+<h2>ECMWF</h2>
+<h3>式バリアント比較（各時刻の最良地点）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th>現行(加算)</th><th>案b</th><th class="prod">案c 本番</th><th>当初案</th><th>簡易判定</th><th class="l">状態</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td class="l">梼原</td><td>26</td><td>17</td><td class="prod">11</td><td>21</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td class="l">面河</td><td>35</td><td>31</td><td class="prod">27</td><td>22</td><td>×</td><td class="l">雲海あり・展望不良</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">梼原</td><td>35</td><td>31</td><td class="prod">28</td><td>33</td><td>×</td><td class="l">雲海あり・雲頂不確実</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td class="l">梼原</td><td>33</td><td>29</td><td class="prod">26</td><td>27</td><td>×</td><td class="l">雲海あり・展望不良</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td class="l">梼原</td><td>65</td><td>56</td><td class="prod">49</td><td>39</td><td>×</td><td class="l">雲海あり・展望良好</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td class="l">面河</td><td>39</td><td>38</td><td class="prod">38</td><td>38</td><td>○</td><td class="l">雲海あり・展望不良</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">面河</td><td>39</td><td>38</td><td class="prod">37</td><td>37</td><td>○</td><td class="l">雲海あり・雲頂不確実</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td class="l">美川</td><td>35</td><td>33</td><td class="prod">31</td><td>28</td><td>×</td><td class="l">雲海あり・展望不良</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+</table></div>
+<p class="note">現行(加算)=M×(.30+.30W+.25C+.15R)　案b=M×W×(.35+.45C+.20R)　案c=M×(.3+.7C)×(.35+.40W+.25R)　当初案=露点差ベース・定数0.50・全雲量C0。<br>簡易判定＝経験則（湿度80%以上・風3m/s未満・日較差8℃以上・中高層雲40%未満）。指数がこの判定に勝てなければ複雑な式を使う意味がありません。</p>
+<details><summary>M・R の比較（構造は案cで固定）</summary><div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th class="prod">M_rh 本番</th><th>M 露点差(線形)</th><th>M 露点差(曲線)</th><th>R 日較差版</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td class="l">梼原</td><td class="prod">11</td><td>8</td><td>9</td><td>10</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td class="l">面河</td><td class="prod">27</td><td>18</td><td>20</td><td>20</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">梼原</td><td class="prod">28</td><td>28</td><td>28</td><td>22</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td class="l">梼原</td><td class="prod">26</td><td>22</td><td>23</td><td>23</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td class="l">梼原</td><td class="prod">49</td><td>30</td><td>37</td><td>49</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td class="l">面河</td><td class="prod">38</td><td>38</td><td>38</td><td>30</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">面河</td><td class="prod">37</td><td>37</td><td>37</td><td>30</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td class="l">美川</td><td class="prod">31</td><td>28</td><td>29</td><td>28</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+</table></div></details>
+<h3>変数の生値</h3>
+<h3>美川（主軸）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>20.7</td><td>20.6</td><td>0.1</td><td>99</td><td>3.8</td><td>50</td><td>13</td><td>54</td><td>81</td><td>100</td><td>0.00</td><td>951.9</td><td>5.6</td><td>1.00</td><td>0.40</td><td>0.06</td><td>0.00</td><td>0.52</td><td class="prod">0.22</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>20.7</td><td>20.4</td><td>0.3</td><td>98</td><td>3.9</td><td>44</td><td>13</td><td>52</td><td>82</td><td>100</td><td>0.00</td><td>952.2</td><td>5.6</td><td>1.00</td><td>0.37</td><td>0.07</td><td>0.00</td><td>0.52</td><td class="prod">0.22</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>21.3</td><td>20.5</td><td>0.8</td><td>95</td><td>4.0</td><td>33</td><td>13</td><td>50</td><td>84</td><td>100</td><td>0.00</td><td>952.5</td><td>5.6</td><td>1.00</td><td>0.33</td><td>0.09</td><td>0.00</td><td>0.40</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>22.3</td><td>20.6</td><td>1.7</td><td>90</td><td>4.1</td><td>20</td><td>13</td><td>48</td><td>84</td><td>100</td><td>0.00</td><td>952.8</td><td>5.6</td><td>1.00</td><td>0.29</td><td>0.10</td><td>0.00</td><td>0.20</td><td class="prod">0.19</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>21.3</td><td>20.6</td><td>0.7</td><td>96</td><td>2.4</td><td>37</td><td>37</td><td>42</td><td>3</td><td>77</td><td>0.10</td><td>953.8</td><td>5.7</td><td>1.00</td><td>0.88</td><td>0.56</td><td>0.23</td><td>0.46</td><td class="prod">0.57</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>21.5</td><td>20.8</td><td>0.7</td><td>96</td><td>2.3</td><td>39</td><td>37</td><td>43</td><td>7</td><td>77</td><td>0.10</td><td>954.1</td><td>5.7</td><td>1.00</td><td>0.91</td><td>0.53</td><td>0.23</td><td>0.42</td><td class="prod">0.55</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.0</td><td>21.5</td><td>0.5</td><td>97</td><td>2.3</td><td>44</td><td>37</td><td>44</td><td>11</td><td>77</td><td class="bad">2.20</td><td>954.5</td><td>5.7</td><td>1.00</td><td>0.89</td><td>0.50</td><td>0.23</td><td>0.32</td><td class="prod">0.51</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>22.7</td><td>22.3</td><td>0.4</td><td>98</td><td>2.6</td><td>50</td><td>37</td><td>45</td><td>15</td><td>77</td><td class="bad">2.20</td><td>955.0</td><td>5.7</td><td>1.00</td><td>0.81</td><td>0.48</td><td>0.23</td><td>0.18</td><td class="prod">0.46</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.7</td><td>22.5</td><td>0.2</td><td>99</td><td>3.1</td><td>72</td><td>69</td><td>63</td><td>100</td><td>100</td><td class="bad">0.90</td><td>953.0</td><td>5.1</td><td>1.00</td><td>0.62</td><td>0.00</td><td>0.00</td><td>0.22</td><td class="prod">0.20</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>22.4</td><td>22.2</td><td>0.2</td><td>99</td><td>3.4</td><td>73</td><td>69</td><td>62</td><td>100</td><td>100</td><td class="bad">0.90</td><td>953.2</td><td>5.1</td><td>1.00</td><td>0.54</td><td>0.00</td><td>0.00</td><td>0.28</td><td class="prod">0.19</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>22.2</td><td>22.1</td><td>0.1</td><td>99</td><td>3.6</td><td>72</td><td>69</td><td>62</td><td>99</td><td>100</td><td class="bad">3.80</td><td>953.6</td><td>5.1</td><td>1.00</td><td>0.45</td><td>0.00</td><td>0.00</td><td>0.32</td><td class="prod">0.18</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>22.1</td><td>22.0</td><td>0.1</td><td>99</td><td>3.9</td><td>70</td><td>69</td><td>61</td><td>98</td><td>100</td><td class="bad">3.80</td><td>954.3</td><td>5.1</td><td>1.00</td><td>0.35</td><td>0.00</td><td>0.00</td><td>0.34</td><td class="prod">0.17</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>18.0</td><td>17.5</td><td>0.5</td><td>97</td><td>4.0</td><td>41</td><td>32</td><td>0</td><td>82</td><td>99</td><td>0.00</td><td>962.1</td><td>5.4</td><td>1.00</td><td>0.35</td><td>0.59</td><td>0.01</td><td>0.56</td><td class="prod">0.45</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>18.1</td><td>17.4</td><td>0.7</td><td>96</td><td>4.0</td><td>36</td><td>32</td><td>0</td><td>77</td><td>99</td><td>0.00</td><td>962.5</td><td>5.4</td><td>1.00</td><td>0.32</td><td>0.62</td><td>0.01</td><td>0.54</td><td class="prod">0.45</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>18.8</td><td>17.3</td><td>1.5</td><td>91</td><td>4.1</td><td>25</td><td>32</td><td>0</td><td>71</td><td>99</td><td>0.00</td><td>963.1</td><td>5.4</td><td>1.00</td><td>0.30</td><td>0.64</td><td>0.01</td><td>0.40</td><td class="prod">0.43</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>20.1</td><td>17.3</td><td>2.8</td><td>84</td><td>4.1</td><td>10</td><td>32</td><td>0</td><td>66</td><td>99</td><td>0.00</td><td>963.9</td><td>5.4</td><td>0.70</td><td>0.30</td><td>0.67</td><td>0.01</td><td>0.14</td><td class="prod">0.27</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>19.6</td><td>17.9</td><td>1.7</td><td>90</td><td>2.3</td><td>54</td><td>56</td><td>0</td><td>0</td><td>76</td><td>0.00</td><td>966.8</td><td>5.9</td><td>1.00</td><td>0.92</td><td>1.00</td><td>0.25</td><td>0.52</td><td class="prod">0.85</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>19.9</td><td>18.0</td><td>1.9</td><td>89</td><td>2.3</td><td>41</td><td>56</td><td>0</td><td>0</td><td>76</td><td>0.00</td><td>967.1</td><td>5.9</td><td>0.95</td><td>0.92</td><td>1.00</td><td>0.25</td><td>0.46</td><td class="prod">0.79</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>21.0</td><td>18.5</td><td>2.5</td><td>86</td><td>2.0</td><td>44</td><td>56</td><td>0</td><td>0</td><td>76</td><td>0.00</td><td>967.5</td><td>5.9</td><td>0.80</td><td>0.99</td><td>1.00</td><td>0.25</td><td>0.24</td><td class="prod">0.65</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>22.5</td><td>19.2</td><td>3.3</td><td>82</td><td>1.6</td><td>55</td><td>56</td><td>0</td><td>0</td><td>76</td><td>0.00</td><td>968.1</td><td>5.9</td><td>0.60</td><td>1.00</td><td>1.00</td><td>0.25</td><td>0.00</td><td class="prod">0.45</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>18.9</td><td>18.9</td><td>0.0</td><td>100</td><td>1.6</td><td>46</td><td>76</td><td>1</td><td>9</td><td>97</td><td>0.00</td><td>967.4</td><td>7.1</td><td>1.00</td><td>1.00</td><td>0.94</td><td>0.03</td><td>0.73</td><td class="prod">0.90</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>19.3</td><td>19.1</td><td>0.2</td><td>99</td><td>1.7</td><td>45</td><td>76</td><td>2</td><td>12</td><td>97</td><td>0.00</td><td>967.7</td><td>7.1</td><td>1.00</td><td>1.00</td><td>0.92</td><td>0.03</td><td>0.65</td><td class="prod">0.86</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.9</td><td>20.0</td><td>0.9</td><td>95</td><td>1.4</td><td>42</td><td>76</td><td>3</td><td>13</td><td>97</td><td>0.00</td><td>968.4</td><td>7.1</td><td>1.00</td><td>1.00</td><td>0.91</td><td>0.03</td><td>0.33</td><td class="prod">0.78</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>23.2</td><td>21.4</td><td>1.8</td><td>90</td><td>0.9</td><td>39</td><td>76</td><td>4</td><td>13</td><td>97</td><td>0.00</td><td>969.2</td><td>7.1</td><td>1.00</td><td>1.00</td><td>0.90</td><td>0.03</td><td>0.00</td><td class="prod">0.70</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>22.7</td><td>22.4</td><td>0.3</td><td>98</td><td>0.7</td><td>61</td><td>64</td><td>33</td><td>39</td><td>89</td><td class="bad">0.60</td><td>969.0</td><td>6.1</td><td>1.00</td><td>1.00</td><td>0.48</td><td>0.11</td><td>0.16</td><td class="prod">0.50</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>23.0</td><td>22.7</td><td>0.3</td><td>98</td><td>0.5</td><td>62</td><td>64</td><td>33</td><td>40</td><td>89</td><td class="bad">0.60</td><td>969.1</td><td>6.1</td><td>1.00</td><td>1.00</td><td>0.47</td><td>0.11</td><td>0.10</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>23.4</td><td>22.9</td><td>0.5</td><td>97</td><td>0.4</td><td>63</td><td>64</td><td>34</td><td>42</td><td>89</td><td class="bad">0.60</td><td>969.3</td><td>6.1</td><td>1.00</td><td>0.96</td><td>0.45</td><td>0.11</td><td>0.02</td><td class="prod">0.46</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>23.7</td><td>23.2</td><td>0.5</td><td>97</td><td>0.4</td><td>64</td><td>64</td><td>34</td><td>46</td><td>89</td><td class="bad">0.60</td><td>969.4</td><td>6.1</td><td>1.00</td><td>0.96</td><td>0.43</td><td>0.11</td><td>0.00</td><td class="prod">0.44</td></tr>
+</table></div>
+
+<details><summary>面河（補助）</summary><div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>19.0</td><td>18.7</td><td>0.3</td><td>98</td><td>2.2</td><td>63</td><td>9</td><td>67</td><td>80</td><td>100</td><td>0.00</td><td>927.4</td><td>8.4</td><td>1.00</td><td>0.94</td><td>0.00</td><td>0.00</td><td>0.81</td><td class="prod">0.28</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>19.2</td><td>18.7</td><td>0.5</td><td>97</td><td>2.2</td><td>63</td><td>9</td><td>65</td><td>81</td><td>100</td><td>0.00</td><td>927.7</td><td>8.4</td><td>1.00</td><td>0.94</td><td>0.00</td><td>0.00</td><td>0.77</td><td class="prod">0.28</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>20.1</td><td>18.9</td><td>1.2</td><td>93</td><td>2.2</td><td>55</td><td>9</td><td>63</td><td>83</td><td>100</td><td>0.00</td><td>928.2</td><td>8.4</td><td>1.00</td><td>0.93</td><td>0.00</td><td>0.00</td><td>0.59</td><td class="prod">0.26</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>21.3</td><td>19.1</td><td>2.2</td><td>87</td><td>2.2</td><td>42</td><td>9</td><td>61</td><td>84</td><td>100</td><td>0.00</td><td>928.8</td><td>8.4</td><td>0.85</td><td>0.93</td><td>0.00</td><td>0.00</td><td>0.35</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>19.0</td><td>18.5</td><td>0.5</td><td>97</td><td>1.7</td><td>62</td><td>23</td><td>44</td><td>1</td><td>75</td><td class="bad">1.60</td><td>929.9</td><td>8.2</td><td>1.00</td><td>1.00</td><td>0.55</td><td>0.25</td><td>0.57</td><td class="prod">0.61</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>19.3</td><td>19.0</td><td>0.3</td><td>98</td><td>1.7</td><td>69</td><td>23</td><td>45</td><td>3</td><td>75</td><td class="bad">1.60</td><td>930.2</td><td>8.2</td><td>1.00</td><td>1.00</td><td>0.54</td><td>0.25</td><td>0.51</td><td class="prod">0.59</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>19.9</td><td>19.6</td><td>0.3</td><td>98</td><td>1.8</td><td>68</td><td>23</td><td>45</td><td>6</td><td>75</td><td class="bad">1.50</td><td>930.6</td><td>8.2</td><td>1.00</td><td>1.00</td><td>0.52</td><td>0.25</td><td>0.39</td><td class="prod">0.56</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>20.7</td><td>20.4</td><td>0.3</td><td>98</td><td>1.8</td><td>64</td><td>23</td><td>45</td><td>11</td><td>75</td><td class="bad">1.50</td><td>931.1</td><td>8.2</td><td>1.00</td><td>1.00</td><td>0.49</td><td>0.25</td><td>0.23</td><td class="prod">0.52</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>20.5</td><td>20.0</td><td>0.5</td><td>97</td><td>1.7</td><td>86</td><td>100</td><td>62</td><td>96</td><td>100</td><td class="bad">7.60</td><td>928.9</td><td>5.2</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.18</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>20.6</td><td>20.1</td><td>0.5</td><td>97</td><td>1.8</td><td>79</td><td>100</td><td>61</td><td>96</td><td>100</td><td class="bad">7.60</td><td>929.0</td><td>5.2</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.16</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>20.9</td><td>20.4</td><td>0.5</td><td>97</td><td>2.0</td><td>69</td><td>100</td><td>61</td><td>96</td><td>100</td><td class="bad">9.60</td><td>929.2</td><td>5.2</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.10</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>21.4</td><td>20.9</td><td>0.5</td><td>97</td><td>2.2</td><td>57</td><td>100</td><td>61</td><td>97</td><td>100</td><td class="bad">9.60</td><td>929.6</td><td>5.2</td><td>1.00</td><td>0.93</td><td>0.00</td><td>0.00</td><td>0.00</td><td class="prod">0.22</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>16.7</td><td>15.0</td><td>1.7</td><td>90</td><td>1.6</td><td>41</td><td>1</td><td>0</td><td>91</td><td>97</td><td>0.00</td><td>937.4</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.55</td><td>0.03</td><td>0.94</td><td class="prod">0.67</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>16.7</td><td>14.9</td><td>1.8</td><td>89</td><td>1.6</td><td>31</td><td>1</td><td>0</td><td>86</td><td>97</td><td>0.00</td><td>937.7</td><td>6.5</td><td>0.95</td><td>1.00</td><td>0.57</td><td>0.03</td><td>0.94</td><td class="prod">0.65</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>18.3</td><td>15.2</td><td>3.1</td><td>82</td><td>1.2</td><td>33</td><td>1</td><td>0</td><td>82</td><td>97</td><td>0.00</td><td>938.6</td><td>6.5</td><td>0.60</td><td>1.00</td><td>0.59</td><td>0.03</td><td>0.62</td><td class="prod">0.39</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>20.7</td><td>15.7</td><td>5.0</td><td>73</td><td>0.9</td><td>42</td><td>1</td><td>0</td><td>80</td><td>97</td><td>0.00</td><td>939.7</td><td>6.5</td><td>0.15</td><td>1.00</td><td>0.60</td><td>0.03</td><td>0.14</td><td class="prod">0.08</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>18.8</td><td>18.8</td><td>0.0</td><td>100</td><td>0.5</td><td>48</td><td>66</td><td>5</td><td>0</td><td>100</td><td>0.10</td><td>942.9</td><td>7.1</td><td>1.00</td><td>1.00</td><td>0.95</td><td>0.00</td><td>0.32</td><td class="prod">0.80</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>18.7</td><td>18.6</td><td>0.1</td><td>99</td><td>0.6</td><td>45</td><td>66</td><td>4</td><td>0</td><td>100</td><td>0.10</td><td>943.1</td><td>7.1</td><td>1.00</td><td>1.00</td><td>0.96</td><td>0.00</td><td>0.34</td><td class="prod">0.81</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>19.3</td><td>18.8</td><td>0.5</td><td>97</td><td>0.6</td><td>54</td><td>66</td><td>4</td><td>0</td><td>100</td><td>0.00</td><td>943.7</td><td>7.1</td><td>1.00</td><td>1.00</td><td>0.96</td><td>0.00</td><td>0.22</td><td class="prod">0.78</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>20.1</td><td>19.0</td><td>1.1</td><td>93</td><td>0.5</td><td>69</td><td>66</td><td>4</td><td>0</td><td>100</td><td>0.00</td><td>944.3</td><td>7.1</td><td>1.00</td><td>0.98</td><td>0.96</td><td>0.00</td><td>0.06</td><td class="prod">0.74</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>15.9</td><td>15.9</td><td>0.0</td><td>100</td><td>2.1</td><td>24</td><td>73</td><td>4</td><td>2</td><td>35</td><td>0.00</td><td>943.4</td><td>8.3</td><td>1.00</td><td>0.96</td><td>0.95</td><td>0.65</td><td>1.00</td><td class="prod">0.95</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>16.5</td><td>16.0</td><td>0.5</td><td>97</td><td>2.0</td><td>24</td><td>73</td><td>6</td><td>3</td><td>35</td><td>0.00</td><td>943.8</td><td>8.3</td><td>1.00</td><td>0.99</td><td>0.93</td><td>0.65</td><td>0.91</td><td class="prod">0.92</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>18.7</td><td>16.8</td><td>1.9</td><td>89</td><td>1.7</td><td>34</td><td>73</td><td>8</td><td>3</td><td>35</td><td>0.00</td><td>944.7</td><td>8.3</td><td>0.95</td><td>1.00</td><td>0.91</td><td>0.65</td><td>0.47</td><td class="prod">0.77</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>21.7</td><td>17.9</td><td>3.8</td><td>79</td><td>1.2</td><td>48</td><td>73</td><td>9</td><td>3</td><td>35</td><td>0.00</td><td>945.8</td><td>8.3</td><td>0.45</td><td>1.00</td><td>0.90</td><td>0.65</td><td>0.00</td><td class="prod">0.31</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>20.4</td><td>20.1</td><td>0.3</td><td>98</td><td>0.7</td><td>100</td><td>100</td><td>27</td><td>39</td><td>96</td><td>0.50</td><td>945.3</td><td>5.4</td><td>1.00</td><td>1.00</td><td>0.53</td><td>0.04</td><td>0.10</td><td class="prod">0.52</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>20.7</td><td>20.2</td><td>0.5</td><td>97</td><td>0.5</td><td>100</td><td>100</td><td>27</td><td>39</td><td>96</td><td>0.50</td><td>945.6</td><td>5.4</td><td>1.00</td><td>1.00</td><td>0.54</td><td>0.04</td><td>0.04</td><td class="prod">0.51</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>21.0</td><td>20.3</td><td>0.7</td><td>96</td><td>0.4</td><td>100</td><td>100</td><td>26</td><td>40</td><td>96</td><td>0.50</td><td>945.8</td><td>5.4</td><td>1.00</td><td>0.94</td><td>0.54</td><td>0.04</td><td>0.00</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>21.3</td><td>20.7</td><td>0.6</td><td>96</td><td>0.5</td><td>100</td><td>100</td><td>25</td><td>43</td><td>96</td><td>0.50</td><td>946.0</td><td>5.4</td><td>1.00</td><td>1.00</td><td>0.54</td><td>0.04</td><td>0.00</td><td class="prod">0.51</td></tr>
+</table></div>
+</details>
+<h3>梼原（主軸）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>21.2</td><td>20.7</td><td>0.5</td><td>97</td><td>1.5</td><td>56</td><td>3</td><td>56</td><td>76</td><td>100</td><td>0.00</td><td>943.5</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.06</td><td>0.00</td><td>0.58</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>21.4</td><td>20.9</td><td>0.5</td><td>97</td><td>1.6</td><td>53</td><td>3</td><td>55</td><td>78</td><td>100</td><td>0.00</td><td>943.8</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.06</td><td>0.00</td><td>0.54</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>22.0</td><td>21.1</td><td>0.9</td><td>95</td><td>1.6</td><td>43</td><td>3</td><td>54</td><td>80</td><td>100</td><td>0.00</td><td>944.2</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.06</td><td>0.00</td><td>0.42</td><td class="prod">0.29</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>22.9</td><td>21.3</td><td>1.6</td><td>91</td><td>1.5</td><td>28</td><td>3</td><td>53</td><td>81</td><td>100</td><td>0.00</td><td>944.8</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.07</td><td>0.00</td><td>0.24</td><td class="prod">0.28</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>21.4</td><td>20.6</td><td>0.8</td><td>95</td><td>0.9</td><td>42</td><td>38</td><td>44</td><td>1</td><td>51</td><td class="bad">1.20</td><td>946.1</td><td>6.3</td><td>1.00</td><td>1.00</td><td>0.56</td><td>0.49</td><td>0.42</td><td class="prod">0.59</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>21.6</td><td>21.1</td><td>0.5</td><td>97</td><td>0.9</td><td>48</td><td>38</td><td>45</td><td>2</td><td>51</td><td class="bad">1.20</td><td>946.4</td><td>6.3</td><td>1.00</td><td>1.00</td><td>0.54</td><td>0.49</td><td>0.38</td><td class="prod">0.57</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.2</td><td>21.9</td><td>0.3</td><td>98</td><td>1.0</td><td>56</td><td>38</td><td>46</td><td>5</td><td>51</td><td class="bad">1.80</td><td>946.8</td><td>6.3</td><td>1.00</td><td>1.00</td><td>0.52</td><td>0.49</td><td>0.26</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>23.1</td><td>22.9</td><td>0.2</td><td>99</td><td>1.4</td><td>65</td><td>38</td><td>46</td><td>8</td><td>51</td><td class="bad">1.80</td><td>947.2</td><td>6.3</td><td>1.00</td><td>1.00</td><td>0.50</td><td>0.49</td><td>0.08</td><td class="prod">0.50</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.9</td><td>22.9</td><td>0.0</td><td>100</td><td>1.7</td><td>73</td><td>79</td><td>61</td><td>100</td><td>100</td><td class="bad">2.50</td><td>945.0</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.10</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>22.9</td><td>22.9</td><td>0.0</td><td>100</td><td>1.6</td><td>70</td><td>79</td><td>60</td><td>100</td><td>100</td><td class="bad">2.50</td><td>945.2</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.10</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>22.9</td><td>22.9</td><td>0.0</td><td>100</td><td>2.0</td><td>64</td><td>79</td><td>59</td><td>100</td><td>100</td><td class="bad">3.50</td><td>945.4</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.10</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>22.7</td><td>22.6</td><td>0.1</td><td>99</td><td>2.7</td><td>55</td><td>79</td><td>58</td><td>100</td><td>100</td><td class="bad">3.50</td><td>945.8</td><td>5.6</td><td>1.00</td><td>0.76</td><td>0.00</td><td>0.00</td><td>0.14</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>17.8</td><td>17.6</td><td>0.2</td><td>99</td><td>1.7</td><td>40</td><td>7</td><td>0</td><td>78</td><td>98</td><td>0.00</td><td>953.3</td><td>6.0</td><td>1.00</td><td>1.00</td><td>0.61</td><td>0.02</td><td>0.69</td><td class="prod">0.67</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>17.7</td><td>17.6</td><td>0.1</td><td>99</td><td>1.4</td><td>30</td><td>7</td><td>0</td><td>72</td><td>98</td><td>0.00</td><td>953.6</td><td>6.0</td><td>1.00</td><td>1.00</td><td>0.64</td><td>0.02</td><td>0.71</td><td class="prod">0.70</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>19.4</td><td>18.4</td><td>1.0</td><td>94</td><td>1.3</td><td>24</td><td>7</td><td>0</td><td>67</td><td>98</td><td>0.10</td><td>954.4</td><td>6.0</td><td>1.00</td><td>1.00</td><td>0.67</td><td>0.02</td><td>0.37</td><td class="prod">0.65</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>22.1</td><td>19.9</td><td>2.2</td><td>87</td><td>1.1</td><td>19</td><td>7</td><td>0</td><td>64</td><td>98</td><td>0.10</td><td>955.3</td><td>6.0</td><td>0.85</td><td>1.00</td><td>0.68</td><td>0.02</td><td>0.00</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>20.8</td><td>20.8</td><td>0.0</td><td>100</td><td>1.0</td><td>59</td><td>73</td><td>2</td><td>0</td><td>100</td><td>0.10</td><td>958.8</td><td>8.6</td><td>1.00</td><td>1.00</td><td>0.98</td><td>0.00</td><td>0.31</td><td class="prod">0.82</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>20.7</td><td>20.7</td><td>0.0</td><td>100</td><td>0.9</td><td>59</td><td>73</td><td>2</td><td>0</td><td>100</td><td>0.10</td><td>959.1</td><td>8.6</td><td>1.00</td><td>1.00</td><td>0.98</td><td>0.00</td><td>0.33</td><td class="prod">0.82</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>21.0</td><td>20.9</td><td>0.1</td><td>99</td><td>0.4</td><td>65</td><td>73</td><td>2</td><td>0</td><td>100</td><td>0.20</td><td>959.6</td><td>8.6</td><td>1.00</td><td>0.97</td><td>0.98</td><td>0.00</td><td>0.27</td><td class="prod">0.79</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>21.6</td><td>21.2</td><td>0.4</td><td>98</td><td>0.1</td><td>74</td><td>73</td><td>2</td><td>0</td><td>100</td><td>0.20</td><td>960.0</td><td>8.6</td><td>1.00</td><td>0.84</td><td>0.98</td><td>0.00</td><td>0.15</td><td class="prod">0.71</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>19.0</td><td>18.8</td><td>0.2</td><td>99</td><td>0.7</td><td>50</td><td>85</td><td>5</td><td>6</td><td>97</td><td>0.00</td><td>959.9</td><td>6.2</td><td>1.00</td><td>1.00</td><td>0.92</td><td>0.03</td><td>0.58</td><td class="prod">0.84</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>19.3</td><td>18.8</td><td>0.5</td><td>97</td><td>0.8</td><td>45</td><td>85</td><td>7</td><td>6</td><td>97</td><td>0.00</td><td>960.2</td><td>6.2</td><td>1.00</td><td>1.00</td><td>0.90</td><td>0.03</td><td>0.52</td><td class="prod">0.82</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.7</td><td>19.7</td><td>1.0</td><td>94</td><td>0.8</td><td>45</td><td>85</td><td>8</td><td>5</td><td>97</td><td>0.00</td><td>960.9</td><td>6.2</td><td>1.00</td><td>1.00</td><td>0.89</td><td>0.03</td><td>0.24</td><td class="prod">0.75</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>22.7</td><td>21.1</td><td>1.6</td><td>91</td><td>1.0</td><td>49</td><td>85</td><td>9</td><td>5</td><td>97</td><td>0.00</td><td>961.8</td><td>6.2</td><td>1.00</td><td>1.00</td><td>0.89</td><td>0.03</td><td>0.00</td><td class="prod">0.69</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>22.4</td><td>22.4</td><td>0.0</td><td>100</td><td>1.4</td><td>76</td><td>98</td><td>32</td><td>41</td><td>100</td><td>0.50</td><td>961.4</td><td>3.1</td><td>1.00</td><td>1.00</td><td>0.48</td><td>0.00</td><td>0.07</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>22.6</td><td>22.6</td><td>0.0</td><td>100</td><td>1.4</td><td>78</td><td>98</td><td>31</td><td>40</td><td>100</td><td>0.50</td><td>961.6</td><td>3.1</td><td>1.00</td><td>1.00</td><td>0.49</td><td>0.00</td><td>0.03</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>22.7</td><td>22.7</td><td>0.0</td><td>100</td><td>1.4</td><td>80</td><td>98</td><td>30</td><td>40</td><td>100</td><td>0.50</td><td>961.7</td><td>3.1</td><td>1.00</td><td>1.00</td><td>0.50</td><td>0.00</td><td>0.01</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>22.9</td><td>22.9</td><td>0.0</td><td>100</td><td>1.4</td><td>82</td><td>98</td><td>29</td><td>41</td><td>100</td><td>0.50</td><td>961.8</td><td>3.1</td><td>1.00</td><td>1.00</td><td>0.51</td><td>0.00</td><td>0.00</td><td class="prod">0.49</td></tr>
+</table></div>
+
+<details><summary>津野町（補助）</summary><div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>21.0</td><td>20.5</td><td>0.5</td><td>97</td><td>1.5</td><td>56</td><td>3</td><td>56</td><td>76</td><td>100</td><td>0.00</td><td>940.0</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.06</td><td>0.00</td><td>0.58</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>21.2</td><td>20.7</td><td>0.5</td><td>97</td><td>1.6</td><td>53</td><td>3</td><td>55</td><td>78</td><td>100</td><td>0.00</td><td>940.3</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.06</td><td>0.00</td><td>0.54</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>21.8</td><td>20.9</td><td>0.9</td><td>95</td><td>1.6</td><td>43</td><td>3</td><td>54</td><td>80</td><td>100</td><td>0.00</td><td>940.7</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.06</td><td>0.00</td><td>0.42</td><td class="prod">0.29</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>22.7</td><td>21.1</td><td>1.6</td><td>91</td><td>1.5</td><td>28</td><td>3</td><td>53</td><td>81</td><td>100</td><td>0.00</td><td>941.3</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.07</td><td>0.00</td><td>0.24</td><td class="prod">0.28</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>21.2</td><td>20.4</td><td>0.8</td><td>95</td><td>0.9</td><td>42</td><td>38</td><td>44</td><td>1</td><td>51</td><td class="bad">1.20</td><td>942.6</td><td>6.3</td><td>1.00</td><td>1.00</td><td>0.56</td><td>0.49</td><td>0.42</td><td class="prod">0.59</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>21.4</td><td>20.9</td><td>0.5</td><td>97</td><td>0.9</td><td>48</td><td>38</td><td>45</td><td>2</td><td>51</td><td class="bad">1.20</td><td>942.9</td><td>6.3</td><td>1.00</td><td>1.00</td><td>0.54</td><td>0.49</td><td>0.38</td><td class="prod">0.57</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.0</td><td>21.7</td><td>0.3</td><td>98</td><td>1.0</td><td>56</td><td>38</td><td>46</td><td>5</td><td>51</td><td class="bad">1.80</td><td>943.3</td><td>6.3</td><td>1.00</td><td>1.00</td><td>0.52</td><td>0.49</td><td>0.26</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>22.9</td><td>22.7</td><td>0.2</td><td>99</td><td>1.4</td><td>65</td><td>38</td><td>46</td><td>8</td><td>51</td><td class="bad">1.80</td><td>943.7</td><td>6.3</td><td>1.00</td><td>1.00</td><td>0.50</td><td>0.49</td><td>0.08</td><td class="prod">0.50</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.7</td><td>22.7</td><td>0.0</td><td>100</td><td>1.7</td><td>73</td><td>79</td><td>61</td><td>100</td><td>100</td><td class="bad">2.50</td><td>941.6</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.10</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>22.7</td><td>22.7</td><td>0.0</td><td>100</td><td>1.6</td><td>70</td><td>79</td><td>60</td><td>100</td><td>100</td><td class="bad">2.50</td><td>941.7</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.10</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>22.7</td><td>22.7</td><td>0.0</td><td>100</td><td>2.0</td><td>64</td><td>79</td><td>59</td><td>100</td><td>100</td><td class="bad">3.50</td><td>941.9</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.00</td><td>0.10</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>22.5</td><td>22.4</td><td>0.1</td><td>99</td><td>2.7</td><td>55</td><td>79</td><td>58</td><td>100</td><td>100</td><td class="bad">3.50</td><td>942.3</td><td>5.6</td><td>1.00</td><td>0.76</td><td>0.00</td><td>0.00</td><td>0.14</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>17.6</td><td>17.4</td><td>0.2</td><td>99</td><td>1.7</td><td>40</td><td>7</td><td>0</td><td>78</td><td>98</td><td>0.00</td><td>949.7</td><td>6.0</td><td>1.00</td><td>1.00</td><td>0.61</td><td>0.02</td><td>0.69</td><td class="prod">0.67</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>17.5</td><td>17.4</td><td>0.1</td><td>99</td><td>1.4</td><td>30</td><td>7</td><td>0</td><td>72</td><td>98</td><td>0.00</td><td>950.0</td><td>6.0</td><td>1.00</td><td>1.00</td><td>0.64</td><td>0.02</td><td>0.71</td><td class="prod">0.70</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>19.2</td><td>18.2</td><td>1.0</td><td>94</td><td>1.3</td><td>24</td><td>7</td><td>0</td><td>67</td><td>98</td><td>0.10</td><td>950.9</td><td>6.0</td><td>1.00</td><td>1.00</td><td>0.67</td><td>0.02</td><td>0.37</td><td class="prod">0.65</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>21.9</td><td>19.7</td><td>2.2</td><td>87</td><td>1.1</td><td>19</td><td>7</td><td>0</td><td>64</td><td>98</td><td>0.10</td><td>951.8</td><td>6.0</td><td>0.85</td><td>1.00</td><td>0.68</td><td>0.02</td><td>0.00</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>20.6</td><td>20.6</td><td>0.0</td><td>100</td><td>1.0</td><td>59</td><td>73</td><td>2</td><td>0</td><td>100</td><td>0.10</td><td>955.3</td><td>8.6</td><td>1.00</td><td>1.00</td><td>0.98</td><td>0.00</td><td>0.31</td><td class="prod">0.82</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>20.5</td><td>20.5</td><td>0.0</td><td>100</td><td>0.9</td><td>59</td><td>73</td><td>2</td><td>0</td><td>100</td><td>0.10</td><td>955.6</td><td>8.6</td><td>1.00</td><td>1.00</td><td>0.98</td><td>0.00</td><td>0.33</td><td class="prod">0.82</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>20.8</td><td>20.7</td><td>0.1</td><td>99</td><td>0.4</td><td>65</td><td>73</td><td>2</td><td>0</td><td>100</td><td>0.20</td><td>956.0</td><td>8.6</td><td>1.00</td><td>0.97</td><td>0.98</td><td>0.00</td><td>0.27</td><td class="prod">0.79</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>21.4</td><td>21.0</td><td>0.4</td><td>98</td><td>0.1</td><td>74</td><td>73</td><td>2</td><td>0</td><td>100</td><td>0.20</td><td>956.5</td><td>8.6</td><td>1.00</td><td>0.84</td><td>0.98</td><td>0.00</td><td>0.15</td><td class="prod">0.71</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>18.8</td><td>18.6</td><td>0.2</td><td>99</td><td>0.7</td><td>50</td><td>85</td><td>5</td><td>6</td><td>97</td><td>0.00</td><td>956.3</td><td>6.2</td><td>1.00</td><td>1.00</td><td>0.92</td><td>0.03</td><td>0.58</td><td class="prod">0.84</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>19.1</td><td>18.6</td><td>0.5</td><td>97</td><td>0.8</td><td>45</td><td>85</td><td>7</td><td>6</td><td>97</td><td>0.00</td><td>956.7</td><td>6.2</td><td>1.00</td><td>1.00</td><td>0.90</td><td>0.03</td><td>0.52</td><td class="prod">0.82</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.5</td><td>19.5</td><td>1.0</td><td>94</td><td>0.8</td><td>45</td><td>85</td><td>8</td><td>5</td><td>97</td><td>0.00</td><td>957.3</td><td>6.2</td><td>1.00</td><td>1.00</td><td>0.89</td><td>0.03</td><td>0.24</td><td class="prod">0.75</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>22.5</td><td>20.9</td><td>1.6</td><td>91</td><td>1.0</td><td>49</td><td>85</td><td>9</td><td>5</td><td>97</td><td>0.00</td><td>958.2</td><td>6.2</td><td>1.00</td><td>1.00</td><td>0.89</td><td>0.03</td><td>0.00</td><td class="prod">0.69</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>22.2</td><td>22.2</td><td>0.0</td><td>100</td><td>1.4</td><td>76</td><td>98</td><td>32</td><td>41</td><td>100</td><td>0.50</td><td>957.9</td><td>3.1</td><td>1.00</td><td>1.00</td><td>0.48</td><td>0.00</td><td>0.07</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>22.4</td><td>22.4</td><td>0.0</td><td>100</td><td>1.4</td><td>78</td><td>98</td><td>31</td><td>40</td><td>100</td><td>0.50</td><td>958.0</td><td>3.1</td><td>1.00</td><td>1.00</td><td>0.49</td><td>0.00</td><td>0.03</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>22.5</td><td>22.5</td><td>0.0</td><td>100</td><td>1.4</td><td>80</td><td>98</td><td>30</td><td>40</td><td>100</td><td>0.50</td><td>958.1</td><td>3.1</td><td>1.00</td><td>1.00</td><td>0.50</td><td>0.00</td><td>0.01</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>22.7</td><td>22.7</td><td>0.0</td><td>100</td><td>1.4</td><td>82</td><td>98</td><td>29</td><td>41</td><td>100</td><td>0.50</td><td>958.3</td><td>3.1</td><td>1.00</td><td>1.00</td><td>0.51</td><td>0.00</td><td>0.00</td><td class="prod">0.49</td></tr>
+</table></div>
+</details>
+<p class="note">日没時点の低層雲は「霧の発生を妨げる先在の雲」を捉えている可能性がある一方、その時点で既に霧や層雲が出ていることもあります。断定せず記録のみに留めています。降水ゲートで0になった行は赤背景です。</p>
+<h3>雲頂の内訳（気圧面プロファイル・日の出時刻のみ）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th>地上気圧</th>
+<th>1000</th>
+<th>975</th>
+<th>950</th>
+<th>925</th>
+<th>900</th>
+<th>875</th>
+<th>850</th>
+<th>825</th>
+<th class="l">状態</th><th>下端</th><th>上端</th><th class="prod">V_top</th></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td>952</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>698m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>1424m</td>
+<td class="dim">地中/欠</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>698</td><td>1424</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">面河</td><td>928</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">97%<br>1421m</td>
+<td class="dim">地中/欠</td>
+<td class="l">有効面が2面未満</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">梼原</td><td>944</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">90%<br>693m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>1422m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1422</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">津野町</td><td>940</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">90%<br>693m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>1422m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1422</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td>954</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">94%<br>716m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">90%<br>1447m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1447</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">面河</td><td>930</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>86%<br>715m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>1447m</td>
+<td class="dim">地中/欠</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">梼原</td><td>946</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">90%<br>714m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">94%<br>1446m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1446</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">津野町</td><td>943</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">90%<br>714m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">94%<br>1446m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1446</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">美川</td><td>953</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>708m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">97%<br>1438m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1438</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">面河</td><td>929</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">99%<br>1434m</td>
+<td class="dim">地中/欠</td>
+<td class="l">有効面が2面未満</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">梼原</td><td>945</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">96%<br>702m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>1434m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1434</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">津野町</td><td>942</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">96%<br>702m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>1434m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1434</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">美川</td><td>963</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">93%<br>790m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>74%<br>1511m</td>
+<td class="dim">地中/欠</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>790</td><td>1511</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">面河</td><td>938</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>86%<br>786m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>1511m</td>
+<td class="dim">地中/欠</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">梼原</td><td>954</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">90%<br>786m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>83%<br>1511m</td>
+<td class="dim">地中/欠</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>786</td><td>1511</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">津野町</td><td>950</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">90%<br>786m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>83%<br>1511m</td>
+<td class="dim">地中/欠</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>786</td><td>1511</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td>967</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">92%<br>832m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">92%<br>1556m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1556</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">面河</td><td>943</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">93%<br>831m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">93%<br>1557m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1557</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">梼原</td><td>959</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">92%<br>831m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">96%<br>1556m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1556</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">津野町</td><td>956</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">92%<br>831m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">96%<br>1556m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1556</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">美川</td><td>968</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>843m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>1571m</td>
+<td class="dim">地中/欠</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">面河</td><td>944</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">90%<br>844m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>1572m</td>
+<td class="dim">地中/欠</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>844</td><td>1572</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">梼原</td><td>960</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>843m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>1571m</td>
+<td class="dim">地中/欠</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">津野町</td><td>957</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>843m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>1571m</td>
+<td class="dim">地中/欠</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td>969</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>850m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">96%<br>1581m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1581</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">面河</td><td>946</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>852m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">100%<br>1581m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1581</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">梼原</td><td>962</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>850m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">99%<br>1580m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1580</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">津野町</td><td>958</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>850m</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">99%<br>1580m</td>
+<td class="dim">地中/欠</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1580</td><td>--</td><td class="prod">--</td></tr>
+</table></div>
+<p class="note">湿度90%以上の面を黄色で示します。地上気圧より下の面は地中として除外していますが、地上気圧自体も返却標高への補正を受けている可能性があるため、判別の妥当性を後から確認できるよう値を併記しています。<br>展望地点の判定高度 1400m は 875hPa(約1215m)と850hPa(約1461m)の間にあり、この帯に雲頂が入る日は上下の判定ができません（状態「展望地点の高度を跨ぐ」）。ECMWF は 1000/925/850hPa しか返さないため、谷では実質2面しか使えず雲頂をほぼ評価できません（V_summit は 850hPa 1面で成立するので、EC版でも指数は出せます）。<br>取得する気圧面は 1000〜825hPa の8段です。谷でおよそ地表〜1720mにあたり、判定に必要な範囲を覆います。それより上は判定に使わないため取得していません。</p>
+<h3>V の内訳</h3>
+<div class="wrap"><table>
+<tr><th class="l" rowspan="2">日時</th><th colspan="6">V_summit（展望地点が雲の中にないか・主）</th><th colspan="3">V_vis（予報視程）</th><th colspan="3">記録のみ</th>
+<th colspan="2">美川</th>
+<th colspan="2">面河</th>
+<th colspan="2">梼原</th>
+<th colspan="2">津野町</th>
+</tr><tr><th>下側高度</th><th>下側湿度</th><th>上側面</th><th>上側高度</th><th>上側湿度</th><th class="prod">V_summit</th>
+<th>視程</th><th class="l">状態</th><th>V_vis</th><th>山上低層雲</th><th>V_sfc</th><th>山上降水</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+</tr>
+<tr><td class="l">2026-09-07 05:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1420</td><td>96</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>56</td><td>0.10</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 06:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1422</td><td>95</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>53</td><td>0.10</td><td>0.00</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 07:00</td><td>1296</td><td>95</td><td>850hPa</td><td>1424</td><td>92</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>43</td><td>0.30</td><td>0.00</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 08:00</td><td>1296</td><td>91</td><td>850hPa</td><td>1427</td><td>88</td><td class="prod">0.40</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>28</td><td>0.70</td><td>0.00</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-08 05:00</td><td>1296</td><td>95</td><td>850hPa</td><td>1444</td><td>93</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>42</td><td>0.30</td><td class="bad">1.20</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 06:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1446</td><td>94</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>48</td><td>0.10</td><td class="bad">1.20</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 07:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1448</td><td>95</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>56</td><td>0.00</td><td class="bad">1.80</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 08:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1451</td><td>97</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>65</td><td>0.00</td><td class="bad">1.80</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-09 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1433</td><td>99</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>73</td><td>0.00</td><td class="bad">2.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-09 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1434</td><td>98</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>70</td><td>0.00</td><td class="bad">2.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-09 07:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1436</td><td>95</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>64</td><td>0.00</td><td class="bad">3.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-09 08:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1440</td><td>90</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>55</td><td>0.00</td><td class="bad">3.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-10 05:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1508</td><td>87</td><td class="prod">0.40</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>40</td><td>0.00</td><td>0.00</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-10 06:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1511</td><td>83</td><td class="prod">0.40</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>30</td><td>0.00</td><td>0.00</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-10 07:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1516</td><td>82</td><td class="prod">0.40</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>24</td><td>0.40</td><td>0.10</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-10 08:00</td><td>1296</td><td>87</td><td>850hPa</td><td>1521</td><td>83</td><td class="prod">1.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>19</td><td>1.00</td><td>0.10</td>
+<td>--</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-11 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1554</td><td>96</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>59</td><td>0.00</td><td>0.10</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1556</td><td>96</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>59</td><td>0.00</td><td>0.10</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 07:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1559</td><td>97</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>65</td><td>0.00</td><td>0.20</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 08:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1564</td><td>98</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>74</td><td>0.00</td><td>0.20</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 05:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1568</td><td>88</td><td class="prod">0.40</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>50</td><td>0.00</td><td>0.00</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-12 06:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1571</td><td>87</td><td class="prod">0.40</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>45</td><td>0.10</td><td>0.00</td>
+<td>--</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-12 07:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1575</td><td>89</td><td class="prod">0.40</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>45</td><td>0.40</td><td>0.00</td>
+<td>--</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-12 08:00</td><td>1296</td><td>91</td><td>850hPa</td><td>1580</td><td>92</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>49</td><td>0.70</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-13 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1579</td><td>99</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>76</td><td>0.00</td><td>0.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-13 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1580</td><td>99</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>78</td><td>0.00</td><td>0.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-13 07:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1581</td><td>99</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>80</td><td>0.00</td><td>0.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-13 08:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1583</td><td>99</td><td class="bad">0.00</td>
+<td>--</td><td class="l">missing</td><td>--</td><td>82</td><td>0.00</td><td>0.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+</table></div>
+<p class="note"><b>V = min(V_top_fog, V_summit, V_vis)</b>。適用できた補正だけの最小値をとり、すべて適用できなければ「--」です。<b>補正を適用しないことと「良好(1.0)」は区別</b>しており、湿潤層を検出できない場合や上端が不明な場合を 1.0 にはしていません。<br>V_summit は展望地点の高度 1400m を挟む上下の湿り具合です。挟む面は固定せず、その時刻の geopotential_height から毎回選びます（上側の高度が時刻ごとに動くのはそのためです）。上下どちらかが欠ける場合は「判定材料不足」とし、1.0 にはしません。<br>0／0.4／0.7／1.0 はいずれも仮の係数です。<b>0 は「確実に霧」ではなく、濃い霧の可能性を重く見た暫定的な強い減点</b>です。上下の湿度だけでは 0.4 と 0.7 の差を物理的に確定できません（直上だけ湿っていても、層の下端が展望地点より下にある可能性があります）。<br>「谷上空」は谷側のプロファイルで展望高度帯が湿っているかの補助記録で、V には掛けていません。山上判定と食い違うときの手がかりとして残しています。<br>V_vis が「missing」の版は視程補正なしで、視界良好という意味ではありません。V_sfc（山上の低層雲）も記録のみです。山上格子の低層雲は「現地の霧」と「眼下の雲海が同じセルに含まれているだけ」を区別できないためです。</p>
+<h2>平均</h2>
+<h3>式バリアント比較（各時刻の最良地点）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th>現行(加算)</th><th>案b</th><th class="prod">案c 本番</th><th>当初案</th><th>簡易判定</th><th class="l">状態</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td class="l">面河</td><td>6</td><td>4</td><td class="prod">3</td><td>5</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td class="l">美川</td><td>20</td><td>11</td><td class="prod">10</td><td>18</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td class="l">美川</td><td>28</td><td>21</td><td class="prod">19</td><td>25</td><td>×</td><td class="l">雲海あり・展望不良</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">降水あり</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">美川</td><td>7</td><td>4</td><td class="prod">3</td><td>8</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td class="l">梼原</td><td>16</td><td>10</td><td class="prod">7</td><td>15</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td class="l">美川</td><td>7</td><td>3</td><td class="prod">3</td><td>9</td><td>×</td><td class="l">雲海の条件なし</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td class="l">美川</td><td>1</td><td>1</td><td class="prod">1</td><td>1</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td class="l">津野町</td><td>32</td><td>29</td><td class="prod">26</td><td>24</td><td>×</td><td class="l">雲海あり・展望不良</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td class="l">津野町</td><td>42</td><td>36</td><td class="prod">32</td><td>24</td><td>×</td><td class="l">雲海あり・展望良好</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海あり・現地も霧の疑い</td></tr>
+</table></div>
+<p class="note">現行(加算)=M×(.30+.30W+.25C+.15R)　案b=M×W×(.35+.45C+.20R)　案c=M×(.3+.7C)×(.35+.40W+.25R)　当初案=露点差ベース・定数0.50・全雲量C0。<br>簡易判定＝経験則（湿度80%以上・風3m/s未満・日較差8℃以上・中高層雲40%未満）。指数がこの判定に勝てなければ複雑な式を使う意味がありません。</p>
+<details><summary>M・R の比較（構造は案cで固定）</summary><div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th class="prod">M_rh 本番</th><th>M 露点差(線形)</th><th>M 露点差(曲線)</th><th>R 日較差版</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td class="l">面河</td><td class="prod">3</td><td>2</td><td>2</td><td>2</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td class="l">美川</td><td class="prod">10</td><td>7</td><td>8</td><td>10</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td class="l">美川</td><td class="prod">19</td><td>16</td><td>16</td><td>17</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">美川</td><td class="prod">3</td><td>3</td><td>3</td><td>2</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td class="l">梼原</td><td class="prod">7</td><td>6</td><td>6</td><td>6</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td class="l">美川</td><td class="prod">3</td><td>3</td><td>3</td><td>2</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td class="l">美川</td><td class="prod">1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td class="l">津野町</td><td class="prod">26</td><td>19</td><td>21</td><td>22</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td class="l">津野町</td><td class="prod">32</td><td>17</td><td>22</td><td>31</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+</table></div></details>
+<h3>変数の生値</h3>
+<h3>美川（主軸）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>21.7</td><td>20.7</td><td>1.0</td><td>94</td><td>0.9</td><td>43</td><td>37</td><td>57</td><td>42</td><td>63</td><td>0.00</td><td>949.7</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.22</td><td>0.37</td><td>0.33</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>21.6</td><td>20.6</td><td>1.0</td><td>94</td><td>1.1</td><td>44</td><td>37</td><td>55</td><td>41</td><td>63</td><td>0.00</td><td>950.2</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.24</td><td>0.37</td><td>0.35</td><td class="prod">0.31</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>21.9</td><td>20.6</td><td>1.3</td><td>92</td><td>1.1</td><td>42</td><td>37</td><td>55</td><td>39</td><td>63</td><td>0.00</td><td>951.0</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.25</td><td>0.37</td><td>0.29</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>22.2</td><td>20.8</td><td>1.4</td><td>92</td><td>1.4</td><td>34</td><td>37</td><td>55</td><td>38</td><td>63</td><td>0.00</td><td>950.9</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.26</td><td>0.37</td><td>0.23</td><td class="prod">0.29</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>22.5</td><td>21.0</td><td>1.5</td><td>91</td><td>0.6</td><td>45</td><td>34</td><td>39</td><td>48</td><td>48</td><td>0.00</td><td>951.2</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.37</td><td>0.52</td><td>0.17</td><td class="prod">0.50</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>22.8</td><td>21.0</td><td>1.8</td><td>90</td><td>1.0</td><td>43</td><td>34</td><td>41</td><td>49</td><td>48</td><td>0.00</td><td>951.4</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.35</td><td>0.52</td><td>0.11</td><td class="prod">0.49</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.9</td><td>21.8</td><td>1.1</td><td>94</td><td>0.7</td><td>41</td><td>34</td><td>43</td><td>51</td><td>48</td><td class="bad">0.90</td><td>951.8</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.32</td><td>0.52</td><td>0.09</td><td class="prod">0.46</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>23.5</td><td>22.8</td><td>0.7</td><td>96</td><td>0.6</td><td>39</td><td>34</td><td>43</td><td>51</td><td>48</td><td class="bad">1.60</td><td>951.7</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.31</td><td>0.52</td><td>0.00</td><td class="prod">0.42</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.1</td><td>21.4</td><td>0.7</td><td>96</td><td>2.4</td><td>51</td><td>42</td><td>57</td><td>99</td><td>98</td><td>0.50</td><td>951.6</td><td>4.0</td><td>1.00</td><td>0.86</td><td>0.00</td><td>0.02</td><td>0.43</td><td class="prod">0.22</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>21.8</td><td>20.9</td><td>0.9</td><td>95</td><td>1.9</td><td>29</td><td>42</td><td>58</td><td>99</td><td>98</td><td>0.10</td><td>952.9</td><td>4.0</td><td>1.00</td><td>1.00</td><td>0.00</td><td>0.02</td><td>0.49</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>21.9</td><td>21.2</td><td>0.7</td><td>96</td><td>2.3</td><td>44</td><td>42</td><td>57</td><td>99</td><td>98</td><td>0.00</td><td>953.9</td><td>4.0</td><td>1.00</td><td>0.92</td><td>0.00</td><td>0.02</td><td>0.47</td><td class="prod">0.22</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>22.0</td><td>21.3</td><td>0.7</td><td>96</td><td>2.4</td><td>57</td><td>42</td><td>55</td><td>97</td><td>98</td><td>0.00</td><td>954.7</td><td>4.0</td><td>1.00</td><td>0.87</td><td>0.00</td><td>0.02</td><td>0.45</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>18.0</td><td>17.6</td><td>0.4</td><td>98</td><td>1.5</td><td>38</td><td>28</td><td>21</td><td>26</td><td>37</td><td>0.00</td><td>962.0</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.66</td><td>0.63</td><td>1.00</td><td class="prod">0.61</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>17.9</td><td>17.5</td><td>0.4</td><td>97</td><td>1.5</td><td>26</td><td>28</td><td>19</td><td>25</td><td>37</td><td>0.00</td><td>962.2</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.68</td><td>0.63</td><td>1.00</td><td class="prod">0.61</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>19.6</td><td>17.9</td><td>1.7</td><td>90</td><td>1.8</td><td>9</td><td>28</td><td>18</td><td>24</td><td>37</td><td>0.00</td><td>963.0</td><td>6.5</td><td>1.00</td><td>1.00</td><td>0.70</td><td>0.63</td><td>0.69</td><td class="prod">0.58</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>21.4</td><td>18.0</td><td>3.4</td><td>81</td><td>2.1</td><td>7</td><td>28</td><td>16</td><td>25</td><td>37</td><td>0.00</td><td>963.7</td><td>6.5</td><td>0.55</td><td>0.96</td><td>0.71</td><td>0.63</td><td>0.33</td><td class="prod">0.31</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>20.8</td><td>20.3</td><td>0.5</td><td>97</td><td>0.7</td><td>100</td><td>95</td><td>33</td><td>1</td><td>99</td><td>0.10</td><td>966.8</td><td>7.9</td><td>1.00</td><td>1.00</td><td>0.67</td><td>0.01</td><td>0.59</td><td class="prod">0.77</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>21.0</td><td>20.5</td><td>0.5</td><td>97</td><td>0.5</td><td>100</td><td>95</td><td>30</td><td>2</td><td>99</td><td>0.10</td><td>967.1</td><td>7.9</td><td>1.00</td><td>0.98</td><td>0.69</td><td>0.01</td><td>0.55</td><td class="prod">0.74</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>21.6</td><td>20.9</td><td>0.7</td><td>96</td><td>0.2</td><td>100</td><td>95</td><td>28</td><td>2</td><td>99</td><td>0.00</td><td>967.5</td><td>7.9</td><td>1.00</td><td>0.88</td><td>0.71</td><td>0.01</td><td>0.43</td><td class="prod">0.65</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>22.6</td><td>21.5</td><td>1.1</td><td>94</td><td>0.1</td><td>100</td><td>95</td><td>26</td><td>2</td><td>99</td><td>0.00</td><td>968.1</td><td>7.9</td><td>1.00</td><td>0.86</td><td>0.73</td><td>0.01</td><td>0.23</td><td class="prod">0.53</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>18.5</td><td>18.7</td><td>-0.2</td><td>100</td><td>1.0</td><td>95</td><td>98</td><td>2</td><td>2</td><td>87</td><td>0.00</td><td>967.7</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.97</td><td>0.13</td><td>0.81</td><td class="prod">0.92</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>18.9</td><td>18.9</td><td>0.0</td><td>100</td><td>1.1</td><td>98</td><td>98</td><td>2</td><td>2</td><td>87</td><td>0.00</td><td>968.0</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.97</td><td>0.13</td><td>0.73</td><td class="prod">0.89</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.5</td><td>19.9</td><td>0.6</td><td>96</td><td>1.2</td><td>99</td><td>98</td><td>2</td><td>2</td><td>87</td><td>0.00</td><td>968.7</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.97</td><td>0.13</td><td>0.41</td><td class="prod">0.81</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>22.9</td><td>21.3</td><td>1.6</td><td>90</td><td>1.3</td><td>100</td><td>98</td><td>2</td><td>2</td><td>87</td><td>0.00</td><td>969.6</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.97</td><td>0.13</td><td>0.00</td><td class="prod">0.72</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>23.0</td><td>22.9</td><td>0.1</td><td>99</td><td>1.2</td><td>97</td><td>77</td><td>4</td><td>51</td><td>100</td><td>0.40</td><td>969.4</td><td>5.1</td><td>1.00</td><td>1.00</td><td>0.71</td><td>0.00</td><td>0.13</td><td class="prod">0.56</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>23.2</td><td>23.0</td><td>0.2</td><td>99</td><td>1.3</td><td>94</td><td>77</td><td>4</td><td>49</td><td>100</td><td>0.40</td><td>969.5</td><td>5.1</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.09</td><td class="prod">0.55</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>23.4</td><td>23.2</td><td>0.2</td><td>99</td><td>1.3</td><td>92</td><td>77</td><td>4</td><td>47</td><td>100</td><td>0.40</td><td>969.6</td><td>5.1</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.05</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>23.6</td><td>23.4</td><td>0.2</td><td>99</td><td>1.3</td><td>90</td><td>77</td><td>5</td><td>47</td><td>100</td><td>0.40</td><td>969.8</td><td>5.1</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.01</td><td class="prod">0.52</td></tr>
+</table></div>
+
+<details><summary>面河（補助）</summary><div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>20.9</td><td>19.2</td><td>1.7</td><td>90</td><td>0.9</td><td>53</td><td>45</td><td>62</td><td>46</td><td>73</td><td>0.00</td><td>927.5</td><td>4.7</td><td>1.00</td><td>1.00</td><td>0.15</td><td>0.28</td><td>0.37</td><td class="prod">0.31</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>20.5</td><td>19.2</td><td>1.3</td><td>92</td><td>1.1</td><td>54</td><td>45</td><td>60</td><td>44</td><td>73</td><td>0.00</td><td>928.0</td><td>4.7</td><td>1.00</td><td>1.00</td><td>0.18</td><td>0.28</td><td>0.45</td><td class="prod">0.32</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>20.6</td><td>19.2</td><td>1.4</td><td>92</td><td>1.1</td><td>47</td><td>45</td><td>60</td><td>42</td><td>73</td><td>0.00</td><td>928.8</td><td>4.7</td><td>1.00</td><td>1.00</td><td>0.19</td><td>0.28</td><td>0.43</td><td class="prod">0.32</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>21.1</td><td>19.6</td><td>1.5</td><td>91</td><td>1.2</td><td>41</td><td>45</td><td>58</td><td>40</td><td>73</td><td>0.00</td><td>928.8</td><td>4.7</td><td>1.00</td><td>1.00</td><td>0.22</td><td>0.28</td><td>0.33</td><td class="prod">0.29</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>22.2</td><td>19.4</td><td>2.8</td><td>84</td><td>0.7</td><td>60</td><td>39</td><td>40</td><td>46</td><td>46</td><td>0.00</td><td>929.2</td><td>3.0</td><td>0.70</td><td>1.00</td><td>0.37</td><td>0.54</td><td>0.08</td><td class="prod">0.46</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>22.3</td><td>19.6</td><td>2.7</td><td>85</td><td>0.3</td><td>50</td><td>39</td><td>42</td><td>48</td><td>46</td><td class="bad">1.00</td><td>929.5</td><td>3.0</td><td>0.75</td><td>0.93</td><td>0.33</td><td>0.54</td><td>0.06</td><td class="prod">0.44</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.0</td><td>20.4</td><td>1.6</td><td>91</td><td>0.7</td><td>48</td><td>39</td><td>46</td><td>51</td><td>46</td><td class="bad">2.50</td><td>929.8</td><td>3.0</td><td>1.00</td><td>1.00</td><td>0.29</td><td>0.54</td><td>0.12</td><td class="prod">0.48</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>22.5</td><td>21.5</td><td>1.0</td><td>94</td><td>0.4</td><td>47</td><td>39</td><td>46</td><td>51</td><td>46</td><td class="bad">2.10</td><td>929.8</td><td>3.0</td><td>1.00</td><td>0.96</td><td>0.29</td><td>0.54</td><td>0.02</td><td class="prod">0.44</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>21.1</td><td>20.1</td><td>1.0</td><td>94</td><td>3.0</td><td>29</td><td>50</td><td>63</td><td>99</td><td>99</td><td>0.40</td><td>928.6</td><td>3.8</td><td>1.00</td><td>0.68</td><td>0.00</td><td>0.01</td><td>0.38</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>20.7</td><td>19.4</td><td>1.3</td><td>92</td><td>2.9</td><td>11</td><td>50</td><td>65</td><td>99</td><td>99</td><td>0.40</td><td>929.8</td><td>3.8</td><td>1.00</td><td>0.69</td><td>0.00</td><td>0.01</td><td>0.46</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>20.9</td><td>19.6</td><td>1.3</td><td>92</td><td>2.7</td><td>16</td><td>50</td><td>64</td><td>97</td><td>99</td><td>0.10</td><td>931.0</td><td>3.8</td><td>1.00</td><td>0.76</td><td>0.00</td><td>0.01</td><td>0.42</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>21.1</td><td>20.0</td><td>1.1</td><td>93</td><td>2.4</td><td>37</td><td>50</td><td>63</td><td>95</td><td>99</td><td>0.00</td><td>932.1</td><td>3.8</td><td>1.00</td><td>0.86</td><td>0.00</td><td>0.01</td><td>0.38</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>17.3</td><td>16.3</td><td>1.0</td><td>94</td><td>2.0</td><td>34</td><td>29</td><td>23</td><td>23</td><td>37</td><td>0.00</td><td>939.3</td><td>6.9</td><td>1.00</td><td>1.00</td><td>0.66</td><td>0.63</td><td>0.95</td><td class="prod">0.71</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>17.0</td><td>16.1</td><td>0.9</td><td>94</td><td>2.0</td><td>28</td><td>29</td><td>21</td><td>22</td><td>37</td><td>0.00</td><td>939.5</td><td>6.9</td><td>1.00</td><td>0.99</td><td>0.68</td><td>0.63</td><td>1.00</td><td class="prod">0.71</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>18.4</td><td>16.3</td><td>2.1</td><td>88</td><td>2.0</td><td>15</td><td>29</td><td>19</td><td>22</td><td>37</td><td>0.00</td><td>940.4</td><td>6.9</td><td>0.90</td><td>1.00</td><td>0.70</td><td>0.63</td><td>0.73</td><td class="prod">0.52</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>20.2</td><td>16.4</td><td>3.8</td><td>79</td><td>1.9</td><td>23</td><td>29</td><td>18</td><td>22</td><td>37</td><td>0.00</td><td>941.1</td><td>6.9</td><td>0.45</td><td>1.00</td><td>0.71</td><td>0.63</td><td>0.37</td><td class="prod">0.19</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>19.3</td><td>18.4</td><td>0.9</td><td>95</td><td>1.2</td><td>98</td><td>97</td><td>31</td><td>1</td><td>100</td><td>0.00</td><td>944.2</td><td>8.4</td><td>1.00</td><td>1.00</td><td>0.68</td><td>0.00</td><td>0.45</td><td class="prod">0.74</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>19.5</td><td>18.5</td><td>1.0</td><td>94</td><td>1.0</td><td>98</td><td>97</td><td>29</td><td>2</td><td>100</td><td>0.00</td><td>944.4</td><td>8.4</td><td>1.00</td><td>1.00</td><td>0.70</td><td>0.00</td><td>0.41</td><td class="prod">0.74</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>20.4</td><td>18.9</td><td>1.5</td><td>91</td><td>0.5</td><td>100</td><td>97</td><td>27</td><td>2</td><td>100</td><td>0.00</td><td>945.0</td><td>8.4</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.23</td><td class="prod">0.72</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>21.6</td><td>19.6</td><td>2.0</td><td>88</td><td>0.3</td><td>100</td><td>97</td><td>25</td><td>2</td><td>100</td><td>0.00</td><td>945.7</td><td>8.4</td><td>0.90</td><td>0.90</td><td>0.74</td><td>0.00</td><td>0.00</td><td class="prod">0.63</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>17.2</td><td>17.3</td><td>-0.1</td><td>100</td><td>0.5</td><td>98</td><td>97</td><td>1</td><td>2</td><td>87</td><td>0.00</td><td>945.0</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.98</td><td>0.13</td><td>0.74</td><td class="prod">0.94</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>17.5</td><td>17.4</td><td>0.1</td><td>100</td><td>0.4</td><td>98</td><td>97</td><td>1</td><td>2</td><td>87</td><td>0.00</td><td>945.3</td><td>5.6</td><td>1.00</td><td>0.96</td><td>0.98</td><td>0.13</td><td>0.68</td><td class="prod">0.91</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>19.1</td><td>18.4</td><td>0.7</td><td>96</td><td>0.1</td><td>100</td><td>97</td><td>1</td><td>2</td><td>87</td><td>0.00</td><td>946.1</td><td>5.6</td><td>1.00</td><td>0.84</td><td>0.98</td><td>0.13</td><td>0.36</td><td class="prod">0.77</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>21.3</td><td>19.9</td><td>1.4</td><td>91</td><td>0.9</td><td>100</td><td>97</td><td>1</td><td>3</td><td>87</td><td>0.00</td><td>947.1</td><td>5.6</td><td>1.00</td><td>1.00</td><td>0.98</td><td>0.13</td><td>0.00</td><td class="prod">0.53</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>21.3</td><td>21.2</td><td>0.1</td><td>99</td><td>0.9</td><td>100</td><td>97</td><td>4</td><td>48</td><td>100</td><td>0.30</td><td>946.8</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.10</td><td class="prod">0.57</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>21.5</td><td>21.4</td><td>0.1</td><td>99</td><td>1.1</td><td>100</td><td>97</td><td>4</td><td>45</td><td>100</td><td>0.30</td><td>947.1</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.73</td><td>0.00</td><td>0.06</td><td class="prod">0.57</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>21.6</td><td>21.5</td><td>0.1</td><td>99</td><td>1.2</td><td>100</td><td>97</td><td>4</td><td>44</td><td>100</td><td>0.30</td><td>947.2</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.74</td><td>0.00</td><td>0.04</td><td class="prod">0.56</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>21.8</td><td>21.6</td><td>0.2</td><td>99</td><td>1.4</td><td>100</td><td>97</td><td>4</td><td>43</td><td>100</td><td>0.30</td><td>947.2</td><td>3.6</td><td>1.00</td><td>1.00</td><td>0.74</td><td>0.00</td><td>0.00</td><td class="prod">0.56</td></tr>
+</table></div>
+</details>
+<h3>梼原（主軸）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>22.7</td><td>20.0</td><td>2.7</td><td>85</td><td>1.6</td><td>32</td><td>32</td><td>48</td><td>42</td><td>58</td><td>0.00</td><td>941.2</td><td>5.2</td><td>0.75</td><td>1.00</td><td>0.31</td><td>0.43</td><td>0.18</td><td class="prod">0.31</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>22.6</td><td>19.9</td><td>2.7</td><td>85</td><td>1.1</td><td>34</td><td>32</td><td>48</td><td>40</td><td>58</td><td>0.00</td><td>941.9</td><td>5.2</td><td>0.75</td><td>1.00</td><td>0.32</td><td>0.43</td><td>0.20</td><td class="prod">0.31</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>22.8</td><td>19.9</td><td>2.9</td><td>84</td><td>1.5</td><td>33</td><td>32</td><td>48</td><td>38</td><td>58</td><td>0.00</td><td>942.4</td><td>5.2</td><td>0.70</td><td>1.00</td><td>0.34</td><td>0.43</td><td>0.16</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>23.5</td><td>20.1</td><td>3.4</td><td>81</td><td>1.6</td><td>31</td><td>32</td><td>47</td><td>37</td><td>58</td><td>0.00</td><td>942.3</td><td>5.2</td><td>0.55</td><td>1.00</td><td>0.34</td><td>0.43</td><td>0.02</td><td class="prod">0.25</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>23.5</td><td>20.6</td><td>2.9</td><td>84</td><td>1.4</td><td>37</td><td>49</td><td>42</td><td>45</td><td>48</td><td>0.00</td><td>942.9</td><td>4.5</td><td>0.70</td><td>1.00</td><td>0.36</td><td>0.52</td><td>0.12</td><td class="prod">0.44</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>22.3</td><td>21.3</td><td>1.0</td><td>94</td><td>1.6</td><td>40</td><td>49</td><td>45</td><td>48</td><td>48</td><td class="bad">0.80</td><td>943.2</td><td>4.5</td><td>1.00</td><td>1.00</td><td>0.31</td><td>0.52</td><td>0.36</td><td class="prod">0.50</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.5</td><td>21.7</td><td>0.8</td><td>95</td><td>1.6</td><td>39</td><td>49</td><td>46</td><td>49</td><td>48</td><td class="bad">1.80</td><td>943.5</td><td>4.5</td><td>1.00</td><td>1.00</td><td>0.30</td><td>0.52</td><td>0.32</td><td class="prod">0.48</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>23.2</td><td>22.3</td><td>0.9</td><td>95</td><td>1.6</td><td>37</td><td>49</td><td>47</td><td>49</td><td>48</td><td class="bad">0.80</td><td>943.5</td><td>4.5</td><td>1.00</td><td>1.00</td><td>0.29</td><td>0.52</td><td>0.18</td><td class="prod">0.45</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.1</td><td>21.3</td><td>0.8</td><td>95</td><td>2.3</td><td>35</td><td>31</td><td>47</td><td>65</td><td>97</td><td>0.30</td><td>943.0</td><td>3.2</td><td>1.00</td><td>0.92</td><td>0.20</td><td>0.03</td><td>0.39</td><td class="prod">0.30</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>21.9</td><td>20.3</td><td>1.6</td><td>91</td><td>2.7</td><td>10</td><td>31</td><td>48</td><td>66</td><td>97</td><td>0.00</td><td>943.8</td><td>3.2</td><td>1.00</td><td>0.78</td><td>0.19</td><td>0.03</td><td>0.43</td><td class="prod">0.28</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>22.2</td><td>20.5</td><td>1.7</td><td>90</td><td>2.3</td><td>8</td><td>31</td><td>48</td><td>65</td><td>97</td><td>0.00</td><td>945.1</td><td>3.2</td><td>1.00</td><td>0.90</td><td>0.19</td><td>0.03</td><td>0.37</td><td class="prod">0.29</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>23.0</td><td>20.7</td><td>2.3</td><td>87</td><td>2.4</td><td>18</td><td>31</td><td>48</td><td>66</td><td>97</td><td>0.00</td><td>945.9</td><td>3.2</td><td>0.85</td><td>0.87</td><td>0.19</td><td>0.03</td><td>0.21</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>19.0</td><td>17.6</td><td>1.4</td><td>92</td><td>0.3</td><td>15</td><td>36</td><td>28</td><td>28</td><td>49</td><td>0.00</td><td>952.6</td><td>6.2</td><td>1.00</td><td>0.90</td><td>0.58</td><td>0.51</td><td>0.89</td><td class="prod">0.66</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>19.0</td><td>17.4</td><td>1.6</td><td>91</td><td>0.3</td><td>13</td><td>36</td><td>26</td><td>26</td><td>49</td><td>0.00</td><td>952.8</td><td>6.2</td><td>1.00</td><td>0.94</td><td>0.61</td><td>0.51</td><td>0.89</td><td class="prod">0.69</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>21.4</td><td>19.0</td><td>2.4</td><td>86</td><td>1.2</td><td>10</td><td>36</td><td>24</td><td>24</td><td>49</td><td>0.00</td><td>954.1</td><td>6.2</td><td>0.80</td><td>1.00</td><td>0.64</td><td>0.51</td><td>0.41</td><td class="prod">0.58</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>22.9</td><td>19.7</td><td>3.2</td><td>82</td><td>1.9</td><td>15</td><td>36</td><td>22</td><td>24</td><td>49</td><td>0.00</td><td>954.8</td><td>6.2</td><td>0.60</td><td>1.00</td><td>0.66</td><td>0.51</td><td>0.11</td><td class="prod">0.42</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>20.8</td><td>20.3</td><td>0.5</td><td>97</td><td>0.2</td><td>63</td><td>93</td><td>48</td><td>1</td><td>99</td><td>0.00</td><td>958.1</td><td>7.7</td><td>1.00</td><td>0.88</td><td>0.51</td><td>0.01</td><td>0.34</td><td class="prod">0.67</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>20.9</td><td>20.2</td><td>0.7</td><td>96</td><td>0.1</td><td>47</td><td>93</td><td>45</td><td>1</td><td>99</td><td>0.00</td><td>958.4</td><td>7.7</td><td>1.00</td><td>0.82</td><td>0.55</td><td>0.01</td><td>0.32</td><td class="prod">0.67</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>21.1</td><td>20.4</td><td>0.7</td><td>95</td><td>0.3</td><td>38</td><td>93</td><td>43</td><td>1</td><td>99</td><td>0.00</td><td>958.8</td><td>7.7</td><td>1.00</td><td>0.90</td><td>0.56</td><td>0.01</td><td>0.28</td><td class="prod">0.67</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>21.5</td><td>20.8</td><td>0.7</td><td>96</td><td>0.8</td><td>33</td><td>93</td><td>44</td><td>1</td><td>99</td><td>0.00</td><td>959.4</td><td>7.7</td><td>1.00</td><td>1.00</td><td>0.55</td><td>0.01</td><td>0.20</td><td class="prod">0.63</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>18.4</td><td>18.1</td><td>0.3</td><td>98</td><td>1.5</td><td>0</td><td>90</td><td>3</td><td>5</td><td>39</td><td>0.00</td><td>958.8</td><td>5.8</td><td>1.00</td><td>1.00</td><td>0.95</td><td>0.61</td><td>0.75</td><td class="prod">0.87</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>18.8</td><td>18.3</td><td>0.5</td><td>97</td><td>1.6</td><td>3</td><td>90</td><td>4</td><td>6</td><td>39</td><td>0.00</td><td>959.0</td><td>5.8</td><td>1.00</td><td>1.00</td><td>0.93</td><td>0.61</td><td>0.67</td><td class="prod">0.85</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.6</td><td>19.1</td><td>1.5</td><td>91</td><td>1.5</td><td>26</td><td>90</td><td>5</td><td>8</td><td>39</td><td>0.00</td><td>959.8</td><td>5.8</td><td>1.00</td><td>1.00</td><td>0.90</td><td>0.61</td><td>0.31</td><td class="prod">0.76</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>23.1</td><td>20.4</td><td>2.7</td><td>85</td><td>1.6</td><td>58</td><td>90</td><td>8</td><td>11</td><td>39</td><td>0.00</td><td>960.7</td><td>5.8</td><td>0.75</td><td>1.00</td><td>0.86</td><td>0.61</td><td>0.00</td><td class="prod">0.60</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>22.3</td><td>22.1</td><td>0.2</td><td>98</td><td>1.7</td><td>72</td><td>72</td><td>3</td><td>62</td><td>95</td><td>0.10</td><td>960.3</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.66</td><td>0.05</td><td>0.09</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>22.5</td><td>22.3</td><td>0.2</td><td>98</td><td>1.7</td><td>70</td><td>72</td><td>4</td><td>57</td><td>95</td><td>0.10</td><td>960.4</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.68</td><td>0.05</td><td>0.05</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>22.7</td><td>22.5</td><td>0.2</td><td>98</td><td>1.7</td><td>67</td><td>72</td><td>4</td><td>53</td><td>95</td><td>0.10</td><td>960.6</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.70</td><td>0.05</td><td>0.01</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>23.0</td><td>22.7</td><td>0.3</td><td>98</td><td>1.7</td><td>66</td><td>72</td><td>4</td><td>50</td><td>95</td><td>0.10</td><td>960.8</td><td>4.2</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.05</td><td>0.00</td><td class="prod">0.55</td></tr>
+</table></div>
+
+<details><summary>津野町（補助）</summary><div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>
+<tr><td class="l">2026-09-07 05:00</td><td>22.2</td><td>19.7</td><td>2.5</td><td>86</td><td>1.8</td><td>41</td><td>45</td><td>56</td><td>46</td><td>69</td><td>0.00</td><td>937.9</td><td>5.0</td><td>0.80</td><td>1.00</td><td>0.21</td><td>0.31</td><td>0.12</td><td class="prod">0.29</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td>22.2</td><td>19.5</td><td>2.7</td><td>85</td><td>1.5</td><td>41</td><td>45</td><td>54</td><td>44</td><td>69</td><td>0.00</td><td>938.5</td><td>5.0</td><td>0.75</td><td>1.00</td><td>0.24</td><td>0.31</td><td>0.12</td><td class="prod">0.29</td></tr>
+<tr><td class="l">2026-09-07 07:00</td><td>22.4</td><td>19.5</td><td>2.9</td><td>84</td><td>1.7</td><td>41</td><td>45</td><td>54</td><td>42</td><td>69</td><td>0.00</td><td>939.1</td><td>5.0</td><td>0.70</td><td>1.00</td><td>0.26</td><td>0.31</td><td>0.08</td><td class="prod">0.28</td></tr>
+<tr><td class="l">2026-09-07 08:00</td><td>23.1</td><td>19.6</td><td>3.5</td><td>81</td><td>1.8</td><td>39</td><td>45</td><td>52</td><td>40</td><td>69</td><td>0.00</td><td>939.0</td><td>5.0</td><td>0.55</td><td>1.00</td><td>0.28</td><td>0.31</td><td>0.00</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-08 05:00</td><td>22.7</td><td>20.3</td><td>2.4</td><td>86</td><td>1.3</td><td>46</td><td>50</td><td>41</td><td>45</td><td>47</td><td>0.10</td><td>939.6</td><td>4.3</td><td>0.80</td><td>1.00</td><td>0.36</td><td>0.53</td><td>0.22</td><td class="prod">0.47</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td>21.8</td><td>20.8</td><td>1.0</td><td>94</td><td>1.3</td><td>49</td><td>50</td><td>45</td><td>48</td><td>47</td><td class="bad">1.90</td><td>939.9</td><td>4.3</td><td>1.00</td><td>1.00</td><td>0.31</td><td>0.53</td><td>0.40</td><td class="prod">0.50</td></tr>
+<tr><td class="l">2026-09-08 07:00</td><td>22.1</td><td>21.2</td><td>0.9</td><td>95</td><td>1.4</td><td>51</td><td>50</td><td>46</td><td>49</td><td>47</td><td class="bad">2.40</td><td>940.1</td><td>4.3</td><td>1.00</td><td>1.00</td><td>0.30</td><td>0.53</td><td>0.34</td><td class="prod">0.48</td></tr>
+<tr><td class="l">2026-09-08 08:00</td><td>22.6</td><td>21.8</td><td>0.8</td><td>95</td><td>1.4</td><td>52</td><td>50</td><td>46</td><td>50</td><td>47</td><td class="bad">1.40</td><td>940.1</td><td>4.3</td><td>1.00</td><td>1.00</td><td>0.29</td><td>0.53</td><td>0.24</td><td class="prod">0.45</td></tr>
+<tr><td class="l">2026-09-09 05:00</td><td>22.0</td><td>20.8</td><td>1.2</td><td>93</td><td>2.6</td><td>15</td><td>46</td><td>62</td><td>79</td><td>99</td><td class="bad">1.60</td><td>939.1</td><td>3.0</td><td>1.00</td><td>0.81</td><td>0.00</td><td>0.02</td><td>0.35</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td>21.5</td><td>20.0</td><td>1.5</td><td>91</td><td>2.9</td><td>9</td><td>46</td><td>61</td><td>79</td><td>99</td><td class="bad">0.80</td><td>939.9</td><td>3.0</td><td>1.00</td><td>0.69</td><td>0.00</td><td>0.02</td><td>0.45</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-09 07:00</td><td>21.6</td><td>20.1</td><td>1.5</td><td>91</td><td>2.4</td><td>7</td><td>46</td><td>60</td><td>79</td><td>99</td><td>0.30</td><td>941.3</td><td>3.0</td><td>1.00</td><td>0.87</td><td>0.00</td><td>0.02</td><td>0.43</td><td class="prod">0.24</td></tr>
+<tr><td class="l">2026-09-09 08:00</td><td>22.2</td><td>20.5</td><td>1.7</td><td>90</td><td>2.0</td><td>7</td><td>46</td><td>59</td><td>80</td><td>99</td><td>0.00</td><td>942.2</td><td>3.0</td><td>1.00</td><td>0.99</td><td>0.01</td><td>0.02</td><td>0.31</td><td class="prod">0.23</td></tr>
+<tr><td class="l">2026-09-10 05:00</td><td>18.7</td><td>17.5</td><td>1.2</td><td>93</td><td>2.2</td><td>86</td><td>32</td><td>27</td><td>29</td><td>42</td><td>0.00</td><td>949.4</td><td>7.0</td><td>1.00</td><td>0.94</td><td>0.59</td><td>0.58</td><td>0.90</td><td class="prod">0.67</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td>18.1</td><td>17.3</td><td>0.8</td><td>95</td><td>1.8</td><td>88</td><td>32</td><td>25</td><td>28</td><td>42</td><td>0.00</td><td>949.5</td><td>7.0</td><td>1.00</td><td>1.00</td><td>0.61</td><td>0.58</td><td>1.00</td><td class="prod">0.71</td></tr>
+<tr><td class="l">2026-09-10 07:00</td><td>20.5</td><td>18.6</td><td>1.9</td><td>89</td><td>1.3</td><td>90</td><td>32</td><td>23</td><td>27</td><td>42</td><td>0.00</td><td>950.7</td><td>7.0</td><td>0.95</td><td>1.00</td><td>0.64</td><td>0.58</td><td>0.54</td><td class="prod">0.64</td></tr>
+<tr><td class="l">2026-09-10 08:00</td><td>22.9</td><td>20.1</td><td>2.8</td><td>84</td><td>1.1</td><td>66</td><td>32</td><td>21</td><td>27</td><td>42</td><td>0.30</td><td>951.5</td><td>7.0</td><td>0.70</td><td>1.00</td><td>0.65</td><td>0.58</td><td>0.06</td><td class="prod">0.45</td></tr>
+<tr><td class="l">2026-09-11 05:00</td><td>20.5</td><td>20.4</td><td>0.1</td><td>99</td><td>0.6</td><td>73</td><td>100</td><td>56</td><td>2</td><td>100</td><td>0.00</td><td>954.8</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.43</td><td>0.00</td><td>0.20</td><td class="prod">0.65</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td>20.5</td><td>20.3</td><td>0.2</td><td>99</td><td>0.6</td><td>65</td><td>100</td><td>51</td><td>3</td><td>100</td><td>0.00</td><td>955.1</td><td>7.6</td><td>1.00</td><td>1.00</td><td>0.47</td><td>0.00</td><td>0.20</td><td class="prod">0.66</td></tr>
+<tr><td class="l">2026-09-11 07:00</td><td>20.6</td><td>20.4</td><td>0.2</td><td>99</td><td>0.3</td><td>73</td><td>100</td><td>49</td><td>4</td><td>100</td><td>0.20</td><td>955.5</td><td>7.6</td><td>1.00</td><td>0.92</td><td>0.48</td><td>0.00</td><td>0.18</td><td class="prod">0.64</td></tr>
+<tr><td class="l">2026-09-11 08:00</td><td>21.0</td><td>20.7</td><td>0.3</td><td>98</td><td>0.3</td><td>88</td><td>100</td><td>50</td><td>4</td><td>100</td><td>0.20</td><td>956.0</td><td>7.6</td><td>1.00</td><td>0.93</td><td>0.48</td><td>0.00</td><td>0.10</td><td class="prod">0.59</td></tr>
+<tr><td class="l">2026-09-12 05:00</td><td>18.9</td><td>18.1</td><td>0.8</td><td>95</td><td>1.2</td><td>11</td><td>91</td><td>1</td><td>5</td><td>48</td><td>0.00</td><td>955.8</td><td>5.5</td><td>1.00</td><td>1.00</td><td>0.96</td><td>0.52</td><td>0.53</td><td class="prod">0.85</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td>19.3</td><td>18.3</td><td>1.0</td><td>94</td><td>1.2</td><td>13</td><td>91</td><td>1</td><td>7</td><td>48</td><td>0.00</td><td>956.1</td><td>5.5</td><td>1.00</td><td>1.00</td><td>0.95</td><td>0.52</td><td>0.45</td><td class="prod">0.83</td></tr>
+<tr><td class="l">2026-09-12 07:00</td><td>20.8</td><td>19.1</td><td>1.7</td><td>90</td><td>1.0</td><td>31</td><td>91</td><td>3</td><td>9</td><td>48</td><td>0.00</td><td>956.8</td><td>5.5</td><td>1.00</td><td>1.00</td><td>0.92</td><td>0.52</td><td>0.15</td><td class="prod">0.75</td></tr>
+<tr><td class="l">2026-09-12 08:00</td><td>22.8</td><td>20.2</td><td>2.6</td><td>86</td><td>1.1</td><td>58</td><td>91</td><td>7</td><td>12</td><td>48</td><td>0.00</td><td>957.7</td><td>5.5</td><td>0.80</td><td>1.00</td><td>0.87</td><td>0.52</td><td>0.00</td><td class="prod">0.62</td></tr>
+<tr><td class="l">2026-09-13 05:00</td><td>22.1</td><td>22.0</td><td>0.1</td><td>100</td><td>1.4</td><td>100</td><td>93</td><td>2</td><td>58</td><td>100</td><td>0.50</td><td>957.3</td><td>3.2</td><td>1.00</td><td>1.00</td><td>0.69</td><td>0.00</td><td>0.04</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td>22.2</td><td>22.2</td><td>0.0</td><td>100</td><td>1.4</td><td>100</td><td>93</td><td>2</td><td>54</td><td>100</td><td>0.50</td><td>957.5</td><td>3.2</td><td>1.00</td><td>1.00</td><td>0.71</td><td>0.00</td><td>0.02</td><td class="prod">0.54</td></tr>
+<tr><td class="l">2026-09-13 07:00</td><td>22.3</td><td>22.3</td><td>0.0</td><td>100</td><td>1.3</td><td>100</td><td>93</td><td>2</td><td>51</td><td>100</td><td>0.50</td><td>957.7</td><td>3.2</td><td>1.00</td><td>1.00</td><td>0.72</td><td>0.00</td><td>0.00</td><td class="prod">0.55</td></tr>
+<tr><td class="l">2026-09-13 08:00</td><td>22.4</td><td>22.4</td><td>0.0</td><td>100</td><td>1.3</td><td>100</td><td>93</td><td>3</td><td>48</td><td>100</td><td>0.50</td><td>957.8</td><td>3.2</td><td>1.00</td><td>1.00</td><td>0.73</td><td>0.00</td><td>0.00</td><td class="prod">0.55</td></tr>
+</table></div>
+</details>
+<p class="note">日没時点の低層雲は「霧の発生を妨げる先在の雲」を捉えている可能性がある一方、その時点で既に霧や層雲が出ていることもあります。断定せず記録のみに留めています。降水ゲートで0になった行は赤背景です。</p>
+<h3>雲頂の内訳（気圧面プロファイル・日の出時刻のみ）</h3>
+<div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th>地上気圧</th>
+<th>1000</th>
+<th>975</th>
+<th>950</th>
+<th>925</th>
+<th>900</th>
+<th>875</th>
+<th>850</th>
+<th>825</th>
+<th class="l">状態</th><th>下端</th><th>上端</th><th class="prod">V_top</th></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">美川</td><td>950</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">91%<br>696m</td>
+<td class="warn">91%<br>932m</td>
+<td class="warn">99%<br>1173m</td>
+<td class="warn">93%<br>1422m</td>
+<td class="warn">96%<br>1676m</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1676</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">面河</td><td>928</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>932m</td>
+<td>89%<br>1171m</td>
+<td class="warn">94%<br>1422m</td>
+<td class="warn">98%<br>1676m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">梼原</td><td>942</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>82%<br>696m</td>
+<td>86%<br>932m</td>
+<td class="warn">91%<br>1170m</td>
+<td class="warn">93%<br>1422m</td>
+<td class="warn">97%<br>1676m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-07 06:00</td><td class="l">津野町</td><td>939</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>84%<br>686m</td>
+<td>86%<br>932m</td>
+<td class="warn">91%<br>1170m</td>
+<td class="warn">93%<br>1422m</td>
+<td class="warn">97%<br>1676m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">美川</td><td>951</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>706m</td>
+<td>85%<br>951m</td>
+<td class="warn">98%<br>1197m</td>
+<td class="warn">96%<br>1442m</td>
+<td class="warn">90%<br>1703m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">面河</td><td>930</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>88%<br>951m</td>
+<td>88%<br>1197m</td>
+<td class="warn">99%<br>1442m</td>
+<td class="warn">99%<br>1703m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">梼原</td><td>943</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>706m</td>
+<td>89%<br>941m</td>
+<td>86%<br>1196m</td>
+<td class="warn">94%<br>1442m</td>
+<td class="warn">98%<br>1702m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-08 06:00</td><td class="l">津野町</td><td>940</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">91%<br>706m</td>
+<td class="warn">92%<br>941m</td>
+<td>86%<br>1196m</td>
+<td class="warn">96%<br>1442m</td>
+<td class="warn">98%<br>1702m</td>
+<td class="l">雲頂を挟めた</td><td>941</td><td>1196</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">美川</td><td>953</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>716m</td>
+<td class="warn">97%<br>961m</td>
+<td class="warn">100%<br>1188m</td>
+<td class="warn">90%<br>1451m</td>
+<td class="warn">99%<br>1695m</td>
+<td class="l">取得範囲の上まで湿潤</td><td>1695</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">面河</td><td>930</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>951m</td>
+<td>89%<br>1179m</td>
+<td>75%<br>1442m</td>
+<td class="warn">94%<br>1689m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">梼原</td><td>944</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>89%<br>716m</td>
+<td>85%<br>951m</td>
+<td class="warn">98%<br>1183m</td>
+<td>73%<br>1442m</td>
+<td class="warn">97%<br>1690m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-09 06:00</td><td class="l">津野町</td><td>940</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>88%<br>706m</td>
+<td>80%<br>941m</td>
+<td class="warn">98%<br>1183m</td>
+<td>68%<br>1442m</td>
+<td class="warn">97%<br>1690m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">美川</td><td>962</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>87%<br>580m</td>
+<td>87%<br>807m</td>
+<td class="warn">91%<br>1039m</td>
+<td class="warn">97%<br>1267m</td>
+<td>58%<br>1524m</td>
+<td class="warn">99%<br>1769m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">面河</td><td>940</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>84%<br>806m</td>
+<td>86%<br>1039m</td>
+<td class="warn">94%<br>1267m</td>
+<td>57%<br>1524m</td>
+<td class="warn">100%<br>1771m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">梼原</td><td>953</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>78%<br>800m</td>
+<td class="warn">90%<br>1035m</td>
+<td class="warn">94%<br>1266m</td>
+<td>73%<br>1525m</td>
+<td class="warn">99%<br>1770m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-10 06:00</td><td class="l">津野町</td><td>950</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>77%<br>800m</td>
+<td class="warn">90%<br>1036m</td>
+<td class="warn">94%<br>1266m</td>
+<td>89%<br>1525m</td>
+<td class="warn">99%<br>1770m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">美川</td><td>967</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>84%<br>612m</td>
+<td>77%<br>841m</td>
+<td>84%<br>1078m</td>
+<td class="warn">96%<br>1303m</td>
+<td class="warn">93%<br>1569m</td>
+<td class="warn">96%<br>1807m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">面河</td><td>944</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>80%<br>843m</td>
+<td class="warn">90%<br>1080m</td>
+<td class="warn">100%<br>1304m</td>
+<td class="warn">95%<br>1570m</td>
+<td class="warn">97%<br>1808m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">梼原</td><td>958</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>81%<br>611m</td>
+<td>89%<br>842m</td>
+<td class="warn">94%<br>1078m</td>
+<td class="warn">99%<br>1303m</td>
+<td>87%<br>1570m</td>
+<td class="warn">96%<br>1807m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-11 06:00</td><td class="l">津野町</td><td>955</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td>76%<br>612m</td>
+<td>87%<br>843m</td>
+<td class="warn">100%<br>1079m</td>
+<td class="warn">99%<br>1303m</td>
+<td>89%<br>1570m</td>
+<td class="warn">96%<br>1807m</td>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">美川</td><td>968</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>614m</td>
+<td class="warn">93%<br>844m</td>
+<td class="warn">92%<br>1082m</td>
+<td class="warn">94%<br>1319m</td>
+<td>82%<br>1576m</td>
+<td class="warn">91%<br>1822m</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>1319</td><td>1576</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">面河</td><td>945</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">97%<br>847m</td>
+<td class="warn">96%<br>1084m</td>
+<td class="warn">94%<br>1318m</td>
+<td>87%<br>1577m</td>
+<td>78%<br>1822m</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>1318</td><td>1577</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">梼原</td><td>959</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">91%<br>613m</td>
+<td class="warn">93%<br>845m</td>
+<td class="warn">92%<br>1083m</td>
+<td class="warn">93%<br>1319m</td>
+<td>89%<br>1577m</td>
+<td>84%<br>1823m</td>
+<td class="l">展望地点の高度を跨ぐ</td><td>1319</td><td>1577</td><td class="prod">0.21</td></tr>
+<tr><td class="l">2026-09-12 06:00</td><td class="l">津野町</td><td>956</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">93%<br>614m</td>
+<td class="warn">99%<br>846m</td>
+<td class="warn">97%<br>1084m</td>
+<td class="warn">93%<br>1319m</td>
+<td class="warn">90%<br>1577m</td>
+<td>84%<br>1823m</td>
+<td class="l">雲頂を挟めた</td><td>1577</td><td>1823</td><td class="prod">0.00</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">美川</td><td>970</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">97%<br>619m</td>
+<td class="warn">92%<br>849m</td>
+<td class="warn">92%<br>1087m</td>
+<td>83%<br>1326m</td>
+<td>82%<br>1581m</td>
+<td>80%<br>1830m</td>
+<td class="l">雲頂を挟めた</td><td>1087</td><td>1326</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">面河</td><td>947</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">98%<br>851m</td>
+<td class="warn">96%<br>1089m</td>
+<td>82%<br>1326m</td>
+<td>87%<br>1582m</td>
+<td>72%<br>1830m</td>
+<td class="l">雲頂を挟めた</td><td>1089</td><td>1326</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">梼原</td><td>960</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">91%<br>617m</td>
+<td class="warn">93%<br>850m</td>
+<td class="warn">94%<br>1088m</td>
+<td>89%<br>1325m</td>
+<td>83%<br>1582m</td>
+<td>79%<br>1829m</td>
+<td class="l">雲頂を挟めた</td><td>1088</td><td>1325</td><td class="prod">1.00</td></tr>
+<tr><td class="l">2026-09-13 06:00</td><td class="l">津野町</td><td>958</td>
+<td class="dim">地中/欠</td>
+<td class="dim">地中/欠</td>
+<td class="warn">95%<br>619m</td>
+<td class="warn">98%<br>851m</td>
+<td class="warn">98%<br>1089m</td>
+<td>89%<br>1325m</td>
+<td>85%<br>1582m</td>
+<td>79%<br>1829m</td>
+<td class="l">雲頂を挟めた</td><td>1089</td><td>1325</td><td class="prod">1.00</td></tr>
+</table></div>
+<p class="note">湿度90%以上の面を黄色で示します。地上気圧より下の面は地中として除外していますが、地上気圧自体も返却標高への補正を受けている可能性があるため、判別の妥当性を後から確認できるよう値を併記しています。<br>展望地点の判定高度 1400m は 875hPa(約1215m)と850hPa(約1461m)の間にあり、この帯に雲頂が入る日は上下の判定ができません（状態「展望地点の高度を跨ぐ」）。ECMWF は 1000/925/850hPa しか返さないため、谷では実質2面しか使えず雲頂をほぼ評価できません（V_summit は 850hPa 1面で成立するので、EC版でも指数は出せます）。<br>取得する気圧面は 1000〜825hPa の8段です。谷でおよそ地表〜1720mにあたり、判定に必要な範囲を覆います。それより上は判定に使わないため取得していません。</p>
+<h3>V の内訳</h3>
+<div class="wrap"><table>
+<tr><th class="l" rowspan="2">日時</th><th colspan="6">V_summit（展望地点が雲の中にないか・主）</th><th colspan="3">V_vis（予報視程）</th><th colspan="3">記録のみ</th>
+<th colspan="2">美川</th>
+<th colspan="2">面河</th>
+<th colspan="2">梼原</th>
+<th colspan="2">津野町</th>
+</tr><tr><th>下側高度</th><th>下側湿度</th><th>上側面</th><th>上側高度</th><th>上側湿度</th><th class="prod">V_summit</th>
+<th>視程</th><th class="l">状態</th><th>V_vis</th><th>山上低層雲</th><th>V_sfc</th><th>山上降水</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+<th>V_top_fog</th><th>谷上空</th>
+</tr>
+<tr><td class="l">2026-09-07 05:00</td><td>1296</td><td>90</td><td>850hPa</td><td>1422</td><td>95</td><td class="bad">0.00</td>
+<td>21160</td><td class="l">ok</td><td>1.00</td><td>33</td><td>0.80</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 06:00</td><td>1296</td><td>90</td><td>850hPa</td><td>1422</td><td>97</td><td class="bad">0.00</td>
+<td>7080</td><td class="l">ok</td><td>0.68</td><td>33</td><td>0.80</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 07:00</td><td>1296</td><td>88</td><td>850hPa</td><td>1422</td><td>95</td><td class="prod">0.70</td>
+<td>1740</td><td class="l">ok</td><td>0.08</td><td>32</td><td>1.00</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-07 08:00</td><td>1296</td><td>86</td><td>850hPa</td><td>1432</td><td>90</td><td class="prod">0.70</td>
+<td>4220</td><td class="l">ok</td><td>0.36</td><td>28</td><td>1.00</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 05:00</td><td>1296</td><td>87</td><td>850hPa</td><td>1442</td><td>96</td><td class="prod">0.70</td>
+<td>4320</td><td class="l">ok</td><td>0.37</td><td>41</td><td>0.98</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 06:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1442</td><td>98</td><td class="bad">0.00</td>
+<td>3800</td><td class="l">ok</td><td>0.31</td><td>40</td><td>0.40</td><td>0.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 07:00</td><td>1296</td><td>96</td><td>850hPa</td><td>1442</td><td>99</td><td class="bad">0.00</td>
+<td>3460</td><td class="l">ok</td><td>0.27</td><td>38</td><td>0.20</td><td class="bad">1.90</td>
+<td>1.00</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-08 08:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1442</td><td>98</td><td class="bad">0.00</td>
+<td>2820</td><td class="l">ok</td><td>0.20</td><td>39</td><td>0.10</td><td class="bad">1.10</td>
+<td>0.00</td><td>湿</td>
+<td>1.00</td><td>湿</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-09 05:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1432</td><td>86</td><td class="prod">0.40</td>
+<td>900</td><td class="l">ok</td><td>0.00</td><td>56</td><td>0.00</td><td>0.50</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-09 06:00</td><td>1296</td><td>93</td><td>850hPa</td><td>1442</td><td>83</td><td class="prod">0.40</td>
+<td>2100</td><td class="l">ok</td><td>0.12</td><td>12</td><td>0.50</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-09 07:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1451</td><td>82</td><td class="prod">0.40</td>
+<td>3180</td><td class="l">ok</td><td>0.24</td><td>22</td><td>0.40</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-09 08:00</td><td>1296</td><td>93</td><td>850hPa</td><td>1461</td><td>82</td><td class="prod">0.40</td>
+<td>2180</td><td class="l">ok</td><td>0.13</td><td>37</td><td>0.50</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+<td>--</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-10 05:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1519</td><td>88</td><td class="prod">0.40</td>
+<td>1120</td><td class="l">ok</td><td>0.01</td><td>88</td><td>0.00</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-10 06:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1524</td><td>87</td><td class="prod">0.40</td>
+<td>780</td><td class="l">ok</td><td>0.00</td><td>82</td><td>0.00</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-10 07:00</td><td>1296</td><td>92</td><td>850hPa</td><td>1531</td><td>87</td><td class="prod">0.40</td>
+<td>14420</td><td class="l">ok</td><td>1.00</td><td>55</td><td>0.60</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-10 08:00</td><td>1296</td><td>87</td><td>850hPa</td><td>1536</td><td>86</td><td class="prod">1.00</td>
+<td>7300</td><td class="l">ok</td><td>0.70</td><td>75</td><td>0.30</td><td>0.10</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1567</td><td>94</td><td class="bad">0.00</td>
+<td>600</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.10</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1570</td><td>92</td><td class="bad">0.00</td>
+<td>520</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.10</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 07:00</td><td>1296</td><td>99</td><td>850hPa</td><td>1573</td><td>94</td><td class="bad">0.00</td>
+<td>1020</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.20</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-11 08:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1577</td><td>98</td><td class="bad">0.00</td>
+<td>1540</td><td class="l">ok</td><td>0.06</td><td>100</td><td>0.00</td><td>0.20</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 05:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1575</td><td>91</td><td class="bad">0.00</td>
+<td>680</td><td class="l">ok</td><td>0.00</td><td>36</td><td>0.00</td><td>0.00</td>
+<td>0.22</td><td>湿</td>
+<td>0.22</td><td>湿</td>
+<td>0.22</td><td>湿</td>
+<td>0.22</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 06:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1577</td><td>90</td><td class="bad">0.00</td>
+<td>880</td><td class="l">ok</td><td>0.00</td><td>20</td><td>0.10</td><td>0.00</td>
+<td>0.21</td><td>湿</td>
+<td>0.21</td><td>湿</td>
+<td>0.21</td><td>湿</td>
+<td>0.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 07:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1580</td><td>90</td><td class="bad">0.00</td>
+<td>1300</td><td class="l">ok</td><td>0.03</td><td>39</td><td>0.40</td><td>0.00</td>
+<td>1.00</td><td>湿</td>
+<td>0.20</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>0.00</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-12 08:00</td><td>1296</td><td>91</td><td>850hPa</td><td>1583</td><td>91</td><td class="bad">0.00</td>
+<td>1740</td><td class="l">ok</td><td>0.08</td><td>75</td><td>0.30</td><td>0.00</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>湿</td>
+</tr>
+<tr><td class="l">2026-09-13 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1581</td><td>86</td><td class="prod">0.40</td>
+<td>360</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.50</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-13 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1582</td><td>85</td><td class="prod">0.40</td>
+<td>460</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.50</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-13 07:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1584</td><td>87</td><td class="prod">0.40</td>
+<td>540</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.50</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+<tr><td class="l">2026-09-13 08:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1586</td><td>91</td><td class="bad">0.00</td>
+<td>640</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td>0.50</td>
+<td>--</td><td>－</td>
+<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
+<td>1.00</td><td>－</td>
+</tr>
+</table></div>
+<p class="note"><b>V = min(V_top_fog, V_summit, V_vis)</b>。適用できた補正だけの最小値をとり、すべて適用できなければ「--」です。<b>補正を適用しないことと「良好(1.0)」は区別</b>しており、湿潤層を検出できない場合や上端が不明な場合を 1.0 にはしていません。<br>V_summit は展望地点の高度 1400m を挟む上下の湿り具合です。挟む面は固定せず、その時刻の geopotential_height から毎回選びます（上側の高度が時刻ごとに動くのはそのためです）。上下どちらかが欠ける場合は「判定材料不足」とし、1.0 にはしません。<br>0／0.4／0.7／1.0 はいずれも仮の係数です。<b>0 は「確実に霧」ではなく、濃い霧の可能性を重く見た暫定的な強い減点</b>です。上下の湿度だけでは 0.4 と 0.7 の差を物理的に確定できません（直上だけ湿っていても、層の下端が展望地点より下にある可能性があります）。<br>「谷上空」は谷側のプロファイルで展望高度帯が湿っているかの補助記録で、V には掛けていません。山上判定と食い違うときの手がかりとして残しています。<br>V_vis が「missing」の版は視程補正なしで、視界良好という意味ではありません。V_sfc（山上の低層雲）も記録のみです。山上格子の低層雲は「現地の霧」と「眼下の雲海が同じセルに含まれているだけ」を区別できないためです。</p>
+<h2>モデル比較（本番＝案c の指数）</h2>
+<div class="wrap"><table><tr><th class="l">日時</th>
+<th>規定(best_match)</th>
+<th>ECMWF</th>
+<th>平均</th>
+</tr>
+<tr><td class="l">2026-09-07 05:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-07 06:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-07 07:00</td>
+<td>3</td>
+<td>0</td>
+<td>3</td>
+</tr>
+<tr><td class="l">2026-09-07 08:00</td>
+<td>14</td>
+<td>11</td>
+<td>10</td>
+</tr>
+<tr><td class="l">2026-09-08 05:00</td>
+<td>16</td>
+<td>0</td>
+<td>19</td>
+</tr>
+<tr><td class="l">2026-09-08 06:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-08 07:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-08 08:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-09 05:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-09 06:00</td>
+<td>4</td>
+<td>0</td>
+<td>3</td>
+</tr>
+<tr><td class="l">2026-09-09 07:00</td>
+<td>8</td>
+<td>0</td>
+<td>7</td>
+</tr>
+<tr><td class="l">2026-09-09 08:00</td>
+<td>4</td>
+<td>0</td>
+<td>3</td>
+</tr>
+<tr><td class="l">2026-09-10 05:00</td>
+<td>1</td>
+<td>27</td>
+<td>1</td>
+</tr>
+<tr><td class="l">2026-09-10 06:00</td>
+<td>0</td>
+<td>28</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-10 07:00</td>
+<td>29</td>
+<td>26</td>
+<td>26</td>
+</tr>
+<tr><td class="l">2026-09-10 08:00</td>
+<td>28</td>
+<td>49</td>
+<td>32</td>
+</tr>
+<tr><td class="l">2026-09-11 05:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-11 06:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-11 07:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-11 08:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-12 05:00</td>
+<td>0</td>
+<td>38</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-12 06:00</td>
+<td>0</td>
+<td>37</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-12 07:00</td>
+<td>0</td>
+<td>31</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-12 08:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-13 05:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-13 06:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-13 07:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr><td class="l">2026-09-13 08:00</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</table></div>
+<h2>実績記録</h2>
+<p class="legend">unkai_log.csv に毎朝2軸で記入してください。既存の記入内容はスクリプト再実行でも上書きされません。<br>
+　<b>谷の雲海</b>： なし ／ 一部 ／ 広範囲 ／ 確認できない<br>
+　<b>展望地点の視界</b>： 良好 ／ 一部遮られる ／ 霧で見えない<br>
+展望地点が霧で谷を確認できない日は「確認できない」とし、その日は F の正誤判定に使わず、視界側の検証にだけ使います。</p>
+</body></html>
+
