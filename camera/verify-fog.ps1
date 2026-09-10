@@ -39,13 +39,33 @@ function Avg2 { param($a, $b)
     if ($null -eq $b) { return [double]$a }
     return ([double]$a + [double]$b) / 2.0 }
 
+# V_summit 用。1400mより上で最も低い有効面を毎回選ぶため、複数面の高度も取る。
+$Levels = 925,900,875,850,800
+$H_S    = 1400.0   # 展望地点の判定高度（7-2節と同じ）
+
 function Get-Hourly {
     param([string]$Model)
-    $vars = "cloud_cover_low,cloud_cover,relative_humidity_2m,relative_humidity_850hPa,wind_speed_10m,visibility"
-    $u = "https://api.open-meteo.com/v1/forecast?latitude=$Lat&longitude=$Lon&hourly=$vars" +
+    $v = @("cloud_cover_low","cloud_cover","relative_humidity_2m","wind_speed_10m","visibility")
+    foreach ($p in $Levels) { $v += "relative_humidity_${p}hPa"; $v += "geopotential_height_${p}hPa" }
+    $u = "https://api.open-meteo.com/v1/forecast?latitude=$Lat&longitude=$Lon&hourly=$($v -join ',')" +
          "&past_days=$PastDays&forecast_days=1&timezone=Asia%2FTokyo"
     if ($Model) { $u += "&models=$Model" }
     return (Invoke-RestMethod -Uri $u -TimeoutSec 60).hourly
+}
+
+# 展望地点を挟む上下のRHを返す。上側は H_S より上で最も低い面。
+function Get-SummitRh {
+    param($h, [int]$i)
+    foreach ($p in $Levels) {
+        $z  = $h."geopotential_height_${p}hPa"[$i]
+        $rh = $h."relative_humidity_${p}hPa"[$i]
+        if ($null -ne $z -and $null -ne $rh -and [double]$z -gt $H_S) {
+            $below = $h.relative_humidity_2m[$i]
+            if ($null -eq $below) { return $null }
+            return @{ below = [double]$below; above = [double]$rh; p = $p }
+        }
+    }
+    return $null
 }
 
 Write-Host "Open-Meteo から取得中（過去 $PastDays 日）..."
@@ -70,6 +90,17 @@ $d = foreach ($r in (Import-Csv -LiteralPath $csvPath)) {
         平均版 = Avg2 $bm.cloud_cover_low[$i] $(if ($null -ne $j) { $ec.cloud_cover_low[$j] } else { $null })
         RH850 = $bm.relative_humidity_850hPa[$i]
         風    = $bm.wind_speed_10m[$i]
+        # V_summit（7-2節の式）。規定版とEC版の両方で計算する
+        V規定 = $(if ($s1 = Get-SummitRh $bm $i) {
+                    if ($s1.below -ge 90 -and $s1.above -ge 90) { 0.00 }
+                    elseif ($s1.above -ge 90) { 0.15 }
+                    elseif ($s1.below -ge 90) { 0.50 } else { 1.00 } } else { $null })
+        VEC   = $(if ($null -ne $j -and ($s2 = Get-SummitRh $ec $j)) {
+                    if ($s2.below -ge 90 -and $s2.above -ge 90) { 0.00 }
+                    elseif ($s2.above -ge 90) { 0.15 }
+                    elseif ($s2.below -ge 90) { 0.50 } else { 1.00 } } else { $null })
+        最小RH規定 = $(if ($s1) { [math]::Min($s1.below, $s1.above) } else { $null })
+        最小RHEC   = $(if ($s2) { [math]::Min($s2.below, $s2.above) } else { $null })
     }
 }
 $d = @($d)
@@ -115,7 +146,35 @@ foreach ($m in "規定版","EC版","平均版") {
     ""
 }
 
+# ---- V_summit（7-2節の式）----
+# ⚠ 2026-09-10 の検証では、規定版の湿度では展望ありの全時刻が V=0.00 に落ちた
+#    （空振り100%）。式ではなく best_match の湿度が乾燥を表現できないことが原因。
+"=== V_summit（0=雲の中 / 0.15=上のみ湿潤 / 0.5=下のみ / 1.0=乾燥）==="
+foreach ($vc in @(@{v="V規定"; rh="最小RH規定"; n="規定版の湿度"}, @{v="VEC"; rh="最小RHEC"; n="EC版の湿度"})) {
+    $g = @($d | Where-Object { $null -ne $_.($vc.v) })
+    if ($g.Count -eq 0) { continue }
+    $gn = @($g | Where-Object { $_.展望 -eq "なし" }); $gy = @($g | Where-Object { $_.展望 -eq "あり" })
+    if ($gn.Count -eq 0 -or $gy.Count -eq 0) { continue }
+    $gb = $gn.Count / $g.Count
+    "  --- $($vc.n)  n=$($g.Count) ---"
+    foreach ($th in 0.00, 0.15, 0.50) {
+        $tp = @($gn | Where-Object { $_.($vc.v) -le $th }).Count
+        $fp = @($gy | Where-Object { $_.($vc.v) -le $th }).Count
+        $acc = ($tp + ($gy.Count - $fp)) / $g.Count
+        $dl = "{0:+0.0%;-0.0%;0.0%}" -f ($acc - $gb)
+        "    V<={0:F2} を霧   捕捉 {1,3}/{2,-3}  見逃し {3,3}  空振り {4,3}/{5,-3}  正解率 {6,6:P0}  {7,8}" -f `
+          $th, $tp, $gn.Count, ($gn.Count-$tp), $fp, $gy.Count, $acc, $dl
+    }
+    # 素の最小RHでも見る（V_summit の90%という切り方が妥当かの確認）
+    $a = ($gn | ForEach-Object { $_.($vc.rh) } | Measure-Object -Average -Minimum -Maximum)
+    $b = ($gy | ForEach-Object { $_.($vc.rh) } | Measure-Object -Average -Minimum -Maximum)
+    "    最小RH  霧 {0:F1}% ({1:F0}-{2:F0})   展望あり {3:F1}% ({4:F0}-{5:F0})" -f `
+      $a.Average,$a.Minimum,$a.Maximum,$b.Average,$b.Minimum,$b.Maximum
+    "    ※ 展望ありの下限が90%を割らない版は、RH>=90 で切る V_summit では原理的に区別できない"
+}
+""
+
 if ($Detail) {
     "=== 全時刻 ==="
-    $d | Sort-Object time | Format-Table time,label,展望,near_lc,規定版,EC版,平均版,RH850,風 -AutoSize
+    $d | Sort-Object time | Format-Table time,label,展望,near_lc,規定版,EC版,平均版,V規定,VEC,風 -AutoSize
 }
