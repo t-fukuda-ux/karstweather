@@ -69,6 +69,7 @@ function Get-SummitRh {
 }
 
 Write-Host "Open-Meteo から取得中（過去 $PastDays 日）..."
+Write-Host "※ 自動ラベルとの診断比較です。独立した目視の正解や、事前保存した予報の精度ではありません。"
 $bm = Get-Hourly ""                # 既定 = best_match
 $ec = Get-Hourly "ecmwf_ifs025"
 $ib = @{}; for ($i=0; $i -lt $bm.time.Count; $i++) { $ib[$bm.time[$i]] = $i }
@@ -118,7 +119,7 @@ $no  = @($d | Where-Object { $_.展望 -eq "なし" })   # 霧
 $yes = @($d | Where-Object { $_.展望 -eq "あり" })
 "=== 2値: 展望なし(濃霧+薄霧) $($no.Count)  vs  展望あり(靄+霧なし) $($yes.Count) ==="
 $base = $no.Count / $d.Count
-"  ベースライン（常に「霧」と予報）の正解率: {0:P0}  ← これに勝てない閾値は無意味" -f $base
+"  ベースライン（常に「霧」と予報）の正解率: {0:P0}  ※ 見逃し・空振りも併せて比較" -f $base
 ""
 
 function Auc { param($a, $b, $v)
@@ -129,16 +130,21 @@ function Auc { param($a, $b, $v)
     return $w / ($x.Count * $y.Count) }
 
 foreach ($m in "規定版","EC版","平均版") {
-    if (@($d | Where-Object { $null -ne $_.$m }).Count -eq 0) { continue }
+    # 欠測を [double] で0に変換すると成績が歪むため、版ごとに除外する。
+    $valid = @($d | Where-Object { $null -ne $_.$m })
+    if ($valid.Count -eq 0) { continue }
+    $no = @($valid | Where-Object { $_.展望 -eq "なし" })
+    $yes = @($valid | Where-Object { $_.展望 -eq "あり" })
+    $base = $no.Count / $valid.Count
     $a = ($no  | ForEach-Object { [double]$_.$m } | Measure-Object -Average)
     $b = ($yes | ForEach-Object { [double]$_.$m } | Measure-Object -Average)
-    "=== $m ==="
+    "=== $m（有効 $($valid.Count) / 欠測 $($d.Count - $valid.Count) / ベースライン $($base.ToString('P0'))）==="
     "  展望なし(霧) 平均 {0,5:F1}%   展望あり 平均 {1,5:F1}%   AUC {2:F2}" -f $a.Average, $b.Average, (Auc $no $yes $m)
     "  閾値   捕捉      見逃し  空振り     正解率   ベースライン差"
     foreach ($th in 20,30,40,50,60) {
         $tp = @($no  | Where-Object { [double]$_.$m -ge $th }).Count
         $fp = @($yes | Where-Object { [double]$_.$m -ge $th }).Count
-        $acc = ($tp + ($yes.Count - $fp)) / $d.Count
+        $acc = ($tp + ($yes.Count - $fp)) / $valid.Count
         $delta = "{0:+0.0%;-0.0%;0.0%}" -f ($acc - $base)   # 符号つきで表示する
         "   {0,3}%  {1,3}/{2,-3}    {3,3}   {4,3}/{5,-3}   {6,6:P0}   {7,8}" -f `
           $th, $tp, $no.Count, ($no.Count-$tp), $fp, $yes.Count, $acc, $delta

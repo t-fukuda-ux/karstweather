@@ -46,6 +46,7 @@ if ([string]::IsNullOrWhiteSpace($OutDir)) { $OutDir = $PSScriptRoot }
 $imgDir = Join-Path $OutDir "images"
 $csv    = Join-Path $OutDir "mezuru_contrast.csv"
 $log    = Join-Path $OutDir "capture.log"
+$header = "captured_at_jst,http_last_modified,bytes,sha1_8,mean_all,dark,far_mean,far_sd,mid_mean,mid_sd,near_mean,near_sd,far_over_near,far_lc,mid_lc,near_lc,label,note"
 
 function Write-CamLog {
     param([string]$msg)
@@ -129,6 +130,13 @@ function Format-CamNum {
 # ---- 取得 ----
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+if (Test-Path -LiteralPath $csv) {
+    $first = ([string](Get-Content -LiteralPath $csv -TotalCount 1)).TrimStart([char]0xFEFF)
+    if ($first.Trim() -ne $header) {
+        Write-CamLog "CSVのヘッダが現在の形式と異なります。追記を中止しました。migrate-csv.ps1 で移行してください"
+        exit 1
+    }
+}
 if (-not $NoImage) { New-Item -ItemType Directory -Force -Path $imgDir | Out-Null }
 
 $nowJst = (Get-Date).ToUniversalTime().AddHours(9)   # サーバーのTZに依存させない
@@ -143,12 +151,16 @@ try {
     if ($resp.Headers["Last-Modified"]) { $lastMod = [string]$resp.Headers["Last-Modified"] }
 } catch {
     Write-CamLog ("取得失敗: {0}" -f $_.Exception.Message)
-    exit 0    # 定期実行を失敗扱いにしない
+    exit 1    # タスクの実行結果から欠測を検知できるようにする
 }
 
-if (-not (Test-Path -LiteralPath $tmp)) { Write-CamLog "画像が保存されませんでした"; exit 0 }
+if (-not (Test-Path -LiteralPath $tmp)) { Write-CamLog "画像が保存されませんでした"; exit 1 }
 $bytes = (Get-Item -LiteralPath $tmp).Length
-if ($bytes -lt 2000) { Write-CamLog ("画像が小さすぎます（{0} バイト）。中断します" -f $bytes); exit 0 }
+if ($bytes -lt 2000) {
+    Write-CamLog ("画像が小さすぎます（{0} バイト）。中断します" -f $bytes)
+    Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+    exit 1
+}
 
 # 同じ画像が続いていないか（カメラの停止検知）用にハッシュを残す
 $sha = (Get-FileHash -LiteralPath $tmp -Algorithm SHA1).Hash.Substring(0, 8)
@@ -158,6 +170,7 @@ $sha = (Get-FileHash -LiteralPath $tmp -Algorithm SHA1).Hash.Substring(0, 8)
 Add-Type -AssemblyName System.Drawing
 $stats = [ordered]@{}
 $w = 0; $h = 0; $sizeNote = ""
+$bmp = $null
 try {
     $bmp = [System.Drawing.Bitmap]::FromFile($tmp)
     $w = $bmp.Width; $h = $bmp.Height
@@ -167,11 +180,13 @@ try {
         Write-CamLog ("⚠ 画像サイズが想定と異なります: {0}x{1}（想定 {2}x{3}）。帯の再設定が必要です" -f $w, $h, $ExpectedWidth, $ExpectedHeight)
     }
     $stats = Get-ZoneMetrics -Bmp $bmp -Zones $Zones -Step $Step
-    $bmp.Dispose()
 } catch {
+    if ($null -ne $bmp) { $bmp.Dispose(); $bmp = $null }
     Write-CamLog ("画像を解析できませんでした: {0}" -f $_.Exception.Message)
     Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
-    exit 0
+    exit 1
+} finally {
+    if ($null -ne $bmp) { $bmp.Dispose() }
 }
 
 $meanAll = 0.0; $cnt = 0
@@ -188,7 +203,7 @@ if ($null -ne $stats["far"].sd -and $null -ne $stats["near"].sd -and $stats["nea
 # 判定。夜間は近景の局所コントラストがノイズで霧なしの閾値に達するため空にする。
 $nlc   = $stats["near"].lc
 $label = ""
-if ($dark -eq 0 -and $null -ne $nlc) {
+if ($dark -eq 0 -and $null -ne $nlc -and -not $sizeNote) {
     $label = if     ($nlc -lt $LabelDenseMax) { "濃霧" }
              elseif ($nlc -lt $LabelThinMax)  { "薄霧" }
              elseif ($nlc -lt $LabelHazeMax)  { "靄" }
@@ -197,15 +212,8 @@ if ($dark -eq 0 -and $null -ne $nlc) {
 
 # ---- 記録 ----
 
-$header = "captured_at_jst,http_last_modified,bytes,sha1_8,mean_all,dark,far_mean,far_sd,mid_mean,mid_sd,near_mean,near_sd,far_over_near,far_lc,mid_lc,near_lc,label,note"
 if (-not (Test-Path -LiteralPath $csv)) {
     Set-Content -LiteralPath $csv -Value $header -Encoding UTF8
-} else {
-    # 列を追加した際に旧形式のまま追記すると列がずれる。気づけるように警告を出す。
-    $first = ([string](Get-Content -LiteralPath $csv -TotalCount 1)).TrimStart([char]0xFEFF)
-    if ($first.Trim() -ne $header) {
-        Write-CamLog "⚠ CSVのヘッダが現在の形式と異なります。migrate-csv.ps1 で移行してください"
-    }
 }
 $row = @(
     $nowJst.ToString("yyyy-MM-dd HH:mm"),

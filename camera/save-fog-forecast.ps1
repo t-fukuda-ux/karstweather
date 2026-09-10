@@ -94,7 +94,13 @@ $issued = $nowJst.ToString("yyyy-MM-dd HH:mm")
 $issuedHour = $nowJst.ToString("yyyy-MM-dd HH")
 
 $header = "issued_at,target_time,lead_h,cl_bm,cl_ec,cl_avg,rh2m_bm,rh2m_ec,rh_above_bm,rh_above_ec,p_above_bm,p_above_ec,v_bm,v_ec,wind_bm,vis_bm,precip_bm"
+New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 if (Test-Path -LiteralPath $csv) {
+    $first = ([string](Get-Content -LiteralPath $csv -TotalCount 1)).TrimStart([char]0xFEFF)
+    if ($first.Trim() -ne $header) {
+        Write-FogLog "CSVのヘッダが現在の形式と異なります。追記を中止しました"
+        exit 1
+    }
     if (-not $Force) {
         $dup = @(Import-Csv -LiteralPath $csv | Where-Object { $_.issued_at -like "$issuedHour*" }).Count
         if ($dup -gt 0) { Write-FogLog ("同じ発表時({0}時)の行が {1} 件あるため何もしません" -f $issuedHour, $dup); exit 0 }
@@ -111,7 +117,7 @@ try {
     $ec = Get-Hourly "ecmwf_ifs025"  $days
 } catch {
     Write-FogLog ("取得失敗: {0}" -f $_.Exception.Message)
-    exit 0    # 定期実行を失敗扱いにしない
+    exit 1    # タスクの実行結果から欠測を検知できるようにする
 }
 
 $ie = @{}; for ($i = 0; $i -lt $ec.time.Count; $i++) { $ie[$ec.time[$i]] = $i }
