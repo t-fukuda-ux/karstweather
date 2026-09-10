@@ -631,7 +631,10 @@ SDをやめ、**帯の中で隣接画素の輝度差の絶対値を平均**す�
 |---|---|---|
 | `camera/capture-mezuru.ps1` | 追跡 | 取得と測定の本体。失敗しても終了コード0（定期実行を失敗扱いにしない）。1回約5秒 |
 | `camera/install-camera-task.ps1` | 追跡 | 毎時50分のタスク `KarstCameraCapture` を登録（`-Remove` で削除）。`-WakeToRun` 付き |
-| `camera/verify-fog.ps1` | 追跡 | **検証の本体。** ラベルと Open-Meteo の低層雲%を突き合わせ、版ごとの AUC と閾値別の成績をベースライン差つきで出す。`-PastDays 30` で期間を延ばせる |
+| `camera/verify-fog.ps1` | 追跡 | **診断の検証。** ラベルと Open-Meteo の低層雲%を突き合わせ、版ごとの AUC と閾値別の成績をベースライン差つきで出す。`-PastDays 30` で期間を延ばせる |
+| `camera/save-fog-forecast.ps1` | 追跡 | **予報の履歴。** 姫鶴平の毎時予報を発表時刻つきで保存する（1日2回）。これがないと「事前に当てられたか」は検証できない |
+| `camera/install-fog-forecast-task.ps1` | 追跡 | 06:25 と 18:25 のタスク `KarstFogForecast` を登録（`-Remove` で削除）。`-WakeToRun` 付き |
+| `camera/fog_forecast.csv` | **追跡** | 予報の履歴。1発表あたり約24行・2.3KB。1日2回で年間約1万行 |
 | `camera/migrate-csv.ps1` | 追跡 | 2026-09-10 の列追加にともなう一度きりの移行。実行済み。`.bak` にバックアップを残す |
 | `camera/mezuru_contrast.csv` | **追跡** | 測定値と判定の記録。他PCや解析で使うためgitに入れる |
 | `camera/mezuru_contrast.csv.bak` | 除外 | 移行前のバックアップ |
@@ -646,8 +649,12 @@ CSVの列: `captured_at_jst,http_last_modified,bytes,sha1_8,mean_all,dark,far_me
 powershell -ExecutionPolicy Bypass -File .\camera\install-camera-task.ps1
 # 1回だけ手動実行
 powershell -ExecutionPolicy Bypass -File .\camera\capture-mezuru.ps1
-# 検証（低層雲%との突き合わせ。過去30日分で見る例）
+# 診断の検証（低層雲%との突き合わせ。過去30日分で見る例）
 powershell -ExecutionPolicy Bypass -File .\camera\verify-fog.ps1 -PastDays 30
+# 予報履歴のタスクを登録（サーバーPCで1回だけ）
+powershell -ExecutionPolicy Bypass -File .\camera\install-fog-forecast-task.ps1
+# 予報履歴の溜まり具合
+powershell -Command "Import-Csv .\camera\fog_forecast.csv | Group-Object issued_at | Select-Object Name,Count"
 # 状態確認
 Get-ScheduledTaskInfo -TaskName "KarstCameraCapture" | Select-Object LastRunTime,LastTaskResult,NextRunTime
 Get-Content .\camera\capture.log -Tail 10
@@ -669,6 +676,26 @@ Get-Content .\camera\capture.log -Tail 10
 姫鶴平（標高1380m）の霧は**現地が低層雲の中に入ること**なので、既存の気圧面データがそのまま予測変数になる。カメラは今まで存在しなかった**正解ラベル**を毎時・自動で供給する。
 
 なお 7-2節の `V_summit`（展望地点が雲の中にないか）は、**実質的にすでに霧の予測器**である。カメラはその検証装置にあたる。
+
+#### 霧予報の履歴（`camera/fog_forecast.csv`・2026-09-10 新設）
+
+**⚠ 雲海用の `forecast-history` では霧の予報検証ができない。** 理由は3つ。
+
+1. **姫鶴平の低層雲%がどの版のファイルにも入っていない。** `detail_rows` の `cloud_low` は**谷4地点**の値（同一時刻で美川62% / 面河100% / 梼原77% / 津野町77% と地点ごとに違う）。雲海指数は C に谷の雲、V に展望地点の湿度を使う設計なので、展望地点の低層雲は計算テーブルに乗っていない。**AUC 0.84・正解率86%を出した EC版低層雲の規則は、この履歴では検証できない**
+2. **保存時刻が 05:00〜08:00 の4時刻だけ。** 霧は日中も出るし、靄はむしろ日中に多い
+3. 雲海と霧では必要な変数も時間帯も違う
+
+そこで霧専用の履歴を別立てにした。**雲海側のコードには一切手を入れていない。**
+
+| 項目 | 内容 |
+|---|---|
+| 保存する版 | 規定版 / EC版 / 平均版 の低層雲%、両版の地上RH・上側RH・`V_summit`、風・視程・降水 |
+| 対象時刻 | **05:00〜19:00 JST のみ**（カメラが判定できる時間帯に絞ってファイル量を抑える） |
+| 地平線 | 42時間先まで |
+| 発表 | 1日2回（06:25 / 18:25）。リード時間の長短を両方そろえるため |
+| 重複保護 | 同じ発表時（時単位）の行があれば何もしない |
+
+**⚠ 発表時刻の予報は後から取得できない。** 取り逃がすと永久に欠ける（過去の解析値は取れるが、それは診断であって予報ではない）。このため `WakeToRun` と `StartWhenAvailable` を付けてある。
 
 #### カメラによる霧予報の検証（2026-09-10・昼間29時刻）
 
@@ -707,7 +734,7 @@ Get-Content .\camera\capture.log -Tail 10
 
 **→ `V_summit` を霧に使うなら、式を変えるのではなく湿度の入力を EC版に替えるのが筋。** ただし注意点として、EC版で有効なのは **V≤0.50**（＝上下どちらかが湿潤なら霧）であり、0.00 や 0.15 で締めると 69〜72% に下がる。現行の「0.00/0.15 を強い減点とする」重みづけとは向きが違う。
 
-**⚠ これは「診断」の検証。** 過去時刻に対する現在の解析値を使っており、事前に発表された予報ではない。真の予報検証には `forecast-history` が必要で、現状9組しかない。
+**⚠ これは「診断」の検証。** 過去時刻に対する現在の解析値を使っており、事前に発表された予報ではない。予報としての検証には `camera/fog_forecast.csv`（2026-09-10 に新設・上記）の蓄積が要る。雲海用の `forecast-history` では、姫鶴平の低層雲%が保存されていないため代用できない。
 
 **2. 低層雲% は「見逃し」だけ測れた。空振りは V_summit と同じく測定不能**
 
