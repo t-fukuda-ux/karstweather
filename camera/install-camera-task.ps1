@@ -48,8 +48,11 @@ $trigger = New-ScheduledTaskTrigger -Once -At $start `
     -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration (New-TimeSpan -Days 3650)
 
 # 低優先度・多重起動なし・10分で打ち切り（通常は数秒で終わる）
+# -WakeToRun: スリープ中でも復帰して実行する。2026-09-09 22:50〜09-10 10:50 に
+# 12時間の欠測が発生し、朝5〜9時という霧の最重要時間帯が丸ごと落ちたため追加した。
+# 欠測した時間帯だけは後から復元できないので、記録の穴を空けないことを優先する。
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
-    -StartWhenAvailable -MultipleInstances IgnoreNew `
+    -StartWhenAvailable -WakeToRun -MultipleInstances IgnoreNew `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 10) -Priority 7
 
 if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
