@@ -1,0 +1,22 @@
+{
+  "version": "2026-09-11-v1",
+  "status": "provisional_offline",
+  "development_end": "2026-09-10",
+  "reference_date": "2026-09-11",
+  "prospective_start": "2026-09-12",
+  "dark_min": 100,
+  "near_dense_max": 1,
+  "far_hidden_max": 0.3,
+  "far_clear_min": 1.5,
+  "review_near_margin": 0.2,
+  "review_far_hidden_margin": 0.1,
+  "review_far_clear_margin": 0.3,
+  "review_clear_mid_min": 3.5,
+  "labels": {
+    "D": "濃霧（手前も霞む）",
+    "B": "奥が見えない（手前は見える）",
+    "H": "奥が霞んで見える",
+    "C": "奥まで明瞭",
+    "U": "目視判断が曖昧"
+  }
+}
