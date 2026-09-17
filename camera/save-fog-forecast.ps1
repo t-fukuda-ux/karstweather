@@ -93,7 +93,7 @@ $nowJst = (Get-Date).ToUniversalTime().AddHours(9)
 $issued = $nowJst.ToString("yyyy-MM-dd HH:mm")
 $issuedHour = $nowJst.ToString("yyyy-MM-dd HH")
 
-$header = "issued_at,target_time,lead_h,cl_bm,cl_ec,cl_avg,rh2m_bm,rh2m_ec,rh_above_bm,rh_above_ec,p_above_bm,p_above_ec,v_bm,v_ec,wind_bm,vis_bm,precip_bm"
+$header = "issued_at,target_time,lead_h,cl_bm,cl_ec,cl_avg,rh2m_bm,rh2m_ec,rh_above_bm,rh_above_ec,p_above_bm,p_above_ec,v_bm,v_ec,wind_bm,vis_bm,precip_bm,precip_ec"
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 if (Test-Path -LiteralPath $csv) {
     $first = ([string](Get-Content -LiteralPath $csv -TotalCount 1)).TrimStart([char]0xFEFF)
@@ -148,7 +148,8 @@ for ($i = 0; $i -lt $bm.time.Count; $i++) {
         (Fmt $(if ($s2) { $s2.v } else { $null }) 2),
         (Fmt $bm.wind_speed_10m[$i] 1),
         (Fmt $bm.visibility[$i] 0),
-        (Fmt $bm.precipitation[$i] 2)
+        (Fmt $bm.precipitation[$i] 2),
+        (Fmt $(if ($null -ne $j) { $ec.precipitation[$j] } else { $null }) 2)
     ) -join ","))
 }
 

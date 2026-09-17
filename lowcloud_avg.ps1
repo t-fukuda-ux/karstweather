@@ -29,7 +29,7 @@ param(
     [object]$BundleA     = $null,         # generate_all.ps1 から渡される取得済みデータ（best_match）
     [object]$BundleB     = $null,         # 同（ecmwf_ifs025）
     [object]$PrefetchedAlerts = $null,    # 同・取得済みの警報一覧
-    [object]$UnkaiHours  = $null          # 同・計算済みの雲海指数（F は両モデル平均・V は best_match 由来）
+    [object]$UnkaiHours  = $null          # 同・計算済みの雲海指数（F は両モデル平均・V は ECMWF 由来）
 )
 
 $ErrorActionPreference = "Stop"
@@ -629,7 +629,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
     }
 
     [void]$sb.AppendLine('</table></div>')
-    [void]$sb.AppendLine('<p class="legend">※本ページは best_match と ECMWF(ecmwf_ifs025) の平均値です。天気・週間の文言は数値から機械的に推定した近似表現で、気象庁の予報文とは一致しません。<br>※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。<br>※雲海期待度は、日の出前後の4時間のみ計算します。麓の谷（美川・面河・梼原・津野町）で霧ができる条件と、姫鶴平が雲の上に出る条件を掛け合わせた目安で、発生確率ではありません。谷の条件は両モデルの平均、展望の条件は best_match のみから算出しています（ECMWFは視程が提供されず気圧面も粗いため）。試作中の指標のため、現地の実績と照らして今後調整します。</p>')
+    [void]$sb.AppendLine('<p class="legend">※本ページは best_match と ECMWF(ecmwf_ifs025) の平均値です。天気・週間の文言は数値から機械的に推定した近似表現で、気象庁の予報文とは一致しません。<br>※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。<br>※雲海期待度は、日の出前後の4時間のみ計算します。麓の谷（美川・面河・梼原・津野町）で霧ができる条件と、姫鶴平が雲の上に出る条件を掛け合わせた目安で、発生確率ではありません。谷の条件は両モデルの平均、展望の条件はカメラ実測との相関が高かったECMWFから算出しています。試作中の指標のため、現地の実績と照らして今後調整します。</p>')
 
     if ($daily -and $daily.Count -gt 0) {
         [void]$sb.AppendLine('<h2>週間天気予報</h2>')
@@ -749,7 +749,7 @@ $futureRows = @($rows | Where-Object { -not $_.isPast })
 Assert-RowsUsable -Rows $rows -Label $OutName
 
 # ---- 雲海指数 ----
-# F は両モデルの平均、V は best_match 由来（ECMWF は視程が全欠測で気圧面も粗いため）。
+# F は両モデルの平均、V は ECMWF 由来（カメラ実測との相関比較による2026-09-17の運用変更）。
 # 混成である旨は凡例に明記する。失敗しても天気予報本体は出せるよう null のまま進む。
 $unkaiHours = $UnkaiHours
 if ($null -eq $unkaiHours) {

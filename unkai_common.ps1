@@ -552,8 +552,9 @@ function Get-UnkaiAggregate {
     return [ordered]@{ best = $best; north = $north; south = $south; spread = $spread }
 }
 
-# 平均版。F は両モデルの平均、V は best_match 側のものを使う。
-# ECMWF は視程が全欠測で気圧面も粗く、V の材料が揃わないため（混成である旨は凡例に明記する）。
+# 平均版。F は両モデルの平均、V は ECMWF 側のものを使う。
+# カメラ実測との比較で、前夜予報の V は best_match がほぼ無相関、ECMWF は
+# 明確な相関を示したため（2026-09-17 運用変更。混成である旨は凡例に明記する）。
 function Get-UnkaiTableAverage {
     param($TableA, $TableB)
     $mapB = @{}
@@ -571,21 +572,42 @@ function Get-UnkaiTableAverage {
                 $row[$k] = Get-UnkaiMeanOf2 -A $ra[$k] -B (&{ if ($null -eq $rb) { $null } else { $rb[$k] } })
             }
             $row["f"] = $row["f_c"]
-            # V・ゲートは A（best_match）側をそのまま使う
-            $row["idx"]          = Get-UnkaiIdx -F $row.f_c        -V $ra.v -GateF $ra.gate_f -GateV $ra.gate_v
-            $row["idx_add"]      = Get-UnkaiIdx -F $row.f_add      -V $ra.v -GateF $ra.gate_f -GateV $ra.gate_v
-            $row["idx_b"]        = Get-UnkaiIdx -F $row.f_b        -V $ra.v -GateF $ra.gate_f -GateV $ra.gate_v
-            $row["idx_c_mlin"]   = Get-UnkaiIdx -F $row.f_c_mlin   -V $ra.v -GateF $ra.gate_f -GateV $ra.gate_v
-            $row["idx_c_mpow"]   = Get-UnkaiIdx -F $row.f_c_mpow   -V $ra.v -GateF $ra.gate_f -GateV $ra.gate_v
-            $row["idx_c_rrange"] = Get-UnkaiIdx -F $row.f_c_rrange -V $ra.v -GateF $ra.gate_f -GateV $ra.gate_v
-            $row["idx_f0"]       = Get-UnkaiIdx -F $row.f0         -V $ra.v -GateF $ra.gate_f -GateV $ra.gate_v
-            $row["label"] = Get-UnkaiLabel -F $row.f_c -V $ra.v -TopStatus $ra.top.top_status `
-                                -SummitStatus $ra.summit_status -GateF $ra.gate_f -GateV $ra.gate_v
+            # V・山上降水ゲート・V の説明情報は B（ECMWF）側へ統一する。
+            # 対応する EC 行が欠けた場合は best_match へ黙って戻さず、V 不明として扱う。
+            $v = if ($null -eq $rb) { $null } else { $rb.v }
+            $gateV = if ($null -eq $rb) { $true } else { $rb.gate_v }
+            if ($null -ne $rb) {
+                foreach ($k in @("top","levels","v_vis","vis_status","v_sfc","v_top_fog","v_summit",
+                                  "summit_status","summit_rh_below","summit_z_below","summit_rh_above",
+                                  "summit_z_above","summit_p_above","valley_band_wet","v","gate_v")) {
+                    $row[$k] = $rb[$k]
+                }
+            } else {
+                $row["v"] = $null
+                $row["gate_v"] = $true
+            }
+            $row["idx"]          = Get-UnkaiIdx -F $row.f_c        -V $v -GateF $ra.gate_f -GateV $gateV
+            $row["idx_add"]      = Get-UnkaiIdx -F $row.f_add      -V $v -GateF $ra.gate_f -GateV $gateV
+            $row["idx_b"]        = Get-UnkaiIdx -F $row.f_b        -V $v -GateF $ra.gate_f -GateV $gateV
+            $row["idx_c_mlin"]   = Get-UnkaiIdx -F $row.f_c_mlin   -V $v -GateF $ra.gate_f -GateV $gateV
+            $row["idx_c_mpow"]   = Get-UnkaiIdx -F $row.f_c_mpow   -V $v -GateF $ra.gate_f -GateV $gateV
+            $row["idx_c_rrange"] = Get-UnkaiIdx -F $row.f_c_rrange -V $v -GateF $ra.gate_f -GateV $gateV
+            $row["idx_f0"]       = Get-UnkaiIdx -F $row.f0         -V $v -GateF $ra.gate_f -GateV $gateV
+            $row["label"] = Get-UnkaiLabel -F $row.f_c -V $v `
+                                -TopStatus (&{ if ($null -eq $rb) { $null } else { $rb.top.top_status } }) `
+                                -SummitStatus (&{ if ($null -eq $rb) { $null } else { $rb.summit_status } }) `
+                                -GateF $ra.gate_f -GateV $gateV
             $valleys += , $row
         }
         $agg = Get-UnkaiAggregate -Valleys $valleys
         $h = [ordered]@{}
         foreach ($k in $ha.Keys) { $h[$k] = $ha[$k] }
+        if ($null -ne $hb) {
+            foreach ($k in @("vp_vis","vp_low","vp_rh","vp_precip","v_vis","v_sfc","vis_status",
+                              "gate_v","summit","vp_levels")) {
+                $h[$k] = $hb[$k]
+            }
+        }
         $h["valleys"] = $valleys
         $h["best"] = $agg.best; $h["north"] = $agg.north; $h["south"] = $agg.south
         $h["idx"]   = (&{ if ($null -eq $agg.best) { $null } else { $agg.best.idx } })

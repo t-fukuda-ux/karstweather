@@ -25,9 +25,9 @@ foreach ($name in 'camera-header','forecast-header','camera-network','forecast-n
     $csv = Join-Path $dir $csvName
     if ($name -like '*-header') { Set-Content -LiteralPath $csv -Value "old,header`r`nkeep,this" -Encoding UTF8 }
     if ($name -eq 'forecast-duplicate') {
-        $header = 'issued_at,target_time,lead_h,cl_bm,cl_ec,cl_avg,rh2m_bm,rh2m_ec,rh_above_bm,rh_above_ec,p_above_bm,p_above_ec,v_bm,v_ec,wind_bm,vis_bm,precip_bm'
+        $header = 'issued_at,target_time,lead_h,cl_bm,cl_ec,cl_avg,rh2m_bm,rh2m_ec,rh_above_bm,rh_above_ec,p_above_bm,p_above_ec,v_bm,v_ec,wind_bm,vis_bm,precip_bm,precip_ec'
         $issued = (Get-Date).ToUniversalTime().AddHours(9).ToString('yyyy-MM-dd HH:mm')
-        Set-Content -LiteralPath $csv -Value @($header, ($issued + ',2099-01-01 12:00,1,0,0,0,0,0,0,0,925,925,1,1,0,0,0')) -Encoding UTF8
+        Set-Content -LiteralPath $csv -Value @($header, ($issued + ',2099-01-01 12:00,1,0,0,0,0,0,0,0,925,925,1,1,0,0,0,0')) -Encoding UTF8
     }
     $before = if (Test-Path -LiteralPath $csv) { (Get-FileHash -LiteralPath $csv).Hash } else { $null }
     $output = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath -Case $name -TestDir $dir 2>&1

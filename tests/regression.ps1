@@ -49,6 +49,14 @@ $avgDaily=Build-AvgDaily -allRows $avgRows -sunMap @{} -days 7
 Assert ($avgDaily[0].tmax -eq 23.2 -and $avgDaily[0].tmin -eq 9.1) '平均版の補正後集計'
 Assert ($null -eq $avgDaily[6].tmax) '平均版の欠測'
 Assert ((Get-UnkaiLabel -F 0.8 -V 1 -TopStatus 'capped' -SummitStatus 'summit_dry' -GateF $true -GateV $true) -eq '雲海期待・視界良好') '短い予測ラベル'
+# 実運用の平均版は F を両モデル平均、V と山上降水ゲートを EC 側から使う。
+$va=[ordered]@{id='N_C';dir='北';f_c=0.6;f_add=0.6;f_b=0.6;f_c_mlin=0.6;f_c_mpow=0.6;f_c_rrange=0.6;f0=0.6;v=0.0;gate_f=$true;gate_v=$true;top=[ordered]@{top_status='capped'};summit_status='summit_in_layer'}
+$vb=[ordered]@{id='N_C';dir='北';f_c=0.8;f_add=0.8;f_b=0.8;f_c_mlin=0.8;f_c_mpow=0.8;f_c_rrange=0.8;f0=0.8;v=0.5;gate_f=$true;gate_v=$true;top=[ordered]@{top_status='no_moist_layer'};summit_status='below_wet';v_summit=0.5}
+$mixed=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';valleys=@($va);summit=[ordered]@{v=0.0}}) `
+                                -TableB @([ordered]@{time='2026-09-08 06:00';valleys=@($vb);summit=[ordered]@{v=0.5}}))
+Assert ([math]::Abs([double]$mixed[0].valleys[0].f_c-0.7) -lt 0.0001) '平均版Fは両モデル平均'
+Assert ($mixed[0].valleys[0].v -eq 0.5 -and $mixed[0].valleys[0].idx -eq 35) '平均版VはEC由来'
+Assert ($mixed[0].summit.v -eq 0.5) '平均版のV説明情報もEC由来'
 # 更新日時はJSTからUTCへ変換し、3時間ちょうどから異常。
 $temp=Join-Path ([IO.Path]::GetTempPath()) ('weather-test-'+[guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory($temp)
