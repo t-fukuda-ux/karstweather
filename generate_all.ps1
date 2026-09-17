@@ -81,7 +81,7 @@ if ($null -ne $unkaiA -and $null -ne $unkaiB) {
         Write-Warning ("雲海指数(平均)の算出に失敗しました: {0}" -f $_.Exception.Message)
     }
 } elseif ($null -ne $unkaiA) {
-    $unkaiM = $unkaiA   # ECMWFが欠けたときは best_match をそのまま使う
+    Write-Warning "ECMWF雲海データがないため、平均版の雲海指数は表示しません。規定版Vへの切替は行いません。"
 }
 
 # ---- 3版の生成（1版の失敗で他を止めない） ----
@@ -158,7 +158,7 @@ try {
     if ($null -ne $unkaiA) { $historyModels['best_match'] = $unkaiA }
     if ($null -ne $unkaiB) { $historyModels['ecmwf_ifs025'] = $unkaiB }
     if ($null -ne $unkaiM) { $historyModels['average'] = $unkaiM }
-    $averageMode = if ($null -ne $unkaiB) { 'F=mean; V=ecmwf_ifs025' } else { 'best_match fallback' }
+    $averageMode = 'F=mean; V=ecmwf_ifs025'
     $revision = (git -C $PSScriptRoot rev-parse HEAD)
     if ($LASTEXITCODE -ne 0) { throw '履歴に記録するソースのリビジョンを取得できません。' }
     if (git -C $PSScriptRoot diff --name-only -- '*.ps1') { $revision += '+working-tree' }
