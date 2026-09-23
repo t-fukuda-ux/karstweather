@@ -552,7 +552,7 @@ function Get-UnkaiAggregate {
     return [ordered]@{ best = $best; north = $north; south = $south; spread = $spread }
 }
 
-# 平均版。F は両モデルの平均、V は ECMWF 側のものを使う。
+# 平均版。F は best_match（A）、V は ECMWF（B）側のものを使う。
 # カメラ実測との比較で、前夜予報の V は best_match がほぼ無相関、ECMWF は
 # 明確な相関を示したため（2026-09-17 運用変更。混成である旨は凡例に明記する）。
 function Get-UnkaiTableAverage {
@@ -566,11 +566,11 @@ function Get-UnkaiTableAverage {
         $valleys = @()
         foreach ($ra in $ha.valleys) {
             $rb = if ($null -eq $hb) { $null } else { $hb.valleys | Where-Object { $_.id -eq $ra.id } }
+            # F（谷の霧）は A（best_match）のまま使う（2026-09-23〜。以前は両モデルの平均）。
+            # ECMWF は約25km格子で谷を表せず、谷の湿度がほぼ毎朝85〜100%になって F を押し上げていた
+            # （9/22・9/23 は雲海なしの実績に対し EC の F=0.6〜1.0、best_match は 0〜0.6。梼原と津野町は EC で常に同値）。
             $row = [ordered]@{}
             foreach ($k in $ra.Keys) { $row[$k] = $ra[$k] }
-            foreach ($k in @("f_c","f_add","f_b","f_c_mlin","f_c_mpow","f_c_rrange","f0")) {
-                $row[$k] = Get-UnkaiMeanOf2 -A $ra[$k] -B (&{ if ($null -eq $rb) { $null } else { $rb[$k] } })
-            }
             $row["f"] = $row["f_c"]
             # V・山上降水ゲート・V の説明情報は B（ECMWF）側へ統一する。
             # 対応する EC 行が欠けた場合は best_match へ黙って戻さず、V 不明として扱う。
@@ -602,6 +602,7 @@ function Get-UnkaiTableAverage {
         $agg = Get-UnkaiAggregate -Valleys $valleys
         $h = [ordered]@{}
         foreach ($k in $ha.Keys) { $h[$k] = $ha[$k] }
+        # 山上の風 vp_wind は F と同じく best_match 側を残す（上書きの対象に含めない）
         if ($null -ne $hb) {
             foreach ($k in @("vp_vis","vp_low","vp_rh","vp_precip","v_vis","v_sfc","vis_status",
                               "gate_v","summit","vp_levels")) {
@@ -652,6 +653,8 @@ function Get-UnkaiTable {
             $vpLow  = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.cloud_cover_low      -at $at
             $vpRh   = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.relative_humidity_2m -at $at
             $vpPrec = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.precipitation        -at $at
+            # 山上の風（m/s）。強風で雲海が崩れる減点の候補として記録だけする（指数には未使用。2026-09-23〜）
+            $vpWind = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.wind_speed_10m       -at $at
             $vVis   = Get-UnkaiVVis -vis $vis
             $vSfc   = Get-UnkaiVSfc -low $vpLow -rh $vpRh
             $visStatus = if ($null -eq $vis) { "missing" } else { "ok" }
@@ -735,7 +738,7 @@ function Get-UnkaiTable {
                 label = (&{ if ($null -eq $best) { "判定不能" } else { $best.label } })
                 spread = $spread
                 spread_total = $UnkaiValleys.Count
-                vp_vis = $vis; vp_low = $vpLow; vp_rh = $vpRh; vp_precip = $vpPrec
+                vp_vis = $vis; vp_low = $vpLow; vp_rh = $vpRh; vp_precip = $vpPrec; vp_wind = $vpWind
                 v_vis = $vVis; v_sfc = $vSfc; vis_status = $visStatus; gate_v = $gateV
                 summit = $summit; vp_levels = $vpLevels
             }

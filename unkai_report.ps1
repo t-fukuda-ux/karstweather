@@ -56,7 +56,8 @@ $UnkaiDetailHeader = @(
     "top_status","levels_used","H_top_lower","H_top_upper","H_top_mid","V_top_fog","V_top_low","V_top_high",
     "summit_status","V_summit","summit_rh_below","summit_z_below","summit_p_above","summit_rh_above","summit_z_above","valley_band_wet",
     "vis","vis_status","V_vis","V_sfc","V","gate_f","gate_v",
-    "idx","idx_add","idx_b","idx_c_mlin","idx_c_mpow","idx_c_rrange","idx_f0","label"
+    "idx","idx_add","idx_b","idx_c_mlin","idx_c_mpow","idx_c_rrange","idx_f0","label",
+    "summit_wind"   # 2026-09-23 追加（末尾に足して既存列の位置を変えない）。展望地点の地上風 m/s、記録のみ
 ) -join ","
 
 function Get-UnkaiDetailLines {
@@ -88,7 +89,8 @@ function Get-UnkaiDetailLines {
                 (Format-UnkaiNum $r.v 3), (Format-UnkaiBool $r.gate_f), (Format-UnkaiBool $r.gate_v),
                 (Format-UnkaiInt $r.idx), (Format-UnkaiInt $r.idx_add), (Format-UnkaiInt $r.idx_b),
                 (Format-UnkaiInt $r.idx_c_mlin), (Format-UnkaiInt $r.idx_c_mpow), (Format-UnkaiInt $r.idx_c_rrange),
-                (Format-UnkaiInt $r.idx_f0), $r.label
+                (Format-UnkaiInt $r.idx_f0), $r.label,
+                (Format-UnkaiNum $h.vp_wind 2)
             ) -join ",")
         }
     }
@@ -267,10 +269,10 @@ function Get-UnkaiLabHtml {
         # --- V の内訳 ---
         [void]$sb.AppendLine('<h3>V の内訳</h3>')
         [void]$sb.AppendLine('<div class="wrap"><table>')
-        [void]$sb.AppendLine('<tr><th class="l" rowspan="2">日時</th><th colspan="6">V_summit（展望地点が雲の中にないか・主）</th><th colspan="3">V_vis（予報視程）</th><th colspan="3">記録のみ</th>')
+        [void]$sb.AppendLine('<tr><th class="l" rowspan="2">日時</th><th colspan="6">V_summit（展望地点が雲の中にないか・主）</th><th colspan="3">V_vis（予報視程）</th><th colspan="4">記録のみ</th>')
         foreach ($v in $UnkaiValleys) { [void]$sb.AppendLine(("<th colspan=""2"">{0}</th>" -f $v.name)) }
         [void]$sb.AppendLine('</tr><tr><th>下側高度</th><th>下側湿度</th><th>上側面</th><th>上側高度</th><th>上側湿度</th><th class="prod">V_summit</th>')
-        [void]$sb.AppendLine('<th>視程</th><th class="l">状態</th><th>V_vis</th><th>山上低層雲</th><th>V_sfc</th><th>山上降水</th>')
+        [void]$sb.AppendLine('<th>視程</th><th class="l">状態</th><th>V_vis</th><th>山上低層雲</th><th>V_sfc</th><th>山上降水</th><th>山上風km/h</th>')
         foreach ($v in $UnkaiValleys) { [void]$sb.AppendLine('<th>V_top_fog</th><th>谷上空</th>') }
         [void]$sb.AppendLine('</tr>')
         foreach ($h in $hrs) {
@@ -281,9 +283,11 @@ function Get-UnkaiLabHtml {
                 $h.time, (Format-UnkaiCell $sm.z_below 0), (Format-UnkaiCell $sm.rh_below 0),
                 (&{ if ($null -eq $sm.p_above) { "--" } else { ("{0}hPa" -f $sm.p_above) } }),
                 (Format-UnkaiCell $sm.z_above 0), (Format-UnkaiCell $sm.rh_above 0), $sc, (Format-UnkaiCell $sm.v 2)))
-            [void]$sb.AppendLine(("<td>{0}</td><td class=""l"">{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td{5}>{6}</td>" -f `
+            $windKmh = if ($null -eq $h.vp_wind) { $null } else { [double]$h.vp_wind * 3.6 }
+            [void]$sb.AppendLine(("<td>{0}</td><td class=""l"">{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td{5}>{6}</td><td>{7}</td>" -f `
                 (Format-UnkaiCell $h.vp_vis 0), $h.vis_status, (Format-UnkaiCell $h.v_vis 2),
-                (Format-UnkaiCell $h.vp_low 0), (Format-UnkaiCell $h.v_sfc 2), $gc, (Format-UnkaiCell $h.vp_precip 2)))
+                (Format-UnkaiCell $h.vp_low 0), (Format-UnkaiCell $h.v_sfc 2), $gc, (Format-UnkaiCell $h.vp_precip 2),
+                (Format-UnkaiCell $windKmh 1)))
             foreach ($v in $UnkaiValleys) {
                 $r = $h.valleys | Where-Object { $_.id -eq $v.id }
                 $bw = if ($r.valley_band_wet) { "湿" } else { "－" }

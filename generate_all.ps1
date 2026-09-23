@@ -61,7 +61,7 @@ try {
 # 失敗しても天気予報3版は生成できるよう、警告のうえ null のまま進める。
 $unkaiA = $null   # best_match
 $unkaiB = $null   # ecmwf_ifs025
-$unkaiM = $null   # 平均版（F は両モデル平均・V は ECMWF 由来）
+$unkaiM = $null   # 平均版（F は best_match・V は ECMWF 由来）
 $unkaiBundleA = $null   # 検証用ページの地点一覧で使うので保持しておく
 try {
     $unkaiBundleA = Get-UnkaiBundle -Model "best_match" -ForecastDays 7 -Timezone $Timezone
@@ -158,7 +158,7 @@ try {
     if ($null -ne $unkaiA) { $historyModels['best_match'] = $unkaiA }
     if ($null -ne $unkaiB) { $historyModels['ecmwf_ifs025'] = $unkaiB }
     if ($null -ne $unkaiM) { $historyModels['average'] = $unkaiM }
-    $averageMode = 'F=mean; V=ecmwf_ifs025'
+    $averageMode = 'F=best_match; V=ecmwf_ifs025'
     $revision = (git -C $PSScriptRoot rev-parse HEAD)
     if ($LASTEXITCODE -ne 0) { throw '履歴に記録するソースのリビジョンを取得できません。' }
     if (git -C $PSScriptRoot diff --name-only -- '*.ps1') { $revision += '+working-tree' }
