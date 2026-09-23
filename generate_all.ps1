@@ -91,7 +91,7 @@ $results = [ordered]@{ "規定版" = $false; "EC版" = $false; "平均版" = $fa
 if ($null -ne $bundleA) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
-            -Timezone $Timezone -Bundle $bundleA -PrefetchedAlerts $alerts -UnkaiHours $unkaiA
+            -Timezone $Timezone -Bundle $bundleA -PrefetchedAlerts $alerts -UnkaiHours $unkaiA -SkipUnkaiFetch
         $results["規定版"] = $true
     } catch {
         Write-Warning ("規定版の生成に失敗しました: {0}" -f $_.Exception.Message)
@@ -104,7 +104,7 @@ if ($null -ne $bundleB) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
             -Timezone $Timezone -Models "ecmwf_ifs025" -OutName "lowcloud_ec" -ModelLabel "[ECMWF]" `
-            -Bundle $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiB
+            -Bundle $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiB -SkipUnkaiFetch
         $results["EC版"] = $true
     } catch {
         Write-Warning ("EC版の生成に失敗しました: {0}" -f $_.Exception.Message)
@@ -116,7 +116,7 @@ if ($null -ne $bundleB) {
 if ($null -ne $bundleA -and $null -ne $bundleB) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud_avg.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
-            -Timezone $Timezone -BundleA $bundleA -BundleB $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiM
+            -Timezone $Timezone -BundleA $bundleA -BundleB $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiM -SkipUnkaiFetch
         $results["平均版"] = $true
     } catch {
         Write-Warning ("平均版の生成に失敗しました: {0}" -f $_.Exception.Message)

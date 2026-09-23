@@ -35,7 +35,8 @@ param(
     [string]$ModelLabel  = "",            # HTML見出しに付記するモデル表記（例 "[ECMWF]"）
     [object]$Bundle      = $null,         # generate_all.ps1 から渡される取得済みデータ（省略時は自前で取得）
     [object]$PrefetchedAlerts = $null,    # 同・取得済みの警報一覧
-    [object]$UnkaiHours  = $null          # 同・計算済みの雲海指数（省略時は自前で取得・計算）
+    [object]$UnkaiHours  = $null,         # 同・計算済みの雲海指数（省略時は自前で取得・計算）
+    [switch]$SkipUnkaiFetch               # generate_all.ps1 用。UnkaiHours が null でも取り直さない（取得失敗の連鎖で時間切れになるため）
 )
 
 $ErrorActionPreference = "Stop"
@@ -497,7 +498,7 @@ $futureRows = @($rows | Where-Object { -not $_.isPast })   # コンソール/CSV
 # generate_all.ps1 から呼ばれる場合は計算済みのものを受け取り、再取得しない。
 # 失敗しても天気予報本体は出せるように、握りつぶさず警告して null のまま進む。
 $unkaiHours = $UnkaiHours
-if ($null -eq $unkaiHours) {
+if ($null -eq $unkaiHours -and -not $SkipUnkaiFetch) {
     try {
         $unkaiHours = Get-UnkaiTable -Bundle (Get-UnkaiBundle -Model $Models -ForecastDays $WeeklyDays -Timezone $Timezone)
     } catch {

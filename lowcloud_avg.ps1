@@ -29,7 +29,8 @@ param(
     [object]$BundleA     = $null,         # generate_all.ps1 から渡される取得済みデータ（best_match）
     [object]$BundleB     = $null,         # 同（ecmwf_ifs025）
     [object]$PrefetchedAlerts = $null,    # 同・取得済みの警報一覧
-    [object]$UnkaiHours  = $null          # 同・計算済みの雲海指数（F は両モデル平均・V は ECMWF 由来）
+    [object]$UnkaiHours  = $null,         # 同・計算済みの雲海指数（F は両モデル平均・V は ECMWF 由来）
+    [switch]$SkipUnkaiFetch               # generate_all.ps1 用。UnkaiHours が null でも取り直さない（取得失敗の連鎖で時間切れになるため）
 )
 
 $ErrorActionPreference = "Stop"
@@ -54,7 +55,7 @@ function Avg2 {
     if ($null -eq $b) { return [double]$a }
     return ([double]$a + [double]$b) / 2.0
 }
-# 加重平均（片方欠損時はもう片方をそのまま使う）。全雲量の 規定版0.6:ECMWF0.4 用（2026-07-14追加）
+# 加重平均（片方欠損時はもう片方をそのまま使う）。降水量・全雲量の 規定版0.7:ECMWF0.3 用（2026-07-14追加、2026-07-20に0.6:0.4から変更）
 function AvgW {
     param($a, $b, [double]$wa, [double]$wb)
     if ($null -eq $a -and $null -eq $b) { return $null }
@@ -226,6 +227,7 @@ function Build-CompoundWeekly {
     $daytime = @($dayRowsAll | Where-Object { $h = ([datetime]$_.time).Hour; $h -ge 6 -and $h -le 18 })
     $classes = @()
     foreach ($r in $daytime) {
+        if ($r.wkey -eq "unknown") { continue }   # 欠測の時刻は複合表現に数えない
         $c = Class-Of $r.wkey
         if ($c -eq "雷") { $c = "雨" }   # 雷は文言上「雨」に折り込む（アイコンはhasThunderで別途最優先）
         $classes += $c
@@ -313,7 +315,12 @@ function Build-AvgRows {
         $totAvg  = AvgW $hA.cloud_cover[$i] $bTot 0.7 0.3
         $codeA   = $hA.weather_code[$i]
 
-        $derived = Derive-HourlyWeather -codeA $codeA -codeB $codeB -precip (Or0 $precAvg) -snow (Or0 $snowAvg) -total (Or0 $totAvg)
+        # 両モデルとも降水量・全雲量が欠測なら天気を決めない（欠測を0として「快晴・0.0mm」と出さない）
+        if ($null -eq $precAvg -and $null -eq $totAvg) {
+            $derived = @{ key = "unknown"; label = "--" }
+        } else {
+            $derived = Derive-HourlyWeather -codeA $codeA -codeB $codeB -precip (Or0 $precAvg) -snow (Or0 $snowAvg) -total (Or0 $totAvg)
+        }
 
         $dt  = [datetime]($t -replace 'T', ' ')
         $jd  = Get-JD -utc $dt.AddHours(-9)
@@ -336,7 +343,7 @@ function Build-AvgRows {
             tempAdj = if ($null -eq $tempAvg) { $null } else { $tempAvg + $tAdj }
             wind    = $windAvg
             pop     = $popAvg
-            precip  = (Or0 $precAvg)
+            precip  = $precAvg   # 欠測は null のまま（表示は「--」）
             snow    = (Or0 $snowAvg)
             low     = $lowAvg
             mid     = $midAvg
@@ -358,12 +365,14 @@ function Build-AvgRows {
 
 function Build-AvgDaily {
     param($allRows, $sunMap, [int]$days)
-    $grouped = $allRows | Group-Object { ([datetime]$_.time).Date } | Sort-Object Name
+    # 日付キーは yyyy-MM-dd にする。DateTime の文字列表現は実行環境のカルチャで変わり、
+    # 名前順だと年末（Actions の Invariant では 01/01/2027 が 12/30/2026 より前）に並びが崩れるため。
+    $grouped = $allRows | Group-Object { ([datetime]$_.time).ToString('yyyy-MM-dd') } | Sort-Object Name
     $daily = New-Object System.Collections.Generic.List[object]
     $count = 0
     foreach ($g in $grouped) {
         if ($count -ge $days) { break }
-        $date = [datetime]$g.Name
+        $date = [datetime]::ParseExact($g.Name, 'yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture)
         $dayRows = @($g.Group)
 
         $cw = Build-CompoundWeekly -dayRowsAll $dayRows
@@ -560,14 +569,14 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
         [void]$sb.AppendLine('</tr>')
     }
 
-    Row "天気" { param($r) "<td class=""ico"">{0}<div class=""wt"">{1}</div></td>" -f $WeatherSvg[(Get-AvgIconKey $r.wkey)], $r.weather }
+    Row "天気" { param($r) if ($r.wkey -eq "unknown") { "<td class=""ico"">--</td>" } else { "<td class=""ico"">{0}<div class=""wt"">{1}</div></td>" -f $WeatherSvg[(Get-AvgIconKey $r.wkey)], $r.weather } }
     Row '<span class="lcl">低層雲</span> 霧' { param($r) "<td class=""low"" style=""{0}"">{1:0}</td>" -f (Cloud-Bg $r.low), $r.low }
     Row "気温℃" { param($r) "<td class=""temp"">{0}</td>" -f (Format-DisplayTemperature $r.tempAdj) }
     Row "風速m/s" { param($r)
         $wbg = if ($r.wind -ge 6) { ' style="background:#ffe0b2"' } elseif ($r.wind -ge 3) { ' style="background:#fff9c4"' } else { '' }
         "<td{0}>{1:0.0}</td>" -f $wbg, $r.wind
     }
-    Row "雨量mm" { param($r) "<td style=""{0}"">{1:0.0}</td>" -f (Rain-Bg $r.precip), $r.precip }
+    Row "雨量mm" { param($r) if ($null -eq $r.precip) { "<td>--</td>" } else { "<td style=""{0}"">{1:0.0}</td>" -f (Rain-Bg $r.precip), $r.precip } }
     Row "全雲量%" { param($r) "<td style=""{0}"">{1:0}</td>" -f (Cloud-Bg $r.total), $r.total }
 
     $moonRise = @{}; $moonSet = @{}; $moonTransit = @{}; $ageAt = @{}
@@ -755,7 +764,7 @@ Assert-RowsUsable -Rows $rows -Label $OutName
 # F は両モデルの平均、V は ECMWF 由来（カメラ実測との相関比較による2026-09-17の運用変更）。
 # 混成である旨は凡例に明記する。失敗しても天気予報本体は出せるよう null のまま進む。
 $unkaiHours = $UnkaiHours
-if ($null -eq $unkaiHours) {
+if ($null -eq $unkaiHours -and -not $SkipUnkaiFetch) {
     try {
         $ta = Get-UnkaiTable -Bundle (Get-UnkaiBundle -Model "best_match"    -ForecastDays $WeeklyDays -Timezone $Timezone)
         $tb = Get-UnkaiTable -Bundle (Get-UnkaiBundle -Model "ecmwf_ifs025" -ForecastDays $WeeklyDays -Timezone $Timezone)

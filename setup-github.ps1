@@ -9,7 +9,8 @@
        例: https://github.com/あなたのID/himezuraso-weather
     2. GitHub で Personal Access Token (PAT) を発行
        Settings → Developer settings → Personal access tokens → Fine-grained tokens
-       権限: Contents (Read and Write)
+       権限: Contents / Actions / Issues をそれぞれ Read and Write
+         （Actions はローカルトリガーの workflow_dispatch、Issues は更新停止の通知に使う。SYSTEM.md 9-3・9-5）
     3. 下の $RepoUrl と $UserName を書き換えてから実行
 
 .EXAMPLE

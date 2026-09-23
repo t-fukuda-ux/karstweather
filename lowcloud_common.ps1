@@ -149,6 +149,11 @@ function Assert-BundleUsable {
     if ($n -lt $MinHourlyRows) {
         throw ("{0}: 毎時データが{1}本しかありません（最低{2}本必要）。" -f $label, $n, $MinHourlyRows)
     }
+    # 時刻だけ揃っていて値が全部 null の応答も「中身が無い」扱いにする
+    $valid = @($Bundle.hourly.temperature_2m | Where-Object { $null -ne $_ }).Count
+    if ($valid -lt $MinHourlyRows) {
+        throw ("{0}: 気温の値が{1}本しかありません（最低{2}本必要）。" -f $label, $valid, $MinHourlyRows)
+    }
 }
 
 # 生成直前の最終確認。日付の絞り込み後に0本になっている場合もここで止める。
@@ -389,7 +394,9 @@ function Get-StarIndex {
     $bTwi  = Get-TwilightBrightness -s $s
     $B = $bMoon + $bTwi
     if ($B -gt 100) { $B = 100 }
-    $c = if ($null -eq $totalCloud) { 0.0 } else { [double]$totalCloud }
+    # 雲量が欠測なら指数を出さない（0%扱いにすると星空指数が高く出る）
+    if ($null -eq $totalCloud) { return $null }
+    $c = [double]$totalCloud
     $idx = (100 - $c) * (1 - $B / 100)
     # 降水量で減衰（1mm未満の雨は×0.7、1mm以上は×0.4。降水確率はMSMで非提供のため不使用）
     $pr = if ($null -eq $precip) { 0.0 } else { [double]$precip }

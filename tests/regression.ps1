@@ -61,6 +61,26 @@ Assert ($mixed[0].summit.v -eq 0.5) '平均版のV説明情報もEC由来'
 Assert ((Derive-HourlyWeather -codeA 71 -codeB 71 -precip 1.4 -snow 1.0 -total 100).key -eq 'snow') '純粋な雪をみぞれにしない'
 Assert ((Derive-HourlyWeather -codeA 71 -codeB 71 -precip 0.3 -snow 0.2 -total 100).key -eq 'snow_weak') '弱い雪'
 Assert ((Derive-HourlyWeather -codeA 68 -codeB 68 -precip 2.0 -snow 0.5 -total 100).key -eq 'sleet') '雨の分が残ればみぞれ'
+# 年末をまたいでも週間カードは日付順（Actions と同じ Invariant カルチャで確認）。
+$h2=@{}
+foreach ($key in $h.Keys) { $h2[$key]=@() }
+for ($i=0;$i -lt 96;$i++) {
+    $h2.time += ([datetime]'2026-12-30').AddHours($i).ToString('yyyy-MM-ddTHH:mm')
+    foreach ($k in @($h.Keys | Where-Object { $_ -ne 'time' })) { $h2[$k] += 0 }
+}
+$savedCulture=[Threading.Thread]::CurrentThread.CurrentCulture
+[Threading.Thread]::CurrentThread.CurrentCulture=[Globalization.CultureInfo]::InvariantCulture
+try { $yearEnd=@(Build-AvgDaily -allRows (Build-AvgRows -hA $h2 -hB $h2) -sunMap @{} -days 4) }
+finally { [Threading.Thread]::CurrentThread.CurrentCulture=$savedCulture }
+Assert ((@($yearEnd | ForEach-Object { $_.date.ToString('MM-dd') }) -join ',') -eq '12-30,12-31,01-01,01-02') '年末の週間カードを日付順にする'
+# 欠測を0として扱わない（天気は「--」、雨量は null）。
+$h3=@{}; foreach ($key in $h.Keys) { $h3[$key]=@($h[$key]) }
+$h3.precipitation=@($h.precipitation | ForEach-Object { $null }); $h3.cloud_cover=@($h.cloud_cover | ForEach-Object { $null })
+$missingRow=@(Build-AvgRows -hA $h3 -hB $h3)[0]
+Assert ($missingRow.wkey -eq 'unknown' -and $null -eq $missingRow.precip) '両モデル欠測を快晴・0.0mmにしない'
+$caught=$false
+try { Assert-BundleUsable -Bundle @{hourly=@{time=$h.time;temperature_2m=@($h.time | ForEach-Object { $null })}} -Model 'test' } catch { $caught=$true }
+Assert $caught '値が全部 null の応答は中身が無い扱いにする'
 # 警報の取得失敗を「発表なし」と表示しない。
 $savedInvoke=${function:Invoke-JsonWithRetry}
 function Invoke-JsonWithRetry { throw 'offline' }
