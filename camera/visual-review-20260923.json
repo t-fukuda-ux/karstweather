@@ -1,0 +1,916 @@
+{
+ "reviewer": "Claude（サブエージェント4体が3日ずつ分担）による画像目視。現地の人による判定ではない",
+ "reviewed_at": "2026-09-23",
+ "blind": "数値・予報・既存ラベルを一切見ずに画像だけで判定（CSV/JSON/スクリプトは読まない指示）。基準合わせに visual-review-20260911.json の D/B/H/C 各1枚を見本として提示",
+ "criteria": "fog-criteria-v1.json の D/B/H/C/U（奥の斜面約200〜400mの見え方）",
+ "split": "prospective（v1 基準固定後の 2026-09-12〜09-23）",
+ "spot_check": "09-17 05:50（C、自動判定は靄で誤り）と 09-21 05:50（B）をメイン会話で目視確認し一致",
+ "observations": [
+  {
+   "time": "2026-09-12 05:50",
+   "image": "images/mezuru_20260912_0550.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋見えず、キャラバンも薄い"
+  },
+  {
+   "time": "2026-09-12 06:50",
+   "image": "images/mezuru_20260912_0650.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋輪郭ごく薄い"
+  },
+  {
+   "time": "2026-09-12 07:50",
+   "image": "images/mezuru_20260912_0750.jpg",
+   "visual": "D",
+   "visual_note": "非常に濃い霧、手前の柵もかすむ"
+  },
+  {
+   "time": "2026-09-12 08:50",
+   "image": "images/mezuru_20260912_0850.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋見えず"
+  },
+  {
+   "time": "2026-09-12 09:50",
+   "image": "images/mezuru_20260912_0950.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋輪郭弱い、車"
+  },
+  {
+   "time": "2026-09-12 10:50",
+   "image": "images/mezuru_20260912_1050.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋輪郭ごく薄い"
+  },
+  {
+   "time": "2026-09-12 11:50",
+   "image": "images/mezuru_20260912_1150.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋ほぼ見えず、車"
+  },
+  {
+   "time": "2026-09-12 12:50",
+   "image": "images/mezuru_20260912_1250.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋見えず、バス"
+  },
+  {
+   "time": "2026-09-12 13:50",
+   "image": "images/mezuru_20260912_1350.jpg",
+   "visual": "D",
+   "visual_note": "非常に濃い霧、車"
+  },
+  {
+   "time": "2026-09-12 14:50",
+   "image": "images/mezuru_20260912_1450.jpg",
+   "visual": "D",
+   "visual_note": "非常に濃い霧、車"
+  },
+  {
+   "time": "2026-09-12 15:50",
+   "image": "images/mezuru_20260912_1550.jpg",
+   "visual": "D",
+   "visual_note": "非常に濃い霧、車"
+  },
+  {
+   "time": "2026-09-12 16:50",
+   "image": "images/mezuru_20260912_1650.jpg",
+   "visual": "D",
+   "visual_note": "非常に濃い霧、手前もかすむ"
+  },
+  {
+   "time": "2026-09-12 17:50",
+   "image": "images/mezuru_20260912_1750.jpg",
+   "visual": "D",
+   "visual_note": "非常に濃い霧、やや暗い"
+  },
+  {
+   "time": "2026-09-13 05:50",
+   "image": "images/mezuru_20260913_0550.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋見えず"
+  },
+  {
+   "time": "2026-09-13 06:50",
+   "image": "images/mezuru_20260913_0650.jpg",
+   "visual": "B",
+   "visual_note": "逆光、小屋は見えるが奥は白い、人"
+  },
+  {
+   "time": "2026-09-13 07:50",
+   "image": "images/mezuru_20260913_0750.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋見えず"
+  },
+  {
+   "time": "2026-09-13 08:50",
+   "image": "images/mezuru_20260913_0850.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋ほぼ見えず"
+  },
+  {
+   "time": "2026-09-13 09:50",
+   "image": "images/mezuru_20260913_0950.jpg",
+   "visual": "D",
+   "visual_note": "小屋輪郭弱い、車"
+  },
+  {
+   "time": "2026-09-13 10:50",
+   "image": "images/mezuru_20260913_1050.jpg",
+   "visual": "B",
+   "visual_note": "小屋見える、奥は白い、車"
+  },
+  {
+   "time": "2026-09-13 11:50",
+   "image": "images/mezuru_20260913_1150.jpg",
+   "visual": "B",
+   "visual_note": "小屋見える、奥は白い、車・人"
+  },
+  {
+   "time": "2026-09-13 12:50",
+   "image": "images/mezuru_20260913_1250.jpg",
+   "visual": "D",
+   "visual_note": "小屋輪郭弱め、D/B境界、車"
+  },
+  {
+   "time": "2026-09-13 13:50",
+   "image": "images/mezuru_20260913_1350.jpg",
+   "visual": "D",
+   "visual_note": "小屋輪郭弱い、車"
+  },
+  {
+   "time": "2026-09-13 14:50",
+   "image": "images/mezuru_20260913_1450.jpg",
+   "visual": "D",
+   "visual_note": "小屋輪郭弱い、人・車"
+  },
+  {
+   "time": "2026-09-13 15:50",
+   "image": "images/mezuru_20260913_1550.jpg",
+   "visual": "D",
+   "visual_note": "小屋輪郭弱い"
+  },
+  {
+   "time": "2026-09-13 16:50",
+   "image": "images/mezuru_20260913_1650.jpg",
+   "visual": "D",
+   "visual_note": "小屋輪郭弱い、車"
+  },
+  {
+   "time": "2026-09-13 17:50",
+   "image": "images/mezuru_20260913_1750.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋ごく薄い"
+  },
+  {
+   "time": "2026-09-14 05:50",
+   "image": "images/mezuru_20260914_0550.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋輪郭弱い"
+  },
+  {
+   "time": "2026-09-14 06:50",
+   "image": "images/mezuru_20260914_0650.jpg",
+   "visual": "D",
+   "visual_note": "小屋輪郭弱い、車"
+  },
+  {
+   "time": "2026-09-14 07:50",
+   "image": "images/mezuru_20260914_0750.jpg",
+   "visual": "B",
+   "visual_note": "小屋見える、奥は白い、D/B境界、車"
+  },
+  {
+   "time": "2026-09-14 08:50",
+   "image": "images/mezuru_20260914_0850.jpg",
+   "visual": "B",
+   "visual_note": "小屋見える、奥は白い"
+  },
+  {
+   "time": "2026-09-14 09:50",
+   "image": "images/mezuru_20260914_0950.jpg",
+   "visual": "B",
+   "visual_note": "小屋明瞭、駐車場付近まで薄く見える、奥は白い"
+  },
+  {
+   "time": "2026-09-14 10:50",
+   "image": "images/mezuru_20260914_1050.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭"
+  },
+  {
+   "time": "2026-09-14 11:50",
+   "image": "images/mezuru_20260914_1150.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、晴れ、人多数"
+  },
+  {
+   "time": "2026-09-14 12:50",
+   "image": "images/mezuru_20260914_1250.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、人・車"
+  },
+  {
+   "time": "2026-09-14 13:50",
+   "image": "images/mezuru_20260914_1350.jpg",
+   "visual": "B",
+   "visual_note": "小屋明瞭、奥は白い、傘の人(雨)"
+  },
+  {
+   "time": "2026-09-14 14:50",
+   "image": "images/mezuru_20260914_1450.jpg",
+   "visual": "H",
+   "visual_note": "奥の斜面見えるが霞む、稜線に雲"
+  },
+  {
+   "time": "2026-09-14 15:50",
+   "image": "images/mezuru_20260914_1550.jpg",
+   "visual": "B",
+   "visual_note": "小屋明瞭、東屋かすか、奥は白い、人"
+  },
+  {
+   "time": "2026-09-14 16:50",
+   "image": "images/mezuru_20260914_1650.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋輪郭弱い"
+  },
+  {
+   "time": "2026-09-14 17:50",
+   "image": "images/mezuru_20260914_1750.jpg",
+   "visual": "D",
+   "visual_note": "濃霧、小屋ほぼ見えず"
+  },
+  {
+   "time": "2026-09-15 05:50",
+   "image": "images/mezuru_20260915_0550.jpg",
+   "visual": "H",
+   "visual_note": "早朝で薄暗い、奥の斜面上部が白っぽい"
+  },
+  {
+   "time": "2026-09-15 06:50",
+   "image": "images/mezuru_20260915_0650.jpg",
+   "visual": "D",
+   "visual_note": "小屋の輪郭がほぼ消える"
+  },
+  {
+   "time": "2026-09-15 07:50",
+   "image": "images/mezuru_20260915_0750.jpg",
+   "visual": "D",
+   "visual_note": "小屋の輪郭が弱い"
+  },
+  {
+   "time": "2026-09-15 08:50",
+   "image": "images/mezuru_20260915_0850.jpg",
+   "visual": "B",
+   "visual_note": "小屋は明瞭、奥は白"
+  },
+  {
+   "time": "2026-09-15 09:50",
+   "image": "images/mezuru_20260915_0950.jpg",
+   "visual": "D",
+   "visual_note": "小屋の輪郭が弱い"
+  },
+  {
+   "time": "2026-09-15 10:50",
+   "image": "images/mezuru_20260915_1050.jpg",
+   "visual": "H",
+   "visual_note": "奥の斜面は見えるが白く霞む、濡れた路面"
+  },
+  {
+   "time": "2026-09-15 11:50",
+   "image": "images/mezuru_20260915_1150.jpg",
+   "visual": "C",
+   "visual_note": "奥の斜面に詳細あり、右上わずかに霞"
+  },
+  {
+   "time": "2026-09-15 12:50",
+   "image": "images/mezuru_20260915_1250.jpg",
+   "visual": "B",
+   "visual_note": "駐車場は見えるが奥の斜面は白、車"
+  },
+  {
+   "time": "2026-09-15 13:50",
+   "image": "images/mezuru_20260915_1350.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭"
+  },
+  {
+   "time": "2026-09-15 14:50",
+   "image": "images/mezuru_20260915_1450.jpg",
+   "visual": "C",
+   "visual_note": "軽い霞"
+  },
+  {
+   "time": "2026-09-15 15:50",
+   "image": "images/mezuru_20260915_1550.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭"
+  },
+  {
+   "time": "2026-09-15 16:50",
+   "image": "images/mezuru_20260915_1650.jpg",
+   "visual": "H",
+   "visual_note": "奥の斜面がやや霞む"
+  },
+  {
+   "time": "2026-09-15 17:50",
+   "image": "images/mezuru_20260915_1750.jpg",
+   "visual": "H",
+   "visual_note": "奥がやや霞む、手前に車と人"
+  },
+  {
+   "time": "2026-09-16 05:50",
+   "image": "images/mezuru_20260916_0550.jpg",
+   "visual": "D",
+   "visual_note": "暗い、全面霧"
+  },
+  {
+   "time": "2026-09-16 06:50",
+   "image": "images/mezuru_20260916_0650.jpg",
+   "visual": "D",
+   "visual_note": "小屋の輪郭が弱い"
+  },
+  {
+   "time": "2026-09-16 07:50",
+   "image": "images/mezuru_20260916_0750.jpg",
+   "visual": "D",
+   "visual_note": "小屋ほぼ見えない"
+  },
+  {
+   "time": "2026-09-16 08:50",
+   "image": "images/mezuru_20260916_0850.jpg",
+   "visual": "D",
+   "visual_note": "小屋ほぼ見えない"
+  },
+  {
+   "time": "2026-09-16 09:50",
+   "image": "images/mezuru_20260916_0950.jpg",
+   "visual": "B",
+   "visual_note": "小屋明瞭、奥と左側に霧が流れる、車"
+  },
+  {
+   "time": "2026-09-16 10:50",
+   "image": "images/mezuru_20260916_1050.jpg",
+   "visual": "D",
+   "visual_note": "小屋の輪郭が弱い"
+  },
+  {
+   "time": "2026-09-16 11:50",
+   "image": "images/mezuru_20260916_1150.jpg",
+   "visual": "H",
+   "visual_note": "奥の斜面は見えるが上部が霞む、濡れた路面"
+  },
+  {
+   "time": "2026-09-16 12:50",
+   "image": "images/mezuru_20260916_1250.jpg",
+   "visual": "B",
+   "visual_note": "駐車場は見えるが奥の斜面は白、濡れた路面"
+  },
+  {
+   "time": "2026-09-16 13:50",
+   "image": "images/mezuru_20260916_1350.jpg",
+   "visual": "D",
+   "visual_note": "小屋の輪郭が弱い、車"
+  },
+  {
+   "time": "2026-09-16 14:50",
+   "image": "images/mezuru_20260916_1450.jpg",
+   "visual": "H",
+   "visual_note": "奥の斜面が白く霞む、濡れた路面"
+  },
+  {
+   "time": "2026-09-16 15:50",
+   "image": "images/mezuru_20260916_1550.jpg",
+   "visual": "H",
+   "visual_note": "奥の斜面は見えるがやや霞む、濡れた路面"
+  },
+  {
+   "time": "2026-09-16 16:50",
+   "image": "images/mezuru_20260916_1650.jpg",
+   "visual": "D",
+   "visual_note": "小屋の輪郭が弱い"
+  },
+  {
+   "time": "2026-09-16 17:50",
+   "image": "images/mezuru_20260916_1750.jpg",
+   "visual": "B",
+   "visual_note": "小屋明瞭、奥は白、人と車"
+  },
+  {
+   "time": "2026-09-17 05:50",
+   "image": "images/mezuru_20260917_0550.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、早朝でやや暗い、車"
+  },
+  {
+   "time": "2026-09-17 06:50",
+   "image": "images/mezuru_20260917_0650.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭"
+  },
+  {
+   "time": "2026-09-17 07:50",
+   "image": "images/mezuru_20260917_0750.jpg",
+   "visual": "C",
+   "visual_note": "晴れ、奥まで明瞭"
+  },
+  {
+   "time": "2026-09-17 08:50",
+   "image": "images/mezuru_20260917_0850.jpg",
+   "visual": "C",
+   "visual_note": "晴れ、奥まで明瞭"
+  },
+  {
+   "time": "2026-09-17 09:50",
+   "image": "images/mezuru_20260917_0950.jpg",
+   "visual": "C",
+   "visual_note": "晴れ、奥まで明瞭"
+  },
+  {
+   "time": "2026-09-17 10:50",
+   "image": "images/mezuru_20260917_1050.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、車・人多数"
+  },
+  {
+   "time": "2026-09-17 11:50",
+   "image": "images/mezuru_20260917_1150.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、車・人多数"
+  },
+  {
+   "time": "2026-09-17 12:50",
+   "image": "images/mezuru_20260917_1250.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、車・バイク"
+  },
+  {
+   "time": "2026-09-17 13:50",
+   "image": "images/mezuru_20260917_1350.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、車多数"
+  },
+  {
+   "time": "2026-09-17 14:50",
+   "image": "images/mezuru_20260917_1450.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、車多数"
+  },
+  {
+   "time": "2026-09-17 15:50",
+   "image": "images/mezuru_20260917_1550.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、車・人"
+  },
+  {
+   "time": "2026-09-17 16:50",
+   "image": "images/mezuru_20260917_1650.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、逆光気味、車"
+  },
+  {
+   "time": "2026-09-17 17:50",
+   "image": "images/mezuru_20260917_1750.jpg",
+   "visual": "D",
+   "visual_note": "急に濃霧、キャラバンも霞む"
+  },
+  {
+   "time": "2026-09-18 05:50",
+   "image": "images/mezuru_20260918_0550.jpg",
+   "visual": "D",
+   "visual_note": "濃霧, 手前に車, やや暗い"
+  },
+  {
+   "time": "2026-09-18 06:50",
+   "image": "images/mezuru_20260918_0650.jpg",
+   "visual": "H",
+   "visual_note": "奥はかなり白い(B寄り), 東屋・看板は見える"
+  },
+  {
+   "time": "2026-09-18 07:50",
+   "image": "images/mezuru_20260918_0750.jpg",
+   "visual": "D",
+   "visual_note": "濃霧, 小屋ほぼ消失"
+  },
+  {
+   "time": "2026-09-18 08:50",
+   "image": "images/mezuru_20260918_0850.jpg",
+   "visual": "D",
+   "visual_note": "濃霧"
+  },
+  {
+   "time": "2026-09-18 09:50",
+   "image": "images/mezuru_20260918_0950.jpg",
+   "visual": "D",
+   "visual_note": "濃霧, 小屋消失"
+  },
+  {
+   "time": "2026-09-18 10:50",
+   "image": "images/mezuru_20260918_1050.jpg",
+   "visual": "H",
+   "visual_note": "奥はかなり白い(B寄り), 斜面うっすら"
+  },
+  {
+   "time": "2026-09-18 11:50",
+   "image": "images/mezuru_20260918_1150.jpg",
+   "visual": "D",
+   "visual_note": "濃霧"
+  },
+  {
+   "time": "2026-09-18 12:50",
+   "image": "images/mezuru_20260918_1250.jpg",
+   "visual": "D",
+   "visual_note": "濃霧, キャンピングカーもほぼ消失"
+  },
+  {
+   "time": "2026-09-18 13:50",
+   "image": "images/mezuru_20260918_1350.jpg",
+   "visual": "D",
+   "visual_note": "濃霧"
+  },
+  {
+   "time": "2026-09-18 14:50",
+   "image": "images/mezuru_20260918_1450.jpg",
+   "visual": "D",
+   "visual_note": "濃霧"
+  },
+  {
+   "time": "2026-09-18 15:50",
+   "image": "images/mezuru_20260918_1550.jpg",
+   "visual": "D",
+   "visual_note": "濃霧"
+  },
+  {
+   "time": "2026-09-18 16:50",
+   "image": "images/mezuru_20260918_1650.jpg",
+   "visual": "D",
+   "visual_note": "濃霧, 小屋輪郭弱い"
+  },
+  {
+   "time": "2026-09-18 17:50",
+   "image": "images/mezuru_20260918_1750.jpg",
+   "visual": "B",
+   "visual_note": "小屋はやや霞むが見える, 奥は白"
+  },
+  {
+   "time": "2026-09-19 05:50",
+   "image": "images/mezuru_20260919_0550.jpg",
+   "visual": "C",
+   "visual_note": "薄暗い"
+  },
+  {
+   "time": "2026-09-19 06:50",
+   "image": "images/mezuru_20260919_0650.jpg",
+   "visual": "C",
+   "visual_note": "左上に霧片, 朝日"
+  },
+  {
+   "time": "2026-09-19 07:50",
+   "image": "images/mezuru_20260919_0750.jpg",
+   "visual": "C",
+   "visual_note": ""
+  },
+  {
+   "time": "2026-09-19 08:50",
+   "image": "images/mezuru_20260919_0850.jpg",
+   "visual": "C",
+   "visual_note": ""
+  },
+  {
+   "time": "2026-09-19 09:50",
+   "image": "images/mezuru_20260919_0950.jpg",
+   "visual": "C",
+   "visual_note": ""
+  },
+  {
+   "time": "2026-09-19 10:50",
+   "image": "images/mezuru_20260919_1050.jpg",
+   "visual": "C",
+   "visual_note": "車・人多数"
+  },
+  {
+   "time": "2026-09-19 11:50",
+   "image": "images/mezuru_20260919_1150.jpg",
+   "visual": "C",
+   "visual_note": "車・人多数"
+  },
+  {
+   "time": "2026-09-19 12:50",
+   "image": "images/mezuru_20260919_1250.jpg",
+   "visual": "C",
+   "visual_note": "車・人多数"
+  },
+  {
+   "time": "2026-09-19 13:50",
+   "image": "images/mezuru_20260919_1350.jpg",
+   "visual": "C",
+   "visual_note": "車多数"
+  },
+  {
+   "time": "2026-09-19 14:50",
+   "image": "images/mezuru_20260919_1450.jpg",
+   "visual": "C",
+   "visual_note": "車多数"
+  },
+  {
+   "time": "2026-09-19 15:50",
+   "image": "images/mezuru_20260919_1550.jpg",
+   "visual": "C",
+   "visual_note": "車多数"
+  },
+  {
+   "time": "2026-09-19 16:50",
+   "image": "images/mezuru_20260919_1650.jpg",
+   "visual": "C",
+   "visual_note": "西日"
+  },
+  {
+   "time": "2026-09-19 17:50",
+   "image": "images/mezuru_20260919_1750.jpg",
+   "visual": "C",
+   "visual_note": "夕方"
+  },
+  {
+   "time": "2026-09-20 05:50",
+   "image": "images/mezuru_20260920_0550.jpg",
+   "visual": "C",
+   "visual_note": "薄暗い, ごく薄い霞"
+  },
+  {
+   "time": "2026-09-20 06:50",
+   "image": "images/mezuru_20260920_0650.jpg",
+   "visual": "C",
+   "visual_note": "朝日・影"
+  },
+  {
+   "time": "2026-09-20 07:50",
+   "image": "images/mezuru_20260920_0750.jpg",
+   "visual": "C",
+   "visual_note": "朝日"
+  },
+  {
+   "time": "2026-09-20 08:50",
+   "image": "images/mezuru_20260920_0850.jpg",
+   "visual": "C",
+   "visual_note": ""
+  },
+  {
+   "time": "2026-09-20 09:50",
+   "image": "images/mezuru_20260920_0950.jpg",
+   "visual": "C",
+   "visual_note": ""
+  },
+  {
+   "time": "2026-09-20 10:50",
+   "image": "images/mezuru_20260920_1050.jpg",
+   "visual": "C",
+   "visual_note": "車・人多数"
+  },
+  {
+   "time": "2026-09-20 11:50",
+   "image": "images/mezuru_20260920_1150.jpg",
+   "visual": "C",
+   "visual_note": "車多数"
+  },
+  {
+   "time": "2026-09-20 12:50",
+   "image": "images/mezuru_20260920_1250.jpg",
+   "visual": "C",
+   "visual_note": "車多数"
+  },
+  {
+   "time": "2026-09-20 13:50",
+   "image": "images/mezuru_20260920_1350.jpg",
+   "visual": "C",
+   "visual_note": "車多数"
+  },
+  {
+   "time": "2026-09-20 14:50",
+   "image": "images/mezuru_20260920_1450.jpg",
+   "visual": "C",
+   "visual_note": "車多数"
+  },
+  {
+   "time": "2026-09-20 15:50",
+   "image": "images/mezuru_20260920_1550.jpg",
+   "visual": "C",
+   "visual_note": "車多数"
+  },
+  {
+   "time": "2026-09-20 16:50",
+   "image": "images/mezuru_20260920_1650.jpg",
+   "visual": "C",
+   "visual_note": ""
+  },
+  {
+   "time": "2026-09-20 17:50",
+   "image": "images/mezuru_20260920_1750.jpg",
+   "visual": "C",
+   "visual_note": "西日"
+  },
+  {
+   "time": "2026-09-21 05:50",
+   "image": "images/mezuru_20260921_0550.jpg",
+   "visual": "B",
+   "visual_note": "手前・小屋は見えるが奥の斜面は白く消失、中景もやや霞む、車多数"
+  },
+  {
+   "time": "2026-09-21 06:50",
+   "image": "images/mezuru_20260921_0650.jpg",
+   "visual": "H",
+   "visual_note": "奥の斜面は見えるが白っぽく霞む、朝の薄霧、車・人"
+  },
+  {
+   "time": "2026-09-21 07:50",
+   "image": "images/mezuru_20260921_0750.jpg",
+   "visual": "C",
+   "visual_note": "晴れ、奥まで明瞭、朝日、車"
+  },
+  {
+   "time": "2026-09-21 08:50",
+   "image": "images/mezuru_20260921_0850.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、車・人"
+  },
+  {
+   "time": "2026-09-21 09:50",
+   "image": "images/mezuru_20260921_0950.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、晴れ"
+  },
+  {
+   "time": "2026-09-21 10:50",
+   "image": "images/mezuru_20260921_1050.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、晴れ、混雑"
+  },
+  {
+   "time": "2026-09-21 11:50",
+   "image": "images/mezuru_20260921_1150.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、晴れ、混雑"
+  },
+  {
+   "time": "2026-09-21 12:50",
+   "image": "images/mezuru_20260921_1250.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、晴れ、混雑"
+  },
+  {
+   "time": "2026-09-21 13:50",
+   "image": "images/mezuru_20260921_1350.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、晴れ、混雑"
+  },
+  {
+   "time": "2026-09-21 14:50",
+   "image": "images/mezuru_20260921_1450.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、曇りがち"
+  },
+  {
+   "time": "2026-09-21 15:50",
+   "image": "images/mezuru_20260921_1550.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、曇りがち"
+  },
+  {
+   "time": "2026-09-21 16:50",
+   "image": "images/mezuru_20260921_1650.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭"
+  },
+  {
+   "time": "2026-09-21 17:50",
+   "image": "images/mezuru_20260921_1750.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、夕方でやや暗い"
+  },
+  {
+   "time": "2026-09-22 05:50",
+   "image": "images/mezuru_20260922_0550.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、早朝でやや暗い"
+  },
+  {
+   "time": "2026-09-22 06:50",
+   "image": "images/mezuru_20260922_0650.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、朝日で赤み・逆光気味"
+  },
+  {
+   "time": "2026-09-22 07:50",
+   "image": "images/mezuru_20260922_0750.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、朝日"
+  },
+  {
+   "time": "2026-09-22 08:50",
+   "image": "images/mezuru_20260922_0850.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴"
+  },
+  {
+   "time": "2026-09-22 09:50",
+   "image": "images/mezuru_20260922_0950.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴"
+  },
+  {
+   "time": "2026-09-22 10:50",
+   "image": "images/mezuru_20260922_1050.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴、混雑"
+  },
+  {
+   "time": "2026-09-22 11:50",
+   "image": "images/mezuru_20260922_1150.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴、混雑"
+  },
+  {
+   "time": "2026-09-22 12:50",
+   "image": "images/mezuru_20260922_1250.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴、混雑"
+  },
+  {
+   "time": "2026-09-22 13:50",
+   "image": "images/mezuru_20260922_1350.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴、混雑"
+  },
+  {
+   "time": "2026-09-22 14:50",
+   "image": "images/mezuru_20260922_1450.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、混雑"
+  },
+  {
+   "time": "2026-09-22 15:50",
+   "image": "images/mezuru_20260922_1550.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、混雑"
+  },
+  {
+   "time": "2026-09-22 16:50",
+   "image": "images/mezuru_20260922_1650.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、西日"
+  },
+  {
+   "time": "2026-09-22 17:50",
+   "image": "images/mezuru_20260922_1750.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、夕日"
+  },
+  {
+   "time": "2026-09-23 05:50",
+   "image": "images/mezuru_20260923_0550.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、早朝でやや暗い"
+  },
+  {
+   "time": "2026-09-23 06:50",
+   "image": "images/mezuru_20260923_0650.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、朝日、焚き火の煙が少し"
+  },
+  {
+   "time": "2026-09-23 07:50",
+   "image": "images/mezuru_20260923_0750.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、朝日"
+  },
+  {
+   "time": "2026-09-23 08:50",
+   "image": "images/mezuru_20260923_0850.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴"
+  },
+  {
+   "time": "2026-09-23 09:50",
+   "image": "images/mezuru_20260923_0950.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴"
+  },
+  {
+   "time": "2026-09-23 10:50",
+   "image": "images/mezuru_20260923_1050.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴"
+  },
+  {
+   "time": "2026-09-23 11:50",
+   "image": "images/mezuru_20260923_1150.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴"
+  },
+  {
+   "time": "2026-09-23 12:50",
+   "image": "images/mezuru_20260923_1250.jpg",
+   "visual": "C",
+   "visual_note": "奥まで明瞭、快晴"
+  }
+ ]
+}
