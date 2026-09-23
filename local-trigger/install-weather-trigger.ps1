@@ -46,7 +46,8 @@ $trigger = New-ScheduledTaskTrigger -Once -At $start `
     -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration (New-TimeSpan -Days 3650)
 
 # Priority 7はWindowsタスクスケジューラの低優先度。重複起動は無視する。
-$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 20) `
+# スクリプト内で10分おきに最大3回再試行するため、打ち切りは60分。RestartCount はタスクが起動できなかった時だけ働く。
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 60) `
     -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 10) -MultipleInstances IgnoreNew
 $settings.Priority = 7
 

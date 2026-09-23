@@ -446,11 +446,11 @@ scheduled cron が理由不明で発火しなくなる現象を確認してい�
 
 - タスク名 `KarstWeatherWorkflowTrigger`。**毎時20分**に起動する。
 - 2026-09-07時点でこのサーバーPCへ登録・有効化済み。旧 `LowCloudForecast` タスクは存在せず、使用しない。
-- PCでは予報計算やgit操作を行わない。公開ページの取得日時を確認し、**50分以内に更新済みなら約数秒で終了**する。
+- トリガーは予報計算やgit操作を行わない。公開ページの取得日時を確認し、**25分以内に更新済みなら約数秒で終了**する（2026-09-23 に50分→25分。50分だと遅れて前時の40〜50分台に走った cron の後で起動を省略し、更新が約100分空いていた）。
 - 毎時20分は「更新が必要か確認する時刻」であり、毎回GitHubに新しい更新を作る時刻ではない。直前のActionsで更新済みなら起動を省略する。
-- 50分以上古い、または公開日時を取得できない時だけGitHub Actionsへ `workflow_dispatch` を送り、Actions成功後に公開ページの取得日時が更新されたことまで確認する。
-- タスク優先度7、PowerShellはBelowNormal、非表示・低権限、重複起動は無視、20分で打ち切る。
-- Starlink等の一時切断で失敗した場合は、10分間隔で最大3回再実行する。各HTTPS要求は15秒で打ち切る。
+- 25分以上古い、または公開日時を取得できない時だけGitHub Actionsへ `workflow_dispatch` を送り、Actions成功後に公開ページの取得日時が更新されたことまで確認する。
+- タスク優先度7、PowerShellはBelowNormal、非表示・低権限、重複起動は無視、再試行を含めて60分で打ち切る。
+- Starlink等の一時切断で失敗した場合は、**スクリプト内で**10分待って最大3回まで試す（タスクスケジューラの再実行は終了コード1では働かないため）。公開確認の待ちは8分。Git Credential Manager の対話は禁止（`GCM_INTERACTIVE=never`）し、固まらずに失敗させる。各HTTPS要求は15秒で打ち切る。
 - 実体とログは `C:\ProgramData\KarstWeatherTrigger`。フォルダは現在ユーザー・SYSTEM・管理者だけが変更できるACLにする。
 - GitHub認証はWindowsに保存されたGit Credential Managerの資格情報を実行中だけ使用し、ログやファイルには保存しない。
 - ログは `C:\ProgramData\KarstWeatherTrigger\weather-trigger.log`。1MBを超えたら直近約2000行へ縮小する。
@@ -636,9 +636,10 @@ SDをやめ、**帯の中で隣接画素の輝度差の絶対値を平均**す�
 | `camera/verify-fog.ps1` | 追跡 | **診断の検証。** ラベルと Open-Meteo の低層雲%を突き合わせ、版ごとの AUC と閾値別の成績をベースライン差つきで出す。`-PastDays 30` で期間を延ばせる |
 | `camera/save-fog-forecast.ps1` | 追跡 | **予報の履歴。** 姫鶴平の毎時予報を発表時刻つきで保存する（1日2回）。これがないと「事前に当てられたか」は検証できない |
 | `camera/install-fog-forecast-task.ps1` | 追跡 | 06:25 と 18:25 のタスク `KarstFogForecast` を登録（`-Remove` で削除）。`-WakeToRun` 付き |
+| `camera/push-camera-data.ps1` | 追跡 | **2つのCSVだけを commit・push する**（2026-09-23〜）。`KarstFogForecast` タスクの2つ目の動作として、予報保存の直後に1日2回走る。main 以外のブランチにいる時や、camera 以外の未送信 commit がある時は送らない（終了コード1）。作業中の変更は `--autostash` で退避する。ログは `camera/push.log` |
 | `camera/fog_forecast.csv` | **追跡** | 予報の履歴。1発表あたり約24行・2.3KB。1日2回で年間約1万行 |
 | `camera/migrate-csv.ps1` | 追跡 | 2026-09-10 の列追加にともなう一度きりの移行。実行済み。`.bak` にバックアップを残す |
-| `camera/mezuru_contrast.csv` | **追跡** | 測定値と判定の記録。他PCや解析で使うためgitに入れる |
+| `camera/mezuru_contrast.csv` | **追跡** | 測定値と判定の記録。他PCや解析で使うためgitに入れる。このPCにしか無いデータなので自動で送る（上記） |
 | `camera/mezuru_contrast.csv.bak` | 除外 | 移行前のバックアップ |
 | `camera/images/` | 除外 | 保存した画像。既定90日で間引く。**2026-09-10 から夜間・薄暮は保存しない**（真っ黒＋ノイズで検証に使えず、1日約1.1MBの約半分がこれだった） |
 | `camera/capture.log` | 除外 | 実行ログ |

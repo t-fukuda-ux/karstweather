@@ -42,8 +42,17 @@ if ($Remove) {
 
 if (-not (Test-Path -LiteralPath $script)) { throw ("スクリプトが見つかりません: {0}" -f $script) }
 
-$action = New-ScheduledTaskAction -Execute "powershell.exe" `
-    -Argument ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"{0}`"" -f $script)
+$pushScript = Join-Path $PSScriptRoot "push-camera-data.ps1"
+if (-not (Test-Path -LiteralPath $pushScript)) { throw ("スクリプトが見つかりません: {0}" -f $pushScript) }
+
+# 予報を保存した後、カメラ記録と予報履歴を GitHub へ送る（このPCにしか無いデータのため）。
+# 動作は順に実行され、1つ目が終了コード1でも2つ目は実行される。
+$action = @(
+    (New-ScheduledTaskAction -Execute "powershell.exe" `
+        -Argument ("-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"{0}`"" -f $script)),
+    (New-ScheduledTaskAction -Execute "powershell.exe" `
+        -Argument ("-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"{0}`"" -f $pushScript))
+)
 
 $triggers = foreach ($t in $AtTimes) { New-ScheduledTaskTrigger -Daily -At $t }
 

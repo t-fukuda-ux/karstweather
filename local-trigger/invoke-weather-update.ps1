@@ -7,8 +7,13 @@ param(
     [string]$Branch = 'main',
     [string]$PublicUrl = 'https://t-fukuda-ux.github.io/karstweather/',
     [int]$RunTimeoutMinutes = 12,
-    [int]$PageTimeoutMinutes = 3,
-    [int]$MaxPublishedAgeMinutes = 50,
+    [int]$PageTimeoutMinutes = 8,
+    # 毎時20分の実行で、直前の cron(11/41分) が遅れて前時の40〜50分台に走っていても今回起動する
+    # （50分だと省略され、更新が約100分空いていた）。
+    [int]$MaxPublishedAgeMinutes = 25,
+    # タスクスケジューラの再実行はスクリプトの終了コード1では働かないため、スクリプト内で再試行する。
+    [int]$MaxAttempts = 3,
+    [int]$RetryWaitMinutes = 10,
     [string]$LogPath = ''
 )
 
@@ -35,6 +40,9 @@ function Limit-LogSize {
 }
 
 function Get-GitHubCredential {
+    # 非表示タスクでは認証ダイアログに応答できず、打ち切りまで固まるため対話を禁止する。
+    $env:GCM_INTERACTIVE = 'never'
+    $env:GIT_TERMINAL_PROMPT = '0'
     $output = @('protocol=https', 'host=github.com', '') | git credential fill 2>$null
     if ($LASTEXITCODE -ne 0) { throw 'GitHubの保存済み認証を取得できません。' }
     $values = @{}
@@ -48,7 +56,7 @@ function Get-GitHubCredential {
 
 function Invoke-GitHubApi {
     param([string]$Uri, [string]$Method = 'GET', [string]$Body = '')
-    $args = @{
+    $request = @{
         Uri = $Uri
         Method = $Method
         Headers = $script:ApiHeaders
@@ -56,10 +64,10 @@ function Invoke-GitHubApi {
         UseBasicParsing = $true
     }
     if ($Body) {
-        $args.Body = $Body
-        $args.ContentType = 'application/json'
+        $request.Body = $Body
+        $request.ContentType = 'application/json'
     }
-    return Invoke-RestMethod @args
+    return Invoke-RestMethod @request
 }
 
 function Get-PublishedAt {
@@ -76,36 +84,22 @@ function Get-PublishedAt {
     )
 }
 
-try {
-    Limit-LogSize
-    $createdNew = $false
-    $script:Mutex = New-Object Threading.Mutex($true, 'Local\KarstWeatherWorkflowTrigger', [ref]$createdNew)
-    if (-not $createdNew) {
-        Write-TriggerLog '前回の処理が実行中のため、今回は何もせず終了します。'
-        exit 0
-    }
-
-    # 宿泊管理処理を優先する。以降は短いHTTPS通信と待機だけを行う。
-    [Diagnostics.Process]::GetCurrentProcess().PriorityClass = [Diagnostics.ProcessPriorityClass]::BelowNormal
-    $start = [DateTimeOffset]::UtcNow
-    $baseline = $null
-    try { $baseline = Get-PublishedAt -Url $PublicUrl } catch { Write-TriggerLog ('更新前ページの確認に失敗: ' + $_.Exception.Message) }
-    if ($null -ne $baseline) {
-        $baselineAge = ($start - $baseline.ToUniversalTime()).TotalMinutes
-        if ($baselineAge -ge -5 -and $baselineAge -lt $MaxPublishedAgeMinutes) {
-            Write-TriggerLog ('公開ページは{0:F0}分前に更新済みのため、GitHub起動を省略します。' -f $baselineAge)
-            exit 0
+function Invoke-UpdateOnce {
+    param([DateTimeOffset]$Start, $Baseline)
+    $start = $Start
+    $baseline = $Baseline
+    if ($null -eq $script:ApiHeaders) {
+        $credential = Get-GitHubCredential
+        $script:ApiHeaders = @{
+            Authorization = 'Bearer ' + $credential.password
+            Accept = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+            'User-Agent' = 'karstweather-local-trigger'
         }
+        $credential.Clear()
     }
-
-    $credential = Get-GitHubCredential
-    $script:ApiHeaders = @{
-        Authorization = 'Bearer ' + $credential.password
-        Accept = 'application/vnd.github+json'
-        'X-GitHub-Api-Version' = '2022-11-28'
-        'User-Agent' = 'karstweather-local-trigger'
-    }
-    $credential.Clear()
+    # 秒を表示しないページなので、起動した分の開始時刻を分単位で比較する。
+    $startMinute = [DateTimeOffset]::new($start.Year, $start.Month, $start.Day, $start.Hour, $start.Minute, 0, [TimeSpan]::Zero)
 
     $apiRoot = 'https://api.github.com/repos/{0}/{1}' -f $Owner, $Repository
     $dispatchBody = @{ ref = $Branch } | ConvertTo-Json -Compress
@@ -138,8 +132,6 @@ try {
     while ([DateTimeOffset]::UtcNow -lt $pageLimit) {
         try {
             $published = Get-PublishedAt -Url $PublicUrl
-            # 秒を表示しないページなので、起動した分の開始時刻を分単位で比較する。
-            $startMinute = [DateTimeOffset]::new($start.Year, $start.Month, $start.Day, $start.Hour, $start.Minute, 0, [TimeSpan]::Zero)
             if ($published.ToUniversalTime() -ge $startMinute) { break }
         } catch {
             Write-TriggerLog ('公開確認を再試行: ' + $_.Exception.Message)
@@ -151,7 +143,39 @@ try {
         throw ('Actionsは成功しましたが、公開ページの更新を確認できません（更新前: {0}）。' -f $before)
     }
     Write-TriggerLog ('公開反映を確認しました: 取得 {0} JST' -f $published.ToOffset([TimeSpan]::FromHours(9)).ToString('yyyy-MM-dd HH:mm'))
-    exit 0
+}
+
+try {
+    Limit-LogSize
+    $createdNew = $false
+    $script:Mutex = New-Object Threading.Mutex($true, 'Local\KarstWeatherWorkflowTrigger', [ref]$createdNew)
+    if (-not $createdNew) {
+        Write-TriggerLog '前回の処理が実行中のため、今回は何もせず終了します。'
+        exit 0
+    }
+
+    # 宿泊管理処理を優先する。以降は短いHTTPS通信と待機だけを行う。
+    [Diagnostics.Process]::GetCurrentProcess().PriorityClass = [Diagnostics.ProcessPriorityClass]::BelowNormal
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $start = [DateTimeOffset]::UtcNow
+        $baseline = $null
+        try { $baseline = Get-PublishedAt -Url $PublicUrl } catch { Write-TriggerLog ('更新前ページの確認に失敗: ' + $_.Exception.Message) }
+        if ($null -ne $baseline) {
+            $baselineAge = ($start - $baseline.ToUniversalTime()).TotalMinutes
+            if ($baselineAge -ge -5 -and $baselineAge -lt $MaxPublishedAgeMinutes) {
+                Write-TriggerLog ('公開ページは{0:F0}分前に更新済みのため、GitHub起動を省略します。' -f $baselineAge)
+                exit 0
+            }
+        }
+        try {
+            Invoke-UpdateOnce -Start $start -Baseline $baseline
+            exit 0
+        } catch {
+            Write-TriggerLog ('失敗（{0}/{1}回目）: {2}' -f $attempt, $MaxAttempts, $_.Exception.Message)
+            if ($attempt -ge $MaxAttempts) { exit 1 }
+            Start-Sleep -Seconds ($RetryWaitMinutes * 60)
+        }
+    }
 } catch {
     Write-TriggerLog ('失敗: ' + $_.Exception.Message)
     exit 1
