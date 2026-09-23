@@ -34,7 +34,7 @@ GitHub Actionsの成功だけでは成功にしない。公開URLを読み直し
 
 - PC停止、Windows未ログオン、GitHub全体の障害、保存済み認証の失効時には更新できない。
 - GitHub Actionsの実行自体が長時間停止した場合は1回あたり12分で打ち切る。
-- タスクの失敗はWindowsのタスク履歴と`weather-trigger.log`に残る。通知機能は今回の範囲に含めない。
+- タスクの失敗はWindowsのタスク履歴と`weather-trigger.log`に残る。**3回続けて失敗すると GitHub に Issue「天気予報の自動更新が止まっています」を作り**（GitHub からメールが届く）、次に成功した時にコメントを付けて閉じる（2026-09-23〜）。連続失敗の回数と Issue 番号は `trigger-state.json` に保存する。Issue 作成には PAT に Issues の書き込み権限が必要で、無ければログに残るだけ。PC自体が止まった場合はここでは通知できないため、SYSTEM.md 9-5 の外部監視で補う。
 
 ## 停止・削除
 

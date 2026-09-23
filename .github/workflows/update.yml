@@ -5,7 +5,7 @@ on:
     # 毎時11分・41分。毎時0分はGitHub全体で最混雑のため回避（公式も遅延・ドロップを明記）。
     # scheduledトリガーは理由不明で発火しないことがあるため（2026-07-01/02に発生）、
     # 毎時2回スケジュールして片方がドロップされても更新が続く保険とする。
-    # ローカルのタスクスケジューラ(publish.ps1)も二重化バックアップとして併用。
+    # サーバーPCの軽量トリガー(local-trigger/、毎時20分)が workflow_dispatch で二重化している。
     - cron: '11,41 * * * *'
   workflow_dispatch: {}
 
@@ -32,6 +32,7 @@ jobs:
         run: ./generate_all.ps1
 
       - name: 変更があればコミット・push
+        id: push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -53,6 +54,19 @@ jobs:
           done
           echo "pushに3回失敗しました。"
           exit 1
+
+      # 外部の死活監視（Healthchecks.io）へ「公開できた」合図を送る。合図が途絶えると監視側からメールが届くので、
+      # PC停止・cron停止・生成失敗のどれでも気づける。Secrets の HC_PING_URL が未設定なら何もしない。
+      - name: 死活監視へ成功を通知
+        if: steps.generate.outcome == 'success' && steps.push.outcome == 'success'
+        env:
+          HC_PING_URL: ${{ secrets.HC_PING_URL }}
+        run: |
+          if [ -z "$HC_PING_URL" ]; then
+            echo "HC_PING_URL 未設定のため省略します。"
+            exit 0
+          fi
+          curl -fsS -m 10 --retry 3 -o /dev/null "$HC_PING_URL" || echo "死活監視への通知に失敗（公開には影響なし）"
 
       # 成功した版をpushした後で判定するため、警告が他版の公開を妨げない。
       - name: 平均版の更新停止を確認（3時間）

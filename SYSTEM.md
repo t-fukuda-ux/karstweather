@@ -454,6 +454,7 @@ scheduled cron が理由不明で発火しなくなる現象を確認してい�
 - 実体とログは `C:\ProgramData\KarstWeatherTrigger`。フォルダは現在ユーザー・SYSTEM・管理者だけが変更できるACLにする。
 - GitHub認証はWindowsに保存されたGit Credential Managerの資格情報を実行中だけ使用し、ログやファイルには保存しない。
 - ログは `C:\ProgramData\KarstWeatherTrigger\weather-trigger.log`。1MBを超えたら直近約2000行へ縮小する。
+- **3回続けて失敗すると GitHub に Issue を作って知らせ、復旧すると自動で閉じる**（9-5）。
 - タスクは現在ユーザーのログオン中に実行する。宿泊管理で常時ログオンしているサーバーPCを前提とする。
 
 ```powershell
@@ -480,6 +481,27 @@ Enable-ScheduledTask  -TaskName "KarstWeatherWorkflowTrigger"
 | リポジトリ | karstweather（**Public**） |
 | リポジトリURL | https://github.com/t-fukuda-ux/karstweather |
 | Pages設定 | Settings → Pages → Source: Deploy from a branch → main / (root) |
+
+### 9-5. 更新停止の通知（2026-09-23〜）
+
+止まり方ごとに、次の2つで気づけるようにしている。
+
+| 仕組み | 気づける止まり方 | 届き方 |
+|---|---|---|
+| **Healthchecks.io（外部の死活監視）** | すべて（PC停止・未ログオン・cron停止・生成失敗・push失敗・GitHub障害） | Healthchecks.io からメール |
+| トリガーの Issue 作成（9-3） | トリガーが3回（約3時間）続けて失敗した場合 | GitHub からメール |
+
+Healthchecks.io は「合図が一定時間途絶えたら知らせる」方式。Actions が生成と push に成功するたびに、Secrets の `HC_PING_URL` へ合図を送る（`update.yml` の「死活監視へ成功を通知」）。未設定なら何もしない。
+
+**設定手順（福田さんが1回だけ行う）**
+
+1. https://healthchecks.io に無料で登録し、「Add Check」を押す
+2. Period（間隔）を **1 hour**、Grace（猶予）を **1 hour** にする（2時間合図が無ければメール）。Name は「karstweather」など
+3. 表示された Ping URL（`https://hc-ping.com/…`）をコピーする
+4. GitHub のリポジトリ → Settings → Secrets and variables → Actions → New repository secret で、Name を `HC_PING_URL`、Secret に Ping URL を貼って保存する
+5. 次の Actions 実行後、Healthchecks.io の画面が緑（up）になれば完了
+
+Issue 作成には、Git Credential Manager に保存された PAT に **Issues: Read and write** 権限が必要（既存の Contents・Actions に追加）。無い場合は `weather-trigger.log` に「Issue を作成できませんでした」と残る。
 
 ---
 

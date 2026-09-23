@@ -14,6 +14,8 @@ param(
     # タスクスケジューラの再実行はスクリプトの終了コード1では働かないため、スクリプト内で再試行する。
     [int]$MaxAttempts = 3,
     [int]$RetryWaitMinutes = 10,
+    # この回数だけ続けて失敗したら GitHub に Issue を作る（GitHub からメールが届く）。復旧したら閉じる。
+    [int]$AlertAfterFailures = 3,
     [string]$LogPath = ''
 )
 
@@ -84,24 +86,84 @@ function Get-PublishedAt {
     )
 }
 
+$script:StatePath = Join-Path $PSScriptRoot 'trigger-state.json'
+$script:ApiRoot = 'https://api.github.com/repos/{0}/{1}' -f $Owner, $Repository
+
+function Connect-GitHub {
+    if ($null -ne $script:ApiHeaders) { return }
+    $credential = Get-GitHubCredential
+    $script:ApiHeaders = @{
+        Authorization = 'Bearer ' + $credential.password
+        Accept = 'application/vnd.github+json'
+        'X-GitHub-Api-Version' = '2022-11-28'
+        'User-Agent' = 'karstweather-local-trigger'
+    }
+    $credential.Clear()
+}
+
+# 連続失敗の回数と、通知用に作った Issue の番号を覚えておく
+function Read-TriggerState {
+    try {
+        $s = [IO.File]::ReadAllText($script:StatePath) | ConvertFrom-Json
+        return @{ failures = [int]$s.failures; issue = $s.issue }
+    } catch { return @{ failures = 0; issue = $null } }
+}
+function Save-TriggerState($state) {
+    try { [IO.File]::WriteAllText($script:StatePath, ($state | ConvertTo-Json -Compress)) } catch { Write-TriggerLog ('状態の保存に失敗: ' + $_.Exception.Message) }
+}
+
+# 失敗が続いたら Issue を作る。公開リポジトリなので本文は時刻とエラー文だけにする。
+# 通知の失敗で本来の終了コードを変えないよう、ここでの例外はログに残すだけ。
+function Register-TriggerFailure([string]$message) {
+    $state = Read-TriggerState
+    $state.failures++
+    if ($state.failures -ge $AlertAfterFailures -and -not $state.issue) {
+        try {
+            Connect-GitHub
+            $body = @{
+                title = '天気予報の自動更新が止まっています'
+                body  = ("サーバーPCのトリガーが {0} 回続けて更新に失敗しました（最終 {1} JST）。`n`n最後のエラー: {2}`n`n公開ページ: {3}`n`n復旧するとこの Issue は自動で閉じます。" -f `
+                    $state.failures, (Get-Date -Format 'yyyy-MM-dd HH:mm'), $message, $PublicUrl)
+            } | ConvertTo-Json -Compress
+            $issue = Invoke-GitHubApi -Uri ($script:ApiRoot + '/issues') -Method POST -Body $body
+            $state.issue = $issue.number
+            Write-TriggerLog ('更新停止の Issue を作成しました: ' + $issue.html_url)
+        } catch {
+            Write-TriggerLog ('Issue を作成できませんでした（PAT に Issues の書き込み権限が必要）: ' + $_.Exception.Message)
+        }
+    }
+    Save-TriggerState $state
+}
+
+function Register-TriggerSuccess {
+    $state = Read-TriggerState
+    if ($state.failures -eq 0 -and -not $state.issue) { return }
+    if ($state.issue) {
+        try {
+            Connect-GitHub
+            $comment = @{ body = ('復旧しました（{0} JST に公開ページの更新を確認）。' -f (Get-Date -Format 'yyyy-MM-dd HH:mm')) } | ConvertTo-Json -Compress
+            Invoke-GitHubApi -Uri ($script:ApiRoot + '/issues/' + $state.issue + '/comments') -Method POST -Body $comment | Out-Null
+            Invoke-GitHubApi -Uri ($script:ApiRoot + '/issues/' + $state.issue) -Method PATCH -Body '{"state":"closed"}' | Out-Null
+            Write-TriggerLog ('復旧したため Issue #{0} を閉じました。' -f $state.issue)
+        } catch {
+            # 閉じられなければ次回また試す
+            Write-TriggerLog ('Issue を閉じられませんでした: ' + $_.Exception.Message)
+            Save-TriggerState @{ failures = 0; issue = $state.issue }
+            return
+        }
+    }
+    Save-TriggerState @{ failures = 0; issue = $null }
+}
+
 function Invoke-UpdateOnce {
     param([DateTimeOffset]$Start, $Baseline)
     $start = $Start
     $baseline = $Baseline
-    if ($null -eq $script:ApiHeaders) {
-        $credential = Get-GitHubCredential
-        $script:ApiHeaders = @{
-            Authorization = 'Bearer ' + $credential.password
-            Accept = 'application/vnd.github+json'
-            'X-GitHub-Api-Version' = '2022-11-28'
-            'User-Agent' = 'karstweather-local-trigger'
-        }
-        $credential.Clear()
-    }
+    Connect-GitHub
     # 秒を表示しないページなので、起動した分の開始時刻を分単位で比較する。
     $startMinute = [DateTimeOffset]::new($start.Year, $start.Month, $start.Day, $start.Hour, $start.Minute, 0, [TimeSpan]::Zero)
 
-    $apiRoot = 'https://api.github.com/repos/{0}/{1}' -f $Owner, $Repository
+    $apiRoot = $script:ApiRoot
     $dispatchBody = @{ ref = $Branch } | ConvertTo-Json -Compress
     Invoke-GitHubApi -Uri ($apiRoot + '/actions/workflows/' + $Workflow + '/dispatches') -Method POST -Body $dispatchBody | Out-Null
     Write-TriggerLog 'GitHub Actionsへ更新開始を依頼しました。'
@@ -164,20 +226,23 @@ try {
             $baselineAge = ($start - $baseline.ToUniversalTime()).TotalMinutes
             if ($baselineAge -ge -5 -and $baselineAge -lt $MaxPublishedAgeMinutes) {
                 Write-TriggerLog ('公開ページは{0:F0}分前に更新済みのため、GitHub起動を省略します。' -f $baselineAge)
+                Register-TriggerSuccess
                 exit 0
             }
         }
         try {
             Invoke-UpdateOnce -Start $start -Baseline $baseline
+            Register-TriggerSuccess
             exit 0
         } catch {
             Write-TriggerLog ('失敗（{0}/{1}回目）: {2}' -f $attempt, $MaxAttempts, $_.Exception.Message)
-            if ($attempt -ge $MaxAttempts) { exit 1 }
+            if ($attempt -ge $MaxAttempts) { Register-TriggerFailure $_.Exception.Message; exit 1 }
             Start-Sleep -Seconds ($RetryWaitMinutes * 60)
         }
     }
 } catch {
     Write-TriggerLog ('失敗: ' + $_.Exception.Message)
+    Register-TriggerFailure $_.Exception.Message
     exit 1
 } finally {
     $script:ApiHeaders = $null
