@@ -529,6 +529,7 @@ function Get-Alerts {
     $prefCache = @{}
     foreach ($a in $areas) {
         $items = New-Object System.Collections.Generic.List[object]
+        $failed = $false
         try {
             if (-not $prefCache.ContainsKey($a.pref)) {
                 $prefCache[$a.pref] = Invoke-JsonWithRetry -Uri "https://www.jma.go.jp/bosai/warning/data/r8/$($a.pref).json" -MaxTries 2 -TimeoutSec 30
@@ -550,9 +551,10 @@ function Get-Alerts {
                 }
             }
         } catch {
-            # 取得失敗しても処理は継続（警報表示なしとして扱う）
+            # 取得失敗しても処理は継続する。ただし「発表なし」とは区別する（警報中に誤って発表なしと出さない）
+            $failed = $true
         }
-        $result.Add(@{ name = $a.name; items = $items })
+        $result.Add(@{ name = $a.name; items = $items; failed = $failed })
     }
     return $result
 }
@@ -564,7 +566,9 @@ function Render-AlertHtml {
     $sb = New-Object System.Text.StringBuilder
     [void]$sb.Append('<div class="alertwrap">')
     foreach ($a in $alerts) {
-        if ($a.items.Count -eq 0) {
+        if ($a.failed -and $a.items.Count -eq 0) {
+            [void]$sb.Append(("<a class=""alertbanner alertfail"" href=""https://www.jma.go.jp/bosai/warning/"" target=""_blank"" rel=""noopener"">{0}: 警報を取得できませんでした（気象庁で確認）</a>" -f $a.name))
+        } elseif ($a.items.Count -eq 0) {
             [void]$sb.Append(("<span class=""alertnone"">{0}: 発表なし</span>" -f $a.name))
         } else {
             $maxLevel = if ($a.items | Where-Object { $_.level -eq "特別警報" }) { "特別警報" }
@@ -586,7 +590,9 @@ function Render-AlertConsole {
     $lines = New-Object System.Collections.Generic.List[string]
     if (-not $alerts -or $alerts.Count -eq 0) { return $lines }
     foreach ($a in $alerts) {
-        if ($a.items.Count -eq 0) {
+        if ($a.failed -and $a.items.Count -eq 0) {
+            $lines.Add("⚠ 警報等: $($a.name) 取得失敗")
+        } elseif ($a.items.Count -eq 0) {
             $lines.Add("警報等: $($a.name) 発表なし")
         } else {
             $names = ($a.items | ForEach-Object { $_.name }) -join "・"
@@ -604,7 +610,29 @@ $AlertCss = @'
 .alertbanner.alertwarn{background:#ffe3e3;color:#a61e1e;}
 .alertbanner.alertdanger{background:#f3d9fa;color:#862e9c;}
 .alertbanner.alertspecial{background:#8b0000;color:#fff;}
+.alertbanner.alertfail{background:#eee;color:#555;text-decoration:underline;}
 .alertnone{display:inline-block;flex:0 0 auto;white-space:nowrap;font-size:11px;color:#aaa;}
+'@
+
+# 閲覧時に「取得: yyyy-MM-dd HH:mm JST」が3時間以上古ければ上部に警告を出す（check_forecast.ps1 と同じ基準）。
+# 更新が止まっても閲覧者が古い予報を最新と誤解しないようにする。表記は check_forecast.ps1 の正規表現と共有しているので変えない。
+$StaleCheckScript = @'
+<script>
+(function () {
+  var m = document.body.textContent.match(/取得:\s*(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}) JST/);
+  if (!m) return;
+  var fetched = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4] - 9, +m[5]);
+  var hours = (Date.now() - fetched) / 3600000;
+  if (hours < 3) return;
+  var d = document.createElement('div');
+  d.className = 'stalewarn';
+  d.textContent = '⚠ この予報は ' + m[1] + '-' + m[2] + '-' + m[3] + ' ' + m[4] + ':' + m[5] +
+    ' の取得で、約' + Math.floor(hours) + '時間更新されていません。最新の情報は気象庁などでご確認ください。';
+  var wrap = document.querySelector('.wrap') || document.body;
+  wrap.insertBefore(d, wrap.firstChild);
+})();
+</script>
+<style>.stalewarn{margin:8px 16px;padding:8px 12px;border-radius:6px;background:#ffe8cc;color:#8a3b00;font-size:13px;font-weight:600;}</style>
 '@
 
 # ---- 雲海指数 ----

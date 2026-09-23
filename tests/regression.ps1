@@ -57,6 +57,17 @@ $mixed=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';vall
 Assert ([math]::Abs([double]$mixed[0].valleys[0].f_c-0.7) -lt 0.0001) '平均版Fは両モデル平均'
 Assert ($mixed[0].valleys[0].v -eq 0.5 -and $mixed[0].valleys[0].idx -eq 35) '平均版VはEC由来'
 Assert ($mixed[0].summit.v -eq 0.5) '平均版のV説明情報もEC由来'
+# 降水量は雪の水量を含む。雪だけならみぞれにしない。
+Assert ((Derive-HourlyWeather -codeA 71 -codeB 71 -precip 1.4 -snow 1.0 -total 100).key -eq 'snow') '純粋な雪をみぞれにしない'
+Assert ((Derive-HourlyWeather -codeA 71 -codeB 71 -precip 0.3 -snow 0.2 -total 100).key -eq 'snow_weak') '弱い雪'
+Assert ((Derive-HourlyWeather -codeA 68 -codeB 68 -precip 2.0 -snow 0.5 -total 100).key -eq 'sleet') '雨の分が残ればみぞれ'
+# 警報の取得失敗を「発表なし」と表示しない。
+$savedInvoke=${function:Invoke-JsonWithRetry}
+function Invoke-JsonWithRetry { throw 'offline' }
+$failedAlerts=@(Get-Alerts -areas @(@{name='久万高原町';code='3838600';pref='380000'}))
+${function:Invoke-JsonWithRetry}=$savedInvoke
+$alertHtml=Render-AlertHtml $failedAlerts
+Assert ($failedAlerts[0].failed -and $alertHtml -notmatch '発表なし' -and $alertHtml -match '取得できませんでした') '警報の取得失敗を発表なしにしない'
 # 更新日時はJSTからUTCへ変換し、3時間ちょうどから異常。
 $temp=Join-Path ([IO.Path]::GetTempPath()) ('weather-test-'+[guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory($temp)

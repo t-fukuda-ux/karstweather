@@ -92,7 +92,9 @@ function Derive-HourlyWeather {
         return @{ key = "thunder"; label = "雷雨" }
     }
     if ($snow -gt 0) {
-        if ($precip -gt 0.1) { return @{ key = "sleet"; label = "みぞれ" } }
+        # precipitation は雪の水量を含む（Open-Meteo: 降雪7cm ≒ 水量10mm）。雪の分を引いた残りが雨の分
+        $rainPart = $precip - $snow * 10 / 7
+        if ($rainPart -gt 0.2) { return @{ key = "sleet"; label = "みぞれ" } }
         if ($snow -lt 0.5)   { return @{ key = "snow_weak"; label = "弱い雪" } }
         if ($snow -lt 2)     { return @{ key = "snow"; label = "雪" } }
         return @{ key = "snow_heavy"; label = "大雪" }
@@ -706,6 +708,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
 })();
 </script>
 '@
+    [void]$sb.AppendLine($StaleCheckScript)
     [void]$sb.AppendLine($autoHeight)
     [void]$sb.AppendLine('</body></html>')
 

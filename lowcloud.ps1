@@ -460,6 +460,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
 })();
 </script>
 '@
+    [void]$sb.AppendLine($StaleCheckScript)
     [void]$sb.AppendLine($autoHeight)
     [void]$sb.AppendLine('</body></html>')
 
