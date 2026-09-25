@@ -74,6 +74,7 @@ WordPress 等には トップページを iframe で埋め込む。埋め込み�
 |---|---|---|
 | `index.html` | 追跡 | 平均版のコピー。GitHub Pages のルート |
 | `lowcloud.html` / `lowcloud_ec.html` / `lowcloud_avg.html` | 追跡 | 各版のHTML |
+| `weekly-history/` | 追跡 | **週間予報（7日分）の履歴**（2026-09-25〜）。各日18時以降の最初の実行で版ごとに `YYYY-MM-DD/版-HHMMSS.csv` を保存し上書きしない。天気・補正後と補正前の最高最低気温・降水確率・降水量・降雪量。何日先まで当たるかを実測と比べるため。列の説明は `weekly-history/README.md` |
 | `unkai_lab.html` | 追跡 | 雲海の検証ページ（3時間おきに更新） |
 | `lowcloud*.csv` | 除外 | 各版のCSV |
 | `unkai_detail.csv` | 除外 | 雲海の全内訳（67列） |
@@ -81,7 +82,7 @@ WordPress 等には トップページを iframe で埋め込む。埋め込み�
 | `unkai_log.csv` | 除外 | **雲海の実績記録（手で記入する）。再実行でも上書きしない** |
 | `publish.log` | 除外 | `publish.ps1` の実行ログ |
 
-`publish.ps1` と Actions はいずれも `git add` の対象を**上記の追跡5ファイルと `forecast-history/` に明示限定**している。新しい生成物を公開したい場合は両方に追加が必要。
+`publish.ps1` と Actions はいずれも `git add` の対象を**上記の追跡5ファイルと `forecast-history/`・`weekly-history/` に明示限定**している。新しい生成物を公開したい場合は両方に追加が必要。
 
 ---
 

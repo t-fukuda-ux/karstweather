@@ -84,6 +84,16 @@ if ($null -ne $unkaiA -and $null -ne $unkaiB) {
     Write-Warning "ECMWF雲海データがないため、平均版の雲海指数は表示しません。規定版Vへの切替は行いません。"
 }
 
+# 履歴（雲海・週間）に記録するソースのリビジョン。取れなくても生成は続ける
+$revision = "unknown"
+try {
+    $rev = (git -C $PSScriptRoot rev-parse HEAD)
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($rev)) {
+        $revision = $rev
+        if (git -C $PSScriptRoot diff --name-only -- "*.ps1") { $revision += "+working-tree" }
+    }
+} catch { }
+
 # ---- 3版の生成（1版の失敗で他を止めない） ----
 
 $results = [ordered]@{ "規定版" = $false; "EC版" = $false; "平均版" = $false }
@@ -91,7 +101,7 @@ $results = [ordered]@{ "規定版" = $false; "EC版" = $false; "平均版" = $fa
 if ($null -ne $bundleA) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
-            -Timezone $Timezone -Bundle $bundleA -PrefetchedAlerts $alerts -UnkaiHours $unkaiA -SkipUnkaiFetch
+            -Timezone $Timezone -Bundle $bundleA -PrefetchedAlerts $alerts -UnkaiHours $unkaiA -SkipUnkaiFetch -SaveWeeklyHistory -SourceRevision $revision
         $results["規定版"] = $true
     } catch {
         Write-Warning ("規定版の生成に失敗しました: {0}" -f $_.Exception.Message)
@@ -104,7 +114,7 @@ if ($null -ne $bundleB) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
             -Timezone $Timezone -Models "ecmwf_ifs025" -OutName "lowcloud_ec" -ModelLabel "[ECMWF]" `
-            -Bundle $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiB -SkipUnkaiFetch
+            -Bundle $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiB -SkipUnkaiFetch -SaveWeeklyHistory -SourceRevision $revision
         $results["EC版"] = $true
     } catch {
         Write-Warning ("EC版の生成に失敗しました: {0}" -f $_.Exception.Message)
@@ -116,7 +126,7 @@ if ($null -ne $bundleB) {
 if ($null -ne $bundleA -and $null -ne $bundleB) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud_avg.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
-            -Timezone $Timezone -BundleA $bundleA -BundleB $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiM -SkipUnkaiFetch
+            -Timezone $Timezone -BundleA $bundleA -BundleB $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiM -SkipUnkaiFetch -SaveWeeklyHistory -SourceRevision $revision
         $results["平均版"] = $true
     } catch {
         Write-Warning ("平均版の生成に失敗しました: {0}" -f $_.Exception.Message)
@@ -159,9 +169,7 @@ try {
     if ($null -ne $unkaiB) { $historyModels['ecmwf_ifs025'] = $unkaiB }
     if ($null -ne $unkaiM) { $historyModels['average'] = $unkaiM }
     $averageMode = 'F=best_match; V=ecmwf_ifs025'
-    $revision = (git -C $PSScriptRoot rev-parse HEAD)
-    if ($LASTEXITCODE -ne 0) { throw '履歴に記録するソースのリビジョンを取得できません。' }
-    if (git -C $PSScriptRoot diff --name-only -- '*.ps1') { $revision += '+working-tree' }
+    if ($revision -eq "unknown") { throw '履歴に記録するソースのリビジョンを取得できません。' }
     Save-ForecastHistory -ByModel $historyModels -Dir $PSScriptRoot -IssuedAt (Get-JstNow) -SourceRevision $revision -AverageMode $averageMode
 } catch {
     Write-Warning ('予報履歴の保存に失敗しました: {0}' -f $_.Exception.Message)

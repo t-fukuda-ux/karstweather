@@ -30,7 +30,9 @@ param(
     [object]$BundleB     = $null,         # 同（ecmwf_ifs025）
     [object]$PrefetchedAlerts = $null,    # 同・取得済みの警報一覧
     [object]$UnkaiHours  = $null,         # 同・計算済みの雲海指数（F は best_match・V は ECMWF 由来）
-    [switch]$SkipUnkaiFetch               # generate_all.ps1 用。UnkaiHours が null でも取り直さない（取得失敗の連鎖で時間切れになるため）
+    [switch]$SkipUnkaiFetch,              # generate_all.ps1 用。UnkaiHours が null でも取り直さない（取得失敗の連鎖で時間切れになるため）
+    [switch]$SaveWeeklyHistory,           # generate_all.ps1 用。週間予報を weekly-history/ に1日1回保存する
+    [string]$SourceRevision = ""          # 同・履歴に記録するソースのリビジョン
 )
 
 $ErrorActionPreference = "Stop"
@@ -807,6 +809,14 @@ try {
 } catch {
     Write-Warning ("週間予報の算出に失敗しました: {0}" -f $_.Exception.Message)
     $daily = $null
+}
+if ($SaveWeeklyHistory -and $null -ne $daily) {
+    try {
+        . (Join-Path $PSScriptRoot "forecast_history.ps1")
+        Save-WeeklyForecast -Daily $daily -AllRows $allRows -Model "average" -Dir $PSScriptRoot -IssuedAt (Get-JstNow) -SourceRevision $SourceRevision
+    } catch {
+        Write-Warning ("週間予報の履歴の保存に失敗しました: {0}" -f $_.Exception.Message)
+    }
 }
 
 if ([string]::IsNullOrWhiteSpace($CsvPath)) {

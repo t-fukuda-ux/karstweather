@@ -122,4 +122,16 @@ Assert (($original | ConvertFrom-Json).issued_at -eq '2026-09-07T18:11:00+09:00'
 $hours[0].idx=$null
 Save-ForecastHistory -ByModel @{ecmwf_ifs025=$hours} -Dir $temp -IssuedAt ([datetime]'2026-09-07 18:11') -SourceRevision 'test' -AverageMode ''
 Assert (@(Get-ChildItem (Join-Path $temp 'forecast-history/2026-09-07') -Filter 'ecmwf_ifs025-*.json').Count -eq 0) '全欠測の夕方代表を保存しない'
-Write-Host 'PASS: 週間7日・気温補正・欠測・ラベル・鮮度境界・予報履歴'
+# 週間予報の履歴: 18時以降に1日1回・上書きしない・補正前後の気温を残す。
+$wkDaily=@([pscustomobject]@{date=[datetime]'2026-09-25';weather='晴れ';wcode=1;tmax=24;tmin=12;pop=10;precip=0}, [pscustomobject]@{date=[datetime]'2026-09-26';weather='雨';wcode=61;tmax=$null;tmin=$null;pop=80;precip=12.5})
+$wkRows=@([pscustomobject]@{time='2026-09-25 06:00';temp=11.5}, [pscustomobject]@{time='2026-09-25 14:00';temp=21.2})
+Save-WeeklyForecast -Daily $wkDaily -AllRows $wkRows -Model 'best_match' -Dir $temp -IssuedAt ([datetime]'2026-09-25 17:59') -SourceRevision 'test'
+Assert (-not (Test-Path (Join-Path $temp 'weekly-history/2026-09-25'))) '週間履歴は18時前に保存しない'
+Save-WeeklyForecast -Daily $wkDaily -AllRows $wkRows -Model 'best_match' -Dir $temp -IssuedAt ([datetime]'2026-09-25 18:22') -SourceRevision 'test'
+$wkFile=@(Get-ChildItem (Join-Path $temp 'weekly-history/2026-09-25') -Filter 'best_match-*.csv')
+Assert ($wkFile.Count -eq 1) '週間履歴を保存'
+$wk=@(Import-Csv $wkFile[0].FullName -Encoding UTF8)
+Assert ($wk.Count -eq 2 -and $wk[0].lead_days -eq '0' -and $wk[1].lead_days -eq '1' -and $wk[0].tmax_disp -eq '24.0' -and $wk[0].tmax_raw -eq '21.2' -and $wk[0].tmin_raw -eq '11.5' -and $wk[1].tmax_disp -eq '' -and $wk[1].precip_sum -eq '12.5') '週間履歴の中身'
+Save-WeeklyForecast -Daily $wkDaily -AllRows $wkRows -Model 'best_match' -Dir $temp -IssuedAt ([datetime]'2026-09-25 19:22') -SourceRevision 'later'
+Assert (@(Get-ChildItem (Join-Path $temp 'weekly-history/2026-09-25') -Filter 'best_match-*.csv').Count -eq 1) '週間履歴を後続実行で増やさない'
+Write-Host 'PASS:週間7日・気温補正・欠測・ラベル・鮮度境界・予報履歴'

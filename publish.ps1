@@ -69,7 +69,7 @@ try {
 
     # Step 2: git commit & push（競合時はrebaseして最大3回再試行）
     Invoke-GitBlock {
-        git add index.html lowcloud.html lowcloud_ec.html lowcloud_avg.html unkai_lab.html forecast-history 2>$null
+        git add index.html lowcloud.html lowcloud_ec.html lowcloud_avg.html unkai_lab.html forecast-history weekly-history 2>$null
         git diff --cached --quiet 2>$null
         if ($LASTEXITCODE -eq 0) {
             Write-Log "変更なし。スキップします。"

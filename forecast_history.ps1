@@ -1,5 +1,43 @@
 ﻿#Requires -Version 5.1
 # 計算結果の履歴。現地実績（unkai_log.csv）は一切読み書きしない。
+# 週間予報（7日分）の履歴。1日1回（18時以降の最初の実行）、版ごとに weekly-history/発表日/版-時刻.csv へ保存し上書きしない。
+# 何日先まで当たるかを後で実測と比べるため（2026-09-25〜）。気温は表示用の補正後と、補正前のモデル値の両方を残す。
+$WeeklyHistoryHeader = 'issued_at,model,target_date,lead_days,weather,wcode,tmax_disp,tmin_disp,tmax_raw,tmin_raw,pop_max,precip_sum,snow_sum,source_revision'
+
+function Save-WeeklyForecast {
+    param($Daily, $AllRows, [string]$Model, [string]$Dir, [datetime]$IssuedAt, [string]$SourceRevision)
+    if ($IssuedAt.Hour -lt 18 -or $null -eq $Daily) { return }
+    $days = @($Daily | Where-Object { $null -ne $_ })
+    # 気温が1日も無い（中身の無い応答）なら保存せず、その日の後続の実行で再試行する
+    if (@($days | Where-Object { $null -ne $_.tmax }).Count -eq 0) { return }
+    $histDir = Join-Path $Dir ('weekly-history/' + $IssuedAt.ToString('yyyy-MM-dd'))
+    [void][IO.Directory]::CreateDirectory($histDir)
+    if (@(Get-ChildItem -LiteralPath $histDir -Filter ($Model + '-*.csv') -File).Count -gt 0) { return }
+
+    $fmt = { param($v, $f) if ($null -eq $v) { '' } else { ([double]$v).ToString($f, [Globalization.CultureInfo]::InvariantCulture) } }
+    $stamp = $IssuedAt.ToString('yyyy-MM-ddTHH:mm:ss') + '+09:00'
+    $lines = @($WeeklyHistoryHeader)
+    foreach ($d in $days) {
+        $date = ([datetime]$d.date).Date
+        $dayRows = @($AllRows | Where-Object { ([datetime]$_.time).Date -eq $date })
+        $raw = @($dayRows | ForEach-Object { $_.temp } | Where-Object { $null -ne $_ } | ForEach-Object { [double]$_ })
+        $snowVals = @($dayRows | Where-Object { $_.PSObject.Properties['snow'] -and $null -ne $_.snow } | ForEach-Object { [double]$_.snow })
+        $wcode = if ($d.PSObject.Properties['wcode']) { $d.wcode } else { $null }
+        $lines += (@(
+            $stamp, $Model, $date.ToString('yyyy-MM-dd'), [int]($date - $IssuedAt.Date).TotalDays,
+            ('"' + ([string]$d.weather -replace '"', '') + '"'), $(if ($null -eq $wcode) { '' } else { [string]$wcode }),
+            (& $fmt $d.tmax '0.0'), (& $fmt $d.tmin '0.0'),
+            $(if ($raw.Count) { (& $fmt ($raw | Measure-Object -Maximum).Maximum '0.0') } else { '' }),
+            $(if ($raw.Count) { (& $fmt ($raw | Measure-Object -Minimum).Minimum '0.0') } else { '' }),
+            (& $fmt $d.pop '0'), (& $fmt $d.precip '0.0'),
+            $(if ($snowVals.Count) { (& $fmt ($snowVals | Measure-Object -Sum).Sum '0.00') } else { '' }),
+            $SourceRevision
+        ) -join ',')
+    }
+    $path = Join-Path $histDir ($Model + '-' + $IssuedAt.ToString('HHmmss') + '.csv')
+    [IO.File]::WriteAllLines($path, $lines, [Text.UTF8Encoding]::new($true))
+}
+
 function Save-ForecastHistory {
     param($ByModel, [string]$Dir, [datetime]$IssuedAt, [string]$SourceRevision, [string]$AverageMode)
     $stamp = $IssuedAt.ToString("yyyy-MM-ddTHH:mm:ss") + '+09:00'
