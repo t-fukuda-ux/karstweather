@@ -652,7 +652,7 @@ $FogBlocks = @(
 )
 $FogLevels = @(
     @{ min = 60; key = "high"; mark = "●"; text = "霧が濃い見込み" },
-    @{ min = 30; key = "mid";  mark = "◐"; text = "霧が出たり晴れたりしそう" },
+    @{ min = 30; key = "mid";  mark = "◐"; text = "霧が出るかも" },
     @{ min = 0;  key = "low";  mark = "○"; text = "霧の心配はほぼなし" }
 )
 
