@@ -81,6 +81,12 @@ Assert ($missingRow.wkey -eq 'unknown' -and $null -eq $missingRow.precip) '両�
 $caught=$false
 try { Assert-BundleUsable -Bundle @{hourly=@{time=$h.time;temperature_2m=@($h.time | ForEach-Object { $null })}} -Model 'test' } catch { $caught=$true }
 Assert $caught '値が全部 null の応答は中身が無い扱いにする'
+# 霧の見通し: 時間帯（朝5-10・昼11-15・夕16-20）の低層雲平均で3段階。
+Assert ((Get-FogLevel 29.9).key -eq 'low' -and (Get-FogLevel 30).key -eq 'mid' -and (Get-FogLevel 59.9).key -eq 'mid' -and (Get-FogLevel 60).key -eq 'high' -and $null -eq (Get-FogLevel $null)) '霧の見通しの段階'
+$fogRows=@(0..47 | ForEach-Object { $t=([datetime]'2026-09-25').AddHours($_); [pscustomobject]@{ time=$t.ToString('yyyy-MM-dd HH:mm'); low=$(if ($t.Hour -le 10) { 70 } elseif ($t.Hour -le 15) { 40 } else { 10 }) } })
+$fog=@(Get-FogOutlook -rows $fogRows -now ([datetime]'2026-09-25 12:30'))
+Assert ($fog.Count -eq 2 -and $fog[0].blocks[0].level.key -eq 'high' -and $fog[0].blocks[1].level.key -eq 'mid' -and $fog[0].blocks[2].level.key -eq 'low') '霧の見通しの時間帯集計'
+Assert ($fog[0].blocks[0].past -and -not $fog[0].blocks[1].past -and -not $fog[1].blocks[0].past) '終わった時間帯だけ薄く表示'
 # 警報の取得失敗を「発表なし」と表示しない。
 $savedInvoke=${function:Invoke-JsonWithRetry}
 function Invoke-JsonWithRetry { throw 'offline' }

@@ -642,6 +642,81 @@ $StaleCheckScript = @'
 <style>.stalewarn{margin:8px 16px;padding:8px 12px;border-radius:6px;background:#ffe8cc;color:#8a3b00;font-size:13px;font-weight:600;}</style>
 '@
 
+# ---- 霧の見通し（今日・明日を時間帯ごとに3段階。2026-09-25〜） ----
+# 時刻単位の霧の出入りは予報では当てられないため、時間帯の平均で出す（camera/fog-verification-20260923.md）。
+# 低層雲（平均版）の時間帯平均が 30%未満 → 霧0〜2%、30〜60% → 霧59〜68%、60%以上 → 霧94〜100%（9/12〜9/23 のカメラ目視）。
+$FogBlocks = @(
+    @{ name = "朝"; from = 5;  to = 10 },
+    @{ name = "昼"; from = 11; to = 15 },
+    @{ name = "夕"; from = 16; to = 20 }
+)
+$FogLevels = @(
+    @{ min = 60; key = "high"; mark = "●"; text = "霧が濃い見込み" },
+    @{ min = 30; key = "mid";  mark = "◐"; text = "霧が出たり晴れたりしそう" },
+    @{ min = 0;  key = "low";  mark = "○"; text = "霧の心配はほぼなし" }
+)
+
+function Get-FogLevel {
+    param($lowMean)
+    if ($null -eq $lowMean) { return $null }
+    foreach ($l in $FogLevels) { if ([double]$lowMean -ge $l.min) { return $l } }
+}
+
+# 戻り値: 日ごとに @{ date; blocks = @(@{ name; from; to; mean; level; past }) }
+function Get-FogOutlook {
+    param($rows, [datetime]$now, [int]$days = 2)
+    $out = @()
+    for ($d = 0; $d -lt $days; $d++) {
+        $date = $now.Date.AddDays($d)
+        $blocks = @()
+        foreach ($b in $FogBlocks) {
+            $vals = @($rows | Where-Object {
+                $t = [datetime]$_.time
+                $t.Date -eq $date -and $t.Hour -ge $b.from -and $t.Hour -le $b.to -and $null -ne $_.low
+            } | ForEach-Object { [double]$_.low })
+            $mean = if ($vals.Count -gt 0) { ($vals | Measure-Object -Average).Average } else { $null }
+            $blocks += @{ name = $b.name; from = $b.from; to = $b.to; mean = $mean; level = (Get-FogLevel $mean)
+                          past = ($date.AddHours($b.to + 1) -le $now) }
+        }
+        $out += @{ date = $date; blocks = $blocks }
+    }
+    return $out
+}
+
+function Render-FogOutlookHtml {
+    param($outlook)
+    $wd = @("日","月","火","水","木","金","土")
+    $sb = New-Object System.Text.StringBuilder
+    [void]$sb.Append('<div class="fogwrap"><table class="fogtbl"><tr><th class="fl">霧の見通し</th>')
+    foreach ($b in $FogBlocks) { [void]$sb.Append(("<th>{0}<span class=""fh"">({1}-{2}時)</span></th>" -f $b.name, $b.from, $b.to)) }
+    [void]$sb.Append('</tr>')
+    foreach ($day in $outlook) {
+        [void]$sb.Append(("<tr><th class=""fl"">{0:M/d}({1})</th>" -f $day.date, $wd[[int]$day.date.DayOfWeek]))
+        foreach ($b in $day.blocks) {
+            if ($null -eq $b.level) { [void]$sb.Append('<td>--</td>'); continue }
+            $cls = "fog-" + $b.level.key + $(if ($b.past) { " fogpast" } else { "" })
+            [void]$sb.Append(("<td class=""{0}""><span class=""fm"">{1}</span>{2}</td>" -f $cls, $b.level.mark, $b.level.text))
+        }
+        [void]$sb.Append('</tr>')
+    }
+    [void]$sb.Append('</table></div>')
+    return $sb.ToString()
+}
+
+$FogOutlookCss = @'
+.fogwrap{margin:6px 16px 4px;overflow-x:auto;}
+.fogtbl{border-collapse:collapse;font-size:12px;width:100%;max-width:760px;table-layout:fixed;}
+.fogtbl th.fl{width:5.5em;white-space:nowrap;}
+.fogtbl th,.fogtbl td{border:1px solid #ddd;padding:4px 6px;text-align:left;white-space:normal;vertical-align:top;}
+.fogtbl th{background:#f5f5f5;font-weight:600;}
+.fogtbl .fh{font-weight:400;color:#888;font-size:11px;margin-left:2px;}
+.fogtbl .fm{margin-right:4px;}
+.fogtbl td.fog-high{background:#e0e0e0;color:#333;font-weight:600;}
+.fogtbl td.fog-mid{background:#f2f2f2;color:#444;}
+.fogtbl td.fog-low{background:#fff;color:#666;}
+.fogtbl td.fogpast{opacity:.4;}
+'@
+
 # ---- 雲海指数 ----
 # 別ファイルに分離している。取得・計算ともに Invoke-JsonWithRetry に依存するため末尾で読み込む。
 . (Join-Path $PSScriptRoot "unkai_common.ps1")
