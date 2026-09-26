@@ -655,11 +655,20 @@ $FogLevels = @(
     @{ min = 30; key = "mid";  mark = "◐"; text = "霧が出るかも" },
     @{ min = 0;  key = "low";  mark = "○"; text = "霧の心配はほぼなし" }
 )
+# 「霧が出るかも」の時間帯に 1時間1mm以上の雨の予報が1つでもあれば「霧が出そう」に上げる（2026-09-26〜、福田さん判断）。
+# 低層雲30〜60%の時刻で、前夜予報の雨1mm以上は霧75%（15/20）、雨0mmは52%（15/29）だった（9/12〜9/23 のカメラ目視）。
+$FogRainLevel = @{ key = "midrain"; mark = "◐"; text = "霧が出そう" }
+$FogRainMinMm = 1.0
 
 function Get-FogLevel {
-    param($lowMean)
+    param($lowMean, $maxPrecip = $null)
     if ($null -eq $lowMean) { return $null }
-    foreach ($l in $FogLevels) { if ([double]$lowMean -ge $l.min) { return $l } }
+    foreach ($l in $FogLevels) {
+        if ([double]$lowMean -ge $l.min) {
+            if ($l.key -eq "mid" -and $null -ne $maxPrecip -and [double]$maxPrecip -ge $FogRainMinMm) { return $FogRainLevel }
+            return $l
+        }
+    }
 }
 
 # 戻り値: 日ごとに @{ date; blocks = @(@{ name; from; to; mean; level; past }) }
@@ -675,7 +684,13 @@ function Get-FogOutlook {
                 $t.Date -eq $date -and $t.Hour -ge $b.from -and $t.Hour -le $b.to -and $null -ne $_.low
             } | ForEach-Object { [double]$_.low })
             $mean = if ($vals.Count -gt 0) { ($vals | Measure-Object -Average).Average } else { $null }
-            $blocks += @{ name = $b.name; from = $b.from; to = $b.to; mean = $mean; level = (Get-FogLevel $mean)
+            $precips = @($rows | Where-Object {
+                $t = [datetime]$_.time
+                $t.Date -eq $date -and $t.Hour -ge $b.from -and $t.Hour -le $b.to -and $null -ne $_.precip
+            } | ForEach-Object { [double]$_.precip })
+            $maxPrecip = if ($precips.Count -gt 0) { ($precips | Measure-Object -Maximum).Maximum } else { $null }
+            $blocks += @{ name = $b.name; from = $b.from; to = $b.to; mean = $mean; maxPrecip = $maxPrecip
+                          level = (Get-FogLevel $mean $maxPrecip)
                           past = ($date.AddHours($b.to + 1) -le $now) }
         }
         $out += @{ date = $date; blocks = $blocks }
@@ -713,6 +728,7 @@ $FogOutlookCss = @'
 .fogtbl .fm{margin-right:4px;}
 .fogtbl td.fog-high{background:#e0e0e0;color:#333;font-weight:600;}
 .fogtbl td.fog-mid{background:#f2f2f2;color:#444;}
+.fogtbl td.fog-midrain{background:#e8e8e8;color:#333;font-weight:600;}
 .fogtbl td.fog-low{background:#fff;color:#666;}
 .fogtbl td.fogpast{opacity:.4;}
 '@

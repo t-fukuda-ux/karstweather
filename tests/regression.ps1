@@ -86,6 +86,10 @@ Assert ((Get-FogLevel 29.9).key -eq 'low' -and (Get-FogLevel 30).key -eq 'mid' -
 $fogRows=@(0..47 | ForEach-Object { $t=([datetime]'2026-09-25').AddHours($_); [pscustomobject]@{ time=$t.ToString('yyyy-MM-dd HH:mm'); low=$(if ($t.Hour -le 10) { 70 } elseif ($t.Hour -le 15) { 40 } else { 10 }) } })
 $fog=@(Get-FogOutlook -rows $fogRows -now ([datetime]'2026-09-25 12:30'))
 Assert ($fog.Count -eq 2 -and $fog[0].blocks[0].level.key -eq 'high' -and $fog[0].blocks[1].level.key -eq 'mid' -and $fog[0].blocks[2].level.key -eq 'low') '霧の見通しの時間帯集計'
+$fogRainRows=@(0..23 | ForEach-Object { $t=([datetime]"2026-09-25").AddHours($_); [pscustomobject]@{ time=$t.ToString("yyyy-MM-dd HH:mm"); low=40; precip=$(if ($_ -eq 12) { 1.0 } elseif ($_ -eq 17) { 0.9 } else { 0 }) } })
+$fogRain=@(Get-FogOutlook -rows $fogRainRows -now ([datetime]"2026-09-25 04:00") -days 1)
+Assert ($fogRain[0].blocks[0].level.key -eq "mid" -and $fogRain[0].blocks[1].level.key -eq "midrain" -and $fogRain[0].blocks[1].level.text -eq "霧が出そう" -and $fogRain[0].blocks[2].level.key -eq "mid") "30〜60%で1mm以上の雨なら霧が出そう"
+Assert ((Get-FogLevel 70 5).key -eq "high" -and (Get-FogLevel 20 5).key -eq "low") "雨で上げるのは30〜60%だけ"
 Assert ($fog[0].blocks[0].past -and -not $fog[0].blocks[1].past -and -not $fog[1].blocks[0].past) '終わった時間帯だけ薄く表示'
 # 警報の取得失敗を「発表なし」と表示しない。
 $savedInvoke=${function:Invoke-JsonWithRetry}
