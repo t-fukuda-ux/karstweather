@@ -79,7 +79,7 @@ WordPress 等には トップページを iframe で埋め込む。埋め込み�
 | `lowcloud*.csv` | 除外 | 各版のCSV |
 | `unkai_detail.csv` | 除外 | 雲海の全内訳（67列） |
 | `unkai_levels.csv` | 除外 | 雲海の気圧面プロファイル生値 |
-| `unkai_log.csv` | 除外 | **雲海の実績記録（手で記入する）。再実行でも上書きしない** |
+| `unkai_log.csv` | **追跡** | **雲海の実績記録（手で記入する）。再実行でも上書きしない。PC間で共有するため2026-09-27にgit管理へ移した** |
 | `publish.log` | 除外 | `publish.ps1` の実行ログ |
 
 `publish.ps1` と Actions はいずれも `git add` の対象を**上記の追跡5ファイルと `forecast-history/`・`weekly-history/` に明示限定**している。新しい生成物を公開したい場合は両方に追加が必要。
