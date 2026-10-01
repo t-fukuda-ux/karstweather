@@ -57,6 +57,10 @@ $mixed=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';vall
 Assert ([math]::Abs([double]$mixed[0].valleys[0].f_c-0.6) -lt 0.0001) '平均版Fはbest_match由来'
 Assert ($mixed[0].valleys[0].v -eq 0.5 -and $mixed[0].valleys[0].idx -eq 30) '平均版VはEC由来'
 Assert ($mixed[0].summit.v -eq 0.5) '平均版のV説明情報もEC由来'
+# 週間カードの雲海は日の出に最も近い正時（offset 0）の値。最大値の時刻ではない。
+$udHours=@(@{date='2026-10-01';hh='05';offset=-1;idx=90;dir='北';label='a';spread=1;spread_total=4}, @{date='2026-10-01';hh='06';offset=0;idx=40;dir='南';label='b';spread=0;spread_total=4})
+$ud=@(Get-UnkaiDaily -Hours $udHours)
+Assert ($ud[0].idx -eq 40 -and $ud[0].peak_time -eq '06時' -and $ud[0].dir -eq '南') '週間の雲海は日の出の時刻の値'
 # 降水量は雪の水量を含む。雪だけならみぞれにしない。
 Assert ((Derive-HourlyWeather -codeA 71 -codeB 71 -precip 1.4 -snow 1.0 -total 100).key -eq 'snow') '純粋な雪をみぞれにしない'
 Assert ((Derive-HourlyWeather -codeA 71 -codeB 71 -precip 0.3 -snow 0.2 -total 100).key -eq 'snow_weak') '弱い雪'

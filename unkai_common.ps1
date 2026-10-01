@@ -757,11 +757,10 @@ function Get-UnkaiDaily {
     }
     $out = @()
     foreach ($d in $byDate.Keys) {
-        $peak = $null
-        foreach ($h in $byDate[$d]) {
-            if ($null -eq $h.idx) { continue }
-            if ($null -eq $peak -or $h.idx -gt $peak.idx) { $peak = $h }
-        }
+        # 週間カードは「日の出に最も近い正時」（offset 0）の値を出す（2026-10-01〜、福田さん依頼）。
+        # 以前は4時刻の最大値で、同点だと早い時刻（日の出1時間前）が選ばれ「05時」ばかり出ていた。
+        # 日の出は季節で動くので、9〜10月は6時、11月ごろから7時になる。
+        $peak = $byDate[$d] | Where-Object { $_.offset -eq 0 -and $null -ne $_.idx } | Select-Object -First 1
         if ($null -eq $peak) {
             $out += , [ordered]@{ date = $d; idx = $null; dir = "--"; label = "判定不能"; peak_time = "--"; spread = 0; spread_total = $UnkaiValleys.Count }
         } else {
