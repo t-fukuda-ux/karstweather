@@ -1,0 +1,8 @@
+﻿issued_at,model,target_date,lead_days,weather,wcode,tmax_disp,tmin_disp,tmax_raw,tmin_raw,pop_max,precip_sum,snow_sum,source_revision
+2026-10-01T18:20:28+09:00,ecmwf_ifs025,2026-10-01,0,"曇り",3,22.3,9.1,20.3,9.1,4,0.0,,c29c0acfba5ee9d86e30aac501a6a9f36eecab9b
+2026-10-01T18:20:28+09:00,ecmwf_ifs025,2026-10-02,1,"薄曇",2,19.5,7.7,17.5,7.7,4,0.0,,c29c0acfba5ee9d86e30aac501a6a9f36eecab9b
+2026-10-01T18:20:28+09:00,ecmwf_ifs025,2026-10-03,2,"曇り",3,19.5,5.9,17.5,5.9,0,0.0,,c29c0acfba5ee9d86e30aac501a6a9f36eecab9b
+2026-10-01T18:20:28+09:00,ecmwf_ifs025,2026-10-04,3,"弱い雨",61,14.8,7.9,12.9,7.9,82,16.4,,c29c0acfba5ee9d86e30aac501a6a9f36eecab9b
+2026-10-01T18:20:28+09:00,ecmwf_ifs025,2026-10-05,4,"弱霧雨",51,17.2,9.2,15.2,9.2,69,3.3,,c29c0acfba5ee9d86e30aac501a6a9f36eecab9b
+2026-10-01T18:20:28+09:00,ecmwf_ifs025,2026-10-06,5,"曇り",3,18.2,7.9,16.2,7.9,28,0.0,,c29c0acfba5ee9d86e30aac501a6a9f36eecab9b
+2026-10-01T18:20:28+09:00,ecmwf_ifs025,2026-10-07,6,"薄曇",2,15.5,5.5,13.5,5.5,13,0.0,,c29c0acfba5ee9d86e30aac501a6a9f36eecab9b
