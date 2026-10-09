@@ -392,7 +392,7 @@ function Get-StarIndex {
     if ($s -ge 0) { return $null }
     $bMoon = Get-MoonBrightness -jd $jd -lat $lat -lon $lon
     $bTwi  = Get-TwilightBrightness -s $s
-    $B = $bMoon + $bTwi
+    $B = $bMoon * 1.1 + $bTwi   # 月明かりの影響を1割強める（2026-10-09〜）
     if ($B -gt 100) { $B = 100 }
     # 雲量が欠測なら指数を出さない（0%扱いにすると星空指数が高く出る）
     if ($null -eq $totalCloud) { return $null }
