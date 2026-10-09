@@ -69,10 +69,21 @@ try {
 } catch {
     Write-Warning ("雲海指数(best_match)の算出に失敗しました: {0}" -f $_.Exception.Message)
 }
+$unkaiBundleB = $null   # 霧の見通し「朝」の V 判定にも使うので保持しておく
 try {
-    $unkaiB = Get-UnkaiTable -Bundle (Get-UnkaiBundle -Model "ecmwf_ifs025" -ForecastDays 7 -Timezone $Timezone)
+    $unkaiBundleB = Get-UnkaiBundle -Model "ecmwf_ifs025" -ForecastDays 7 -Timezone $Timezone
+    $unkaiB = Get-UnkaiTable -Bundle $unkaiBundleB
 } catch {
     Write-Warning ("雲海指数(ECMWF)の算出に失敗しました: {0}" -f $_.Exception.Message)
+}
+# 霧の見通し（平均版）: 朝5〜10時の展望地点の V_summit（ECMWF）。取れなければ低層雲と雨だけで判定する
+$fogSummitV = $null
+if ($null -ne $unkaiBundleB) {
+    try {
+        $fogSummitV = Get-UnkaiSummitVMap -Bundle $unkaiBundleB -FromHour 5 -ToHour 10
+    } catch {
+        Write-Warning ("霧の見通し用の V_summit を算出できませんでした（低層雲と雨だけで判定します）: {0}" -f $_.Exception.Message)
+    }
 }
 if ($null -ne $unkaiA -and $null -ne $unkaiB) {
     try {
@@ -126,7 +137,7 @@ if ($null -ne $bundleB) {
 if ($null -ne $bundleA -and $null -ne $bundleB) {
     try {
         & (Join-Path $PSScriptRoot "lowcloud_avg.ps1") -Latitude $Latitude -Longitude $Longitude -Elevation $Elevation `
-            -Timezone $Timezone -BundleA $bundleA -BundleB $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiM -SkipUnkaiFetch -SaveWeeklyHistory -SourceRevision $revision
+            -Timezone $Timezone -BundleA $bundleA -BundleB $bundleB -PrefetchedAlerts $alerts -UnkaiHours $unkaiM -FogSummitV $fogSummitV -SkipUnkaiFetch -SaveWeeklyHistory -SourceRevision $revision
         $results["平均版"] = $true
     } catch {
         Write-Warning ("平均版の生成に失敗しました: {0}" -f $_.Exception.Message)

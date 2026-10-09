@@ -254,6 +254,32 @@ function Get-UnkaiVCombine {
     return $m
 }
 
+# 展望地点の V_summit を、雲海の評価窓（日の出前後）に限らず任意の時刻について求める。
+# 霧の見通しの「朝」の判定に使う（2026-10-06〜）。式は Get-UnkaiTable と同じ。
+# 戻り値: "yyyy-MM-dd HH:00" → V_summit。算出できない時刻（材料不足）は含めない。
+function Get-UnkaiSummitVMap {
+    param($Bundle, [int]$FromHour = 0, [int]$ToHour = 23, [double]$SummitElev = $UnkaiSummitElev)
+    $map = @{}
+    if ($null -eq $Bundle -or -not $Bundle.Contains("S")) { return $map }
+    $vp = $Bundle["S"]; $h = $vp.data.hourly; $ix = $vp.idxMap
+    foreach ($ts in $h.time) {
+        $at = [datetime]::ParseExact([string]$ts, "yyyy-MM-dd'T'HH:mm", $null)
+        if ($at.Hour -lt $FromHour -or $at.Hour -gt $ToHour) { continue }
+        $rh2 = Get-UnkaiValueAt -idxMap $ix -values $h.relative_humidity_2m -at $at
+        $sp  = Get-UnkaiValueAt -idxMap $ix -values $h.surface_pressure -at $at
+        $levels = @()
+        foreach ($p in ($UnkaiLevels | Sort-Object -Descending)) {
+            $lrh = Get-UnkaiValueAt -idxMap $ix -values $h.("relative_humidity_{0}hPa" -f $p) -at $at
+            $lz  = Get-UnkaiValueAt -idxMap $ix -values $h.("geopotential_height_{0}hPa" -f $p) -at $at
+            $ok  = ($null -ne $sp -and $p -lt ([double]$sp - 5.0) -and $null -ne $lrh -and $null -ne $lz)
+            $levels += , ([ordered]@{ p = $p; rh = $lrh; z = $lz; valid = $ok })
+        }
+        $s = Get-UnkaiVSummit -RhBelow $rh2 -ElevBelow $vp.elev -Levels $levels -SummitElev $SummitElev
+        if ($null -ne $s.v) { $map[$at.ToString("yyyy-MM-dd HH:00")] = [double]$s.v }
+    }
+    return $map
+}
+
 # 谷地点の気圧面プロファイルから雲頂を推定する。
 # 単一値ではなく下側・上側の高度と状態を返す。粗い高度間隔による不確かさを潰さないため。
 #   capped           : 湿潤層の上に乾いた面がある（雲頂を挟めた）

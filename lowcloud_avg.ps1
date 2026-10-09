@@ -30,6 +30,7 @@ param(
     [object]$BundleB     = $null,         # 同（ecmwf_ifs025）
     [object]$PrefetchedAlerts = $null,    # 同・取得済みの警報一覧
     [object]$UnkaiHours  = $null,         # 同・計算済みの雲海指数（F は best_match・V は ECMWF 由来）
+    [object]$FogSummitV  = $null,         # 同・霧の見通し「朝」の判定に使う展望地点の V_summit（ECMWF、Get-UnkaiSummitVMap）
     [switch]$SkipUnkaiFetch,              # generate_all.ps1 用。UnkaiHours が null でも取り直さない（取得失敗の連鎖で時間切れになるため）
     [switch]$SaveWeeklyHistory,           # generate_all.ps1 用。週間予報を weekly-history/ に1日1回保存する
     [string]$SourceRevision = ""          # 同・履歴に記録するソースのリビジョン
@@ -529,7 +530,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
     [void]$sb.AppendLine(("<h1>1時間天気予報 — 四国カルスト 姫鶴荘 {0}</h1>" -f $ModelLabel))
     [void]$sb.AppendLine(("<p class=""meta"">緯度 {0} / 経度 {1} / 標高 {2}m(指定)　|　取得: {3}　|　{4} ～ {5}　|　出典: Open-Meteo(best_match+ECMWF平均)</p>" -f $Latitude, $Longitude, $Elevation, $generated, $startTime, $endTime))
     [void]$sb.AppendLine((Render-AlertHtml $alerts))
-    [void]$sb.AppendLine((Render-FogOutlookHtml (Get-FogOutlook -rows $rows -now (Get-JstNow))))
+    [void]$sb.AppendLine((Render-FogOutlookHtml (Get-FogOutlook -rows $rows -now (Get-JstNow) -summitV $fogSummitV)))
     [void]$sb.AppendLine('<div class="scroll"><table>')
 
     # 過去の時刻のセルを薄く表示するため、td/thタグに opacity を後付けする
@@ -644,7 +645,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
     }
 
     [void]$sb.AppendLine('</table></div>')
-    [void]$sb.AppendLine('<p class="legend">※本ページは best_match と ECMWF(ecmwf_ifs025) の平均値です。天気・週間の文言は数値から機械的に推定した近似表現で、気象庁の予報文とは一致しません。<br>※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※霧の見通しは、低層雲の時間帯ごとの平均から3段階で示します（30%未満○・30〜60%◐・60%以上●）。30〜60%の時間帯に1mm以上の雨の予報があれば「霧が出そう」としています。霧が何時に出て何時に晴れるかは予報では当てにくいため、時間帯でまとめています。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。<br>※雲海期待度は、日の出前後の4時間のみ計算します。麓の谷（美川・面河・梼原・津野町）で霧ができる条件と、姫鶴平が雲の上に出る条件を掛け合わせた目安で、発生確率ではありません。谷の条件は谷の地形を表せる細かいモデル（best_match）、展望の条件はカメラ実測との相関が高かったECMWFから算出しています。試作中の指標のため、現地の実績と照らして今後調整します。</p>')
+    [void]$sb.AppendLine('<p class="legend">※本ページは best_match と ECMWF(ecmwf_ifs025) の平均値です。天気・週間の文言は数値から機械的に推定した近似表現で、気象庁の予報文とは一致しません。<br>※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※霧の見通しは、低層雲の時間帯ごとの平均から3段階で示します（30%未満○・30〜60%◐・60%以上●）。30〜60%の時間帯に1mm以上の雨の予報があれば「霧が出そう」としています。低層雲が少なくても、朝に姫鶴平付近の湿度が高い予報（ECMWF）のときは「朝は霧が出ることも」としています。霧が何時に出て何時に晴れるかは予報では当てにくいため、時間帯でまとめています。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。<br>※雲海期待度は、日の出前後の4時間のみ計算します。麓の谷（美川・面河・梼原・津野町）で霧ができる条件と、姫鶴平が雲の上に出る条件を掛け合わせた目安で、発生確率ではありません。谷の条件は谷の地形を表せる細かいモデル（best_match）、展望の条件はカメラ実測との相関が高かったECMWFから算出しています。試作中の指標のため、現地の実績と照らして今後調整します。</p>')
 
     if ($daily -and $daily.Count -gt 0) {
         [void]$sb.AppendLine('<h2>週間天気予報</h2>')
@@ -768,11 +769,15 @@ Assert-RowsUsable -Rows $rows -Label $OutName
 # F は best_match、V は ECMWF 由来（V は2026-09-17、F は2026-09-23の運用変更。unkai_common.ps1 の Get-UnkaiTableAverage 参照）。
 # 混成である旨は凡例に明記する。失敗しても天気予報本体は出せるよう null のまま進む。
 $unkaiHours = $UnkaiHours
+$fogSummitV = $FogSummitV
 if ($null -eq $unkaiHours -and -not $SkipUnkaiFetch) {
     try {
         $ta = Get-UnkaiTable -Bundle (Get-UnkaiBundle -Model "best_match"    -ForecastDays $WeeklyDays -Timezone $Timezone)
-        $tb = Get-UnkaiTable -Bundle (Get-UnkaiBundle -Model "ecmwf_ifs025" -ForecastDays $WeeklyDays -Timezone $Timezone)
+        $ecUnkaiBundle = Get-UnkaiBundle -Model "ecmwf_ifs025" -ForecastDays $WeeklyDays -Timezone $Timezone
+        $tb = Get-UnkaiTable -Bundle $ecUnkaiBundle
         $unkaiHours = Get-UnkaiTableAverage -TableA $ta -TableB $tb
+        # 単体実行時は霧の見通し「朝」用の V もここで求める（generate_all.ps1 経由では -FogSummitV で受け取る）
+        if ($null -eq $fogSummitV) { $fogSummitV = Get-UnkaiSummitVMap -Bundle $ecUnkaiBundle -FromHour 5 -ToHour 10 }
     } catch {
         Write-Warning ("雲海指数の算出に失敗しました: {0}" -f $_.Exception.Message)
         $unkaiHours = $null

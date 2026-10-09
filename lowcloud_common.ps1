@@ -646,7 +646,7 @@ $StaleCheckScript = @'
 # 時刻単位の霧の出入りは予報では当てられないため、時間帯の平均で出す（camera/fog-verification-20260923.md）。
 # 低層雲（平均版）の時間帯平均が 30%未満 → 霧0〜2%、30〜60% → 霧59〜68%、60%以上 → 霧94〜100%（9/12〜9/23 のカメラ目視）。
 $FogBlocks = @(
-    @{ name = "朝"; from = 5;  to = 10 },
+    @{ name = "朝"; from = 5;  to = 10; vcheck = $true },
     @{ name = "昼"; from = 11; to = 15 },
     @{ name = "夕"; from = 16; to = 20 }
 )
@@ -659,6 +659,14 @@ $FogLevels = @(
 # 低層雲30〜60%の時刻で、前夜予報の雨1mm以上は霧75%（15/20）、雨0mmは52%（15/29）だった（9/12〜9/23 のカメラ目視）。
 $FogRainLevel = @{ key = "midrain"; mark = "◐"; text = "霧が出そう" }
 $FogRainMinMm = 1.0
+# 朝の時間帯が「霧の心配はほぼなし」で、展望地点の V_summit（ECMWF）が0.5以下の時刻が1つでもあれば
+# 「朝は霧が出ることも」に弱める（2026-10-06〜、福田さん判断）。
+# 9/12〜10/2 の前夜予報とカメラ判定の照合で、心配なしの時間帯31件のうち V≤0.5 なし16件は霧0件、
+# V≤0.5 あり15件は霧2件（いずれも朝・薄霧）。10/6朝の濃霧（V=0.50）を含めると朝は約3/10。
+# 昼・夕は該当6件がすべて空振りだったため朝だけに限る。
+# 「霧が出るかも」（低層雲30〜60%、霧59〜68%）の意味を薄めないよう、別の弱い表現にしている。
+$FogLowVLevel = @{ key = "lowv"; mark = "○"; text = "朝は霧が出ることも" }
+$FogLowVMax = 0.5
 
 function Get-FogLevel {
     param($lowMean, $maxPrecip = $null)
@@ -673,7 +681,9 @@ function Get-FogLevel {
 
 # 戻り値: 日ごとに @{ date; blocks = @(@{ name; from; to; mean; level; past }) }
 function Get-FogOutlook {
-    param($rows, [datetime]$now, [int]$days = 2)
+    # $summitV: "yyyy-MM-dd HH:00" → 展望地点の V_summit（ECMWF）。Get-UnkaiSummitVMap の戻り値。
+    #           無ければ従来どおり低層雲と雨だけで判定する。
+    param($rows, [datetime]$now, [int]$days = 2, $summitV = $null)
     $out = @()
     for ($d = 0; $d -lt $days; $d++) {
         $date = $now.Date.AddDays($d)
@@ -689,8 +699,15 @@ function Get-FogOutlook {
                 $t.Date -eq $date -and $t.Hour -ge $b.from -and $t.Hour -le $b.to -and $null -ne $_.precip
             } | ForEach-Object { [double]$_.precip })
             $maxPrecip = if ($precips.Count -gt 0) { ($precips | Measure-Object -Maximum).Maximum } else { $null }
+            $level = Get-FogLevel $mean $maxPrecip
+            if ($b.vcheck -and $null -ne $summitV -and $null -ne $level -and $level.key -eq "low") {
+                for ($hh = $b.from; $hh -le $b.to; $hh++) {
+                    $k = "{0:yyyy-MM-dd} {1:00}:00" -f $date, $hh
+                    if ($summitV.ContainsKey($k) -and [double]$summitV[$k] -le $FogLowVMax) { $level = $FogLowVLevel; break }
+                }
+            }
             $blocks += @{ name = $b.name; from = $b.from; to = $b.to; mean = $mean; maxPrecip = $maxPrecip
-                          level = (Get-FogLevel $mean $maxPrecip)
+                          level = $level
                           past = ($date.AddHours($b.to + 1) -le $now) }
         }
         $out += @{ date = $date; blocks = $blocks }
@@ -730,6 +747,7 @@ $FogOutlookCss = @'
 .fogtbl td.fog-mid{background:#f2f2f2;color:#444;}
 .fogtbl td.fog-midrain{background:#e8e8e8;color:#333;font-weight:600;}
 .fogtbl td.fog-low{background:#fff;color:#666;}
+.fogtbl td.fog-lowv{background:#fafafa;color:#555;}
 .fogtbl td.fogpast{opacity:.4;}
 '@
 
