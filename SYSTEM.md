@@ -568,6 +568,16 @@ Issue 作成には、Git Credential Manager に保存された PAT に **Issues:
                         ↕  GitHub（唯一の正）
     ```
     仕様書（SYSTEM.md）もリポジトリ内にあるので、`git pull` すればどのPCでも最新が手に入る。
+
+    各PCのリポジトリの場所（コマンドは絶対パスで書く）:
+
+    | PC | リポジトリ |
+    |---|---|
+    | 開発PC | `C:\Users\user\Claude\Projects\weather-lowclouds` |
+    | サーバーPC（ユーザー mezuru） | `C:\Users\mezuru\Documents\Codex\天気予報` |
+
+    サーバーPCでカメラ記録を今すぐ送る:
+    `powershell -ExecutionPolicy Bypass -File "C:\Users\mezuru\Documents\Codex\天気予報\camera\push-camera-data.ps1"`
     クラウド側にファイルのコピーを置くと、どちらが新しいか分からなくなるので置かない。
 
 ---
