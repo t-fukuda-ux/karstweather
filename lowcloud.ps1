@@ -414,8 +414,9 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
             # 雲海期待度（見頃時刻・方角・4地点中いくつで条件が揃うか）
             $u = $unkaiByDate[("{0:yyyy-MM-dd}" -f $r.date)]
             if ($null -ne $u -and $null -ne $u.idx) {
-                [void]$sb.Append(("<div class=""unkairow"">雲海 <b>{0}</b> {1} {2}<div class=""unkaiw"">{3}　{4}/{5}地点</div></div>" -f `
-                    $u.idx, $u.dir, $u.peak_time, $u.label, $u.spread, $u.spread_total))
+                $frozenNote = if ($u.Contains("frozen_issued")) { ("<br>{0}発表の予報" -f $u.frozen_issued) } else { "" }
+                [void]$sb.Append(("<div class=""unkairow"">雲海 <b>{0}</b> {1} {2}<div class=""unkaiw"">{3}　{4}/{5}地点{6}</div></div>" -f `
+                    $u.idx, $u.dir, $u.peak_time, $u.label, $u.spread, $u.spread_total, $frozenNote))
             }
             [void]$sb.AppendLine('</div>')
         }
@@ -513,6 +514,14 @@ $unkaiByDate = @{}
 if ($null -ne $unkaiHours) {
     foreach ($u in $unkaiHours) { $unkaiByTime[[string]$u.time] = $u }
     foreach ($u in (Get-UnkaiDaily -Hours $unkaiHours)) { $unkaiByDate[[string]$u.date] = $u }
+}
+# 当日の週間カードは、朝の評価前に保存した予報で固定する（Get-UnkaiFrozenDaily 参照）
+$todayKey = (Get-JstNow).ToString("yyyy-MM-dd")
+try {
+    $frozen = Get-UnkaiFrozenDaily -Dir $PSScriptRoot -Model $Models -Date $todayKey
+    if ($null -ne $frozen) { $unkaiByDate[$todayKey] = $frozen }
+} catch {
+    Write-Warning ("当日の雲海カードを保存済み予報で固定できませんでした（最新予報で表示します）: {0}" -f $_.Exception.Message)
 }
 foreach ($r in $rows) {
     $u = $unkaiByTime[[string]$r.time]

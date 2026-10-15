@@ -62,17 +62,28 @@ function Save-ForecastHistory {
         [void][IO.Directory]::CreateDirectory($runDir)
         $runFile = Join-Path $runDir ($IssuedAt.ToString('yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N') + '-' + $model + '.json')
         [IO.File]::WriteAllText($runFile,$json,[Text.UTF8Encoding]::new($false))
-        # 18時以降に最初に得た各モデルの翌朝予報を長期保存。欠測なら後続の実行で再試行する。
+        # 朝の予報を、発表の時間帯ごとに1つずつ長期保存する。欠測なら後続の実行で再試行する。
+        # 同じ日・枠・版を後の予報で上書きしない。保存先は発表日のフォルダ。
+        #   夕方 18:00〜23:59 → 翌朝分   ファイル名 <版>-HHmmss-*.json（従来どおり）
+        #   23時台             → 翌朝分   ファイル名 h23-<版>-HHmmss-*.json（2026-10-15〜）
+        #   04時台             → 当日朝分 ファイル名 h04-<版>-HHmmss-*.json（2026-10-15〜）
+        # 23時台・04時台は「発表が遅いほど当たるか」を比べるため、および当日の週間カードを
+        # 固定する値（Get-UnkaiFrozenDaily）として使う。
+        $today = $IssuedAt.Date.ToString('yyyy-MM-dd')
         $tomorrow = $IssuedAt.Date.AddDays(1).ToString('yyyy-MM-dd')
-        $usable = @($hours | Where-Object { $_.date -eq $tomorrow -and $null -ne $_.idx }).Count -gt 0
-        if ($IssuedAt.Hour -ge 18 -and $usable) {
-            $historyDir = Join-Path $Dir ('forecast-history/' + $IssuedAt.ToString('yyyy-MM-dd'))
+        $slots = @()
+        if ($IssuedAt.Hour -ge 18) { $slots += @{ prefix = ''; target = $tomorrow } }
+        if ($IssuedAt.Hour -eq 23) { $slots += @{ prefix = 'h23-'; target = $tomorrow } }
+        if ($IssuedAt.Hour -eq 4)  { $slots += @{ prefix = 'h04-'; target = $today } }
+        foreach ($slot in $slots) {
+            $usable = @($hours | Where-Object { $_.date -eq $slot.target -and $null -ne $_.idx }).Count -gt 0
+            if (-not $usable) { continue }
+            $historyDir = Join-Path $Dir ('forecast-history/' + $today)
             [void][IO.Directory]::CreateDirectory($historyDir)
-            $path = Join-Path $historyDir ($model + '-' + $IssuedAt.ToString('HHmmss') + '-' + [guid]::NewGuid().ToString('N') + '.json')
-            # 同じ日・版を後の予報で上書きしない。再実行にも対応。
-            if (@(Get-ChildItem -LiteralPath $historyDir -Filter ($model + '-*.json') -File).Count -eq 0) {
-                [IO.File]::WriteAllText($path,$json,[Text.UTF8Encoding]::new($false))
-            }
+            $name = $slot.prefix + $model + '-'
+            if (@(Get-ChildItem -LiteralPath $historyDir -Filter ($name + '*.json') -File).Count -gt 0) { continue }
+            $path = Join-Path $historyDir ($name + $IssuedAt.ToString('HHmmss') + '-' + [guid]::NewGuid().ToString('N') + '.json')
+            [IO.File]::WriteAllText($path,$json,[Text.UTF8Encoding]::new($false))
         }
     }
 }

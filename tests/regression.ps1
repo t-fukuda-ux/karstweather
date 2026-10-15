@@ -57,10 +57,14 @@ $mixed=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';vall
 Assert ([math]::Abs([double]$mixed[0].valleys[0].f_c-0.6) -lt 0.0001) '平均版Fはbest_match由来'
 Assert ($mixed[0].valleys[0].v -eq 0.5 -and $mixed[0].valleys[0].idx -eq 30) '平均版VはEC由来'
 Assert ($mixed[0].summit.v -eq 0.5) '平均版のV説明情報もEC由来'
-# 週間カードの雲海は日の出に最も近い正時（offset 0）の値。最大値の時刻ではない。
+# 週間カードの雲海は朝の4時刻の最大値（2026-10-15〜）。同点は 日の出 → +1h → -1h → +2h の順。
 $udHours=@(@{date='2026-10-01';hh='05';offset=-1;idx=90;dir='北';label='a';spread=1;spread_total=4}, @{date='2026-10-01';hh='06';offset=0;idx=40;dir='南';label='b';spread=0;spread_total=4})
 $ud=@(Get-UnkaiDaily -Hours $udHours)
-Assert ($ud[0].idx -eq 40 -and $ud[0].peak_time -eq '06時' -and $ud[0].dir -eq '南') '週間の雲海は日の出の時刻の値'
+Assert ($ud[0].idx -eq 90 -and $ud[0].peak_time -eq '05時' -and $ud[0].dir -eq '北') '週間の雲海は朝の最大値'
+$tieHours=@(-1,0,1,2 | ForEach-Object { @{date='2026-10-01';hh=('{0:00}' -f (6+$_));offset=$_;idx=50;dir='北';label='x';spread=1;spread_total=4} })
+Assert ((@(Get-UnkaiDaily -Hours $tieHours))[0].peak_time -eq '06時') '同点は日の出の時刻を優先'
+$tieHours2=@(-1,1,2 | ForEach-Object { @{date='2026-10-01';hh=('{0:00}' -f (6+$_));offset=$_;idx=50;dir='北';label='x';spread=1;spread_total=4} })
+Assert ((@(Get-UnkaiDaily -Hours $tieHours2))[0].peak_time -eq '07時') '日の出の時刻が無ければ1時間後を優先（暗い日の出前より）'
 # 降水量は雪の水量を含む。雪だけならみぞれにしない。
 Assert ((Derive-HourlyWeather -codeA 71 -codeB 71 -precip 1.4 -snow 1.0 -total 100).key -eq 'snow') '純粋な雪をみぞれにしない'
 Assert ((Derive-HourlyWeather -codeA 71 -codeB 71 -precip 0.3 -snow 0.2 -total 100).key -eq 'snow_weak') '弱い雪'
@@ -137,6 +141,18 @@ Assert (($original | ConvertFrom-Json).issued_at -eq '2026-09-07T18:11:00+09:00'
 $hours[0].idx=$null
 Save-ForecastHistory -ByModel @{ecmwf_ifs025=$hours} -Dir $temp -IssuedAt ([datetime]'2026-09-07 18:11') -SourceRevision 'test' -AverageMode ''
 Assert (@(Get-ChildItem (Join-Path $temp 'forecast-history/2026-09-07') -Filter 'ecmwf_ifs025-*.json').Count -eq 0) '全欠測の夕方代表を保存しない'
+# 23時台（翌朝分）と04時台（当日朝分）も別名で保存し、夕方の保存とは独立に上書きしない（2026-10-15〜）。
+$hours=@(@{date='2026-09-08';time='2026-09-08 06:00';idx=70})
+Save-ForecastHistory -ByModel @{best_match=$hours} -Dir $temp -IssuedAt ([datetime]'2026-09-07 23:11') -SourceRevision 'test' -AverageMode ''
+$h23=@(Get-ChildItem (Join-Path $temp 'forecast-history/2026-09-07') -Filter 'h23-best_match-*.json')
+Assert ($h23.Count -eq 1 -and ($original -eq [IO.File]::ReadAllText($history))) '23時台は別名で保存し夕方の保存を変えない'
+Save-ForecastHistory -ByModel @{best_match=$hours} -Dir $temp -IssuedAt ([datetime]'2026-09-07 23:41') -SourceRevision 'later' -AverageMode ''
+Assert (@(Get-ChildItem (Join-Path $temp 'forecast-history/2026-09-07') -Filter 'h23-best_match-*.json').Count -eq 1) '23時台も最初の1件だけ'
+Save-ForecastHistory -ByModel @{best_match=$hours} -Dir $temp -IssuedAt ([datetime]'2026-09-08 04:11') -SourceRevision 'test' -AverageMode ''
+Assert (@(Get-ChildItem (Join-Path $temp 'forecast-history/2026-09-08') -Filter 'h04-best_match-*.json').Count -eq 1) '04時台は当日朝分を発表日のフォルダへ'
+Assert (@(Get-ChildItem (Join-Path $temp 'forecast-history/2026-09-08') -Filter 'best_match-*.json').Count -eq 0) '04時台を夕方代表と混同しない'
+Save-ForecastHistory -ByModel @{best_match=$hours} -Dir $temp -IssuedAt ([datetime]'2026-09-08 05:11') -SourceRevision 'test' -AverageMode ''
+Assert (@(Get-ChildItem (Join-Path $temp 'forecast-history/2026-09-08') -Filter '*.json').Count -eq 1) '05時台以降の当日分は保存しない'
 # 週間予報の履歴: 18時以降に1日1回・上書きしない・補正前後の気温を残す。
 $wkDaily=@([pscustomobject]@{date=[datetime]'2026-09-25';weather='晴れ';wcode=1;tmax=24;tmin=12;pop=10;precip=0}, [pscustomobject]@{date=[datetime]'2026-09-26';weather='雨';wcode=61;tmax=$null;tmin=$null;pop=80;precip=12.5})
 $wkRows=@([pscustomobject]@{time='2026-09-25 06:00';temp=11.5}, [pscustomobject]@{time='2026-09-25 14:00';temp=21.2})
@@ -149,4 +165,23 @@ $wk=@(Import-Csv $wkFile[0].FullName -Encoding UTF8)
 Assert ($wk.Count -eq 2 -and $wk[0].lead_days -eq '0' -and $wk[1].lead_days -eq '1' -and $wk[0].tmax_disp -eq '24.0' -and $wk[0].tmax_raw -eq '21.2' -and $wk[0].tmin_raw -eq '11.5' -and $wk[1].tmax_disp -eq '' -and $wk[1].precip_sum -eq '12.5') '週間履歴の中身'
 Save-WeeklyForecast -Daily $wkDaily -AllRows $wkRows -Model 'best_match' -Dir $temp -IssuedAt ([datetime]'2026-09-25 19:22') -SourceRevision 'later'
 Assert (@(Get-ChildItem (Join-Path $temp 'weekly-history/2026-09-25') -Filter 'best_match-*.csv').Count -eq 1) '週間履歴を後続実行で増やさない'
-Write-Host 'PASS:週間7日・気温補正・欠測・ラベル・鮮度境界・予報履歴'
+# 当日の週間カードは保存済み予報で固定: 当日04時台 → 前日23時台 → 前日夕方 の順。無ければ $null。
+$fz=Join-Path $temp 'freeze'
+function New-FrozenRecord($dir,$name,$issued,$idxAt07) {
+    $p=Join-Path $fz ('forecast-history/'+$dir); [void][IO.Directory]::CreateDirectory($p)
+    $rows=@('05','06','07','08' | ForEach-Object { $v=$(if ($_ -eq '07') { $idxAt07 } else { 10 }); "2026-10-15,2026-10-15 ${_}:00,北,$v,lbl$_" })
+    $rec=[ordered]@{ schema_version=1; issued_at=$issued; detail_header='date,time,dir,idx,label'; detail_rows=$rows }
+    [IO.File]::WriteAllText((Join-Path $p $name),(ConvertTo-Json $rec -Compress))
+}
+Assert ($null -eq (Get-UnkaiFrozenDaily -Dir $fz -Model 'average' -Date '2026-10-15')) '保存が無ければ固定しない'
+New-FrozenRecord '2026-10-14' 'average-182033-a.json' '2026-10-14T18:20:33+09:00' 100
+$f1=Get-UnkaiFrozenDaily -Dir $fz -Model 'average' -Date '2026-10-15'
+Assert ($f1.idx -eq 100 -and $f1.peak_time -eq '07時' -and $f1.label -eq 'lbl07' -and $f1.frozen_issued -eq '10/14 18:20') '夕方の予報で固定し、朝の最大値と発表時刻を出す'
+New-FrozenRecord '2026-10-14' 'h23-average-231133-a.json' '2026-10-14T23:11:33+09:00' 80
+Assert ((Get-UnkaiFrozenDaily -Dir $fz -Model 'average' -Date '2026-10-15').idx -eq 80) '23時台は夕方より優先'
+New-FrozenRecord '2026-10-15' 'h04-average-041133-a.json' '2026-10-15T04:11:33+09:00' 60
+New-FrozenRecord '2026-10-15' 'h04-average-044133-b.json' '2026-10-15T04:41:33+09:00' 30
+$f3=Get-UnkaiFrozenDaily -Dir $fz -Model 'average' -Date '2026-10-15'
+Assert ($f3.idx -eq 60 -and $f3.frozen_issued -eq '10/15 04:11') '04時台を最優先し、同じ枠では発表が早いもの'
+Assert ($null -eq (Get-UnkaiFrozenDaily -Dir $fz -Model 'best_match' -Date '2026-10-15')) '版ごとに別に探す'
+Write-Host 'PASS:週間7日・気温補正・欠測・ラベル・鮮度境界・予報履歴・当日固定'

@@ -774,6 +774,90 @@ function Get-UnkaiTable {
 }
 
 # 日別（その日の4時刻のうち最大の時刻をとる）
+# 週間カードに出す時刻を、朝の4時刻（日の出-1h〜+2h）から選ぶ。
+# 指数が最も高い時刻をとる（2026-10-15〜、福田さん判断。「今朝、雲海は見られるか」に素直に答えるため）。
+# 同点のときは 日の出の時刻 → 1時間後 → 1時間前 → 2時間後 の順で優先する。
+# 10/1〜10/14 は「日の出に最も近い時刻」の値だった。それ以前の最大値方式では同点で
+# 最も早い時刻（日の出前で暗い05時）ばかり選ばれたため、同点の優先順を付けて戻した。
+function Select-UnkaiMorningPeak {
+    param($Hours)
+    $rank = @{ "0" = 0; "1" = 1; "-1" = 2; "2" = 3 }
+    $cands = @($Hours | Where-Object { $null -ne $_.idx })
+    if ($cands.Count -eq 0) { return $null }
+    return ($cands | Sort-Object `
+        @{ Expression = { [double]$_.idx }; Descending = $true },
+        @{ Expression = { $k = [string]$_.offset; if ($rank.ContainsKey($k)) { $rank[$k] } else { 9 } } } |
+        Select-Object -First 1)
+}
+
+# 保存済みの予報（forecast-history/ の JSON）から、ある日の朝の時刻ごとの集約を作り直す。
+# detail_header の列名で読むので、列が増えても動く。offset は保存されていないため、
+# その日の行を時刻順に並べた位置から -1, 0, 1, 2 を振る（評価窓の4時刻がそのまま保存されている前提）。
+function Get-UnkaiHoursFromRecord {
+    param($Record, [string]$Date)
+    $hdr = ([string]$Record.detail_header) -split ","
+    $ix = @{}; for ($i = 0; $i -lt $hdr.Count; $i++) { $ix[$hdr[$i]] = $i }
+    foreach ($need in @("date", "time", "dir", "idx", "label")) {
+        if (-not $ix.ContainsKey($need)) { throw ("保存済み予報に列 {0} がありません（schema_version={1}）" -f $need, $Record.schema_version) }
+    }
+    $byTime = [ordered]@{}
+    foreach ($line in @($Record.detail_rows)) {
+        $c = [string]$line -split ","
+        if ($c[$ix["date"]] -ne $Date) { continue }
+        $t = $c[$ix["time"]]
+        if (-not $byTime.Contains($t)) { $byTime[$t] = @() }
+        $idx = if ([string]::IsNullOrWhiteSpace($c[$ix["idx"]]) -or $c[$ix["idx"]] -eq "--") { $null } else { [int]$c[$ix["idx"]] }
+        $byTime[$t] += , [ordered]@{ idx = $idx; dir = $c[$ix["dir"]]; label = $c[$ix["label"]] }
+    }
+    $hours = @(); $pos = 0
+    foreach ($t in ($byTime.Keys | Sort-Object)) {
+        $vs = @($byTime[$t])
+        $best = $vs | Where-Object { $null -ne $_.idx } | Sort-Object { [double]$_.idx } -Descending | Select-Object -First 1
+        $spread = @($vs | Where-Object { $null -ne $_.idx -and $_.idx -ge $UnkaiSpreadThreshold }).Count
+        $hours += , [ordered]@{
+            date = $Date; time = $t; hh = ([datetime]$t).ToString("HH"); offset = ($pos - 1)
+            idx = $(if ($null -eq $best) { $null } else { $best.idx })
+            dir = $(if ($null -eq $best -or $best.idx -le 0) { "--" } else { $best.dir })
+            label = $(if ($null -eq $best) { "判定不能" } else { $best.label })
+            spread = $spread; spread_total = $vs.Count
+        }
+        $pos++
+    }
+    return $hours
+}
+
+# 当日の週間カードを、保存済みの予報で固定する（2026-10-15〜、福田さん判断）。
+# 公開ページは毎回最新予報で作り直すため、終わった時刻も後の予報で書き換わる。10/15 は
+# 前夜の予報（07時100点）が当たり、後の予報（45点）が外れた。人が予定を立てた値を残すため、
+# その朝の評価が始まる前に保存した予報のうち、最も新しいものを使う。
+#   優先順: 当日04時台（h04-） → 前日23時台（h23-） → 前日夕方（18時台〜、接頭辞なし）
+# 該当が無ければ $null（呼び出し側は最新予報のまま表示する）。同じ枠に複数あれば発表が早いもの。
+function Get-UnkaiFrozenDaily {
+    param([string]$Dir, [string]$Model, [string]$Date)
+    $prev = ([datetime]$Date).AddDays(-1).ToString("yyyy-MM-dd")
+    $slots = @(
+        @{ dir = $Date; prefix = "h04-$Model-" },
+        @{ dir = $prev; prefix = "h23-$Model-" },
+        @{ dir = $prev; prefix = "$Model-" }
+    )
+    foreach ($s in $slots) {
+        $p = Join-Path $Dir ("forecast-history/" + $s.dir)
+        if (-not (Test-Path -LiteralPath $p)) { continue }
+        $files = @(Get-ChildItem -LiteralPath $p -Filter ($s.prefix + "*.json") -File)
+        if ($files.Count -eq 0) { continue }
+        $recs = @($files | ForEach-Object { [IO.File]::ReadAllText($_.FullName) | ConvertFrom-Json })
+        $rec = $recs | Sort-Object { [datetimeoffset]$_.issued_at } | Select-Object -First 1
+        $peak = Select-UnkaiMorningPeak -Hours (Get-UnkaiHoursFromRecord -Record $rec -Date $Date)
+        if ($null -eq $peak) { continue }
+        return [ordered]@{
+            date = $Date; idx = $peak.idx; dir = $peak.dir; label = $peak.label
+            peak_time = ($peak.hh + "時"); spread = $peak.spread; spread_total = $peak.spread_total
+            frozen_issued = ([datetimeoffset]$rec.issued_at).ToOffset([timespan]::FromHours(9)).ToString("M/d HH:mm")
+        }
+    }
+    return $null
+}
+
 function Get-UnkaiDaily {
     param($Hours)
     $byDate = [ordered]@{}
@@ -783,10 +867,7 @@ function Get-UnkaiDaily {
     }
     $out = @()
     foreach ($d in $byDate.Keys) {
-        # 週間カードは「日の出に最も近い正時」（offset 0）の値を出す（2026-10-01〜、福田さん依頼）。
-        # 以前は4時刻の最大値で、同点だと早い時刻（日の出1時間前）が選ばれ「05時」ばかり出ていた。
-        # 日の出は季節で動くので、9〜10月は6時、11月ごろから7時になる。
-        $peak = $byDate[$d] | Where-Object { $_.offset -eq 0 -and $null -ne $_.idx } | Select-Object -First 1
+        $peak = Select-UnkaiMorningPeak -Hours $byDate[$d]
         if ($null -eq $peak) {
             $out += , [ordered]@{ date = $d; idx = $null; dir = "--"; label = "判定不能"; peak_time = "--"; spread = 0; spread_total = $UnkaiValleys.Count }
         } else {
