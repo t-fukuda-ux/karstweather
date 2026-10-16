@@ -383,7 +383,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
     }
 
     [void]$sb.AppendLine('</table></div>')
-    [void]$sb.AppendLine('<p class="legend">※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。今後風が強まるのか弱まるのか傾向を見るのに使ってください。<br>※雨量は少し離れた場所が大雨予報の時に、(雨雲がズレるリスクを考慮して）大きく出る事が有ります。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。<br>※雲海期待度は、日の出前後の4時間のみ計算します。麓の谷（美川・面河・梼原・津野町）で霧ができる条件と、姫鶴平が雲の上に出る条件を掛け合わせた目安で、発生確率ではありません。試作中の指標のため、現地の実績と照らして今後調整します。</p>')
+    [void]$sb.AppendLine('<p class="legend">※低層雲の数値が大きい程、霧が出やすく、濃い傾向があります。<br>※気温は晴れた昼間の気温が実際よりも低く出がちです。<br>※山の上は風速が標示よりも強くなります。３ｍ以上は風が強い。今後風が強まるのか弱まるのか傾向を見るのに使ってください。<br>※雨量は少し離れた場所が大雨予報の時に、(雨雲がズレるリスクを考慮して）大きく出る事が有ります。<br>※星空指数は、大きいほど星空観測に好条件。主に雲量・月明かりから計算。<br>※雲海期待度は、日の出前後の4時間のみ計算します。麓の谷（美川・面河・梼原・津野町）で霧ができる条件と、姫鶴平が雲の上に出る条件を掛け合わせた目安で、発生確率ではありません。当日の朝の値は、朝の前に発表された予報（当日4時台→前日23時台→前日夕方の順）で固定しています（後から更新された予報で書き換えません）。試作中の指標のため、現地の実績と照らして今後調整します。</p>')
 
     # ---- 週間予報 ----
     if ($daily -and $daily.Count -gt 0) {
@@ -515,11 +515,14 @@ if ($null -ne $unkaiHours) {
     foreach ($u in $unkaiHours) { $unkaiByTime[[string]$u.time] = $u }
     foreach ($u in (Get-UnkaiDaily -Hours $unkaiHours)) { $unkaiByDate[[string]$u.date] = $u }
 }
-# 当日の週間カードは、朝の評価前に保存した予報で固定する（Get-UnkaiFrozenDaily 参照）
+# 当日の週間カードと毎時テーブルの朝4時刻は、朝の評価前に保存した予報で固定する（Get-UnkaiFrozenRecord 参照）
 $todayKey = (Get-JstNow).ToString("yyyy-MM-dd")
 try {
-    $frozen = Get-UnkaiFrozenDaily -Dir $PSScriptRoot -Model $Models -Date $todayKey
-    if ($null -ne $frozen) { $unkaiByDate[$todayKey] = $frozen }
+    $frozen = Get-UnkaiFrozenRecord -Dir $PSScriptRoot -Model $Models -Date $todayKey
+    if ($null -ne $frozen) {
+        $unkaiByDate[$todayKey] = $frozen.daily
+        foreach ($fh in $frozen.hours) { $unkaiByTime[[string]$fh.time] = $fh }
+    }
 } catch {
     Write-Warning ("当日の雲海カードを保存済み予報で固定できませんでした（最新予報で表示します）: {0}" -f $_.Exception.Message)
 }

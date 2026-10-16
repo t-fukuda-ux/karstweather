@@ -832,7 +832,17 @@ function Get-UnkaiHoursFromRecord {
 # その朝の評価が始まる前に保存した予報のうち、最も新しいものを使う。
 #   優先順: 当日04時台（h04-） → 前日23時台（h23-） → 前日夕方（18時台〜、接頭辞なし）
 # 該当が無ければ $null（呼び出し側は最新予報のまま表示する）。同じ枠に複数あれば発表が早いもの。
+# 毎時テーブルの当日朝の4時刻も同じ保存予報で固定する（2026-10-16〜）。10/16 は 04時発表の06時が
+# 0点で当たり、事後の最新予報は南の谷の湿度を39%→86%に上方修正して70点を出していた。
 function Get-UnkaiFrozenDaily {
+    param([string]$Dir, [string]$Model, [string]$Date)
+    $r = Get-UnkaiFrozenRecord -Dir $Dir -Model $Model -Date $Date
+    if ($null -eq $r) { return $null }
+    return $r.daily
+}
+
+# 戻り値: @{ daily = 週間カード用（Get-UnkaiDaily と同じ形＋frozen_issued）; hours = 毎時の集約（time・idx・label など） }
+function Get-UnkaiFrozenRecord {
     param([string]$Dir, [string]$Model, [string]$Date)
     $prev = ([datetime]$Date).AddDays(-1).ToString("yyyy-MM-dd")
     $slots = @(
@@ -847,13 +857,15 @@ function Get-UnkaiFrozenDaily {
         if ($files.Count -eq 0) { continue }
         $recs = @($files | ForEach-Object { [IO.File]::ReadAllText($_.FullName) | ConvertFrom-Json })
         $rec = $recs | Sort-Object { [datetimeoffset]$_.issued_at } | Select-Object -First 1
-        $peak = Select-UnkaiMorningPeak -Hours (Get-UnkaiHoursFromRecord -Record $rec -Date $Date)
+        $hours = @(Get-UnkaiHoursFromRecord -Record $rec -Date $Date)
+        $peak = Select-UnkaiMorningPeak -Hours $hours
         if ($null -eq $peak) { continue }
-        return [ordered]@{
+        $daily = [ordered]@{
             date = $Date; idx = $peak.idx; dir = $peak.dir; label = $peak.label
             peak_time = ($peak.hh + "時"); spread = $peak.spread; spread_total = $peak.spread_total
             frozen_issued = ([datetimeoffset]$rec.issued_at).ToOffset([timespan]::FromHours(9)).ToString("M/d HH:mm")
         }
+        return [ordered]@{ daily = $daily; hours = $hours }
     }
     return $null
 }

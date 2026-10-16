@@ -184,4 +184,8 @@ New-FrozenRecord '2026-10-15' 'h04-average-044133-b.json' '2026-10-15T04:41:33+0
 $f3=Get-UnkaiFrozenDaily -Dir $fz -Model 'average' -Date '2026-10-15'
 Assert ($f3.idx -eq 60 -and $f3.frozen_issued -eq '10/15 04:11') '04時台を最優先し、同じ枠では発表が早いもの'
 Assert ($null -eq (Get-UnkaiFrozenDaily -Dir $fz -Model 'best_match' -Date '2026-10-15')) '版ごとに別に探す'
+# 毎時テーブルの朝4時刻も同じ保存予報の値を返す（2026-10-16〜）
+$frec=Get-UnkaiFrozenRecord -Dir $fz -Model 'average' -Date '2026-10-15'
+$fh07=@($frec.hours | Where-Object { $_.time -eq '2026-10-15 07:00' })
+Assert ($frec.hours.Count -eq 4 -and $fh07.Count -eq 1 -and $fh07[0].idx -eq 60 -and $fh07[0].label -eq 'lbl07' -and $frec.daily.idx -eq 60) '毎時の朝4時刻もカードと同じ保存予報'
 Write-Host 'PASS:週間7日・気温補正・欠測・ラベル・鮮度境界・予報履歴・当日固定'
