@@ -26,7 +26,7 @@ PowerShell のみで動作する（Python 不要）。**低層雲(%)の把握**�
 | 平均版（単独URL） | 同上 | https://t-fukuda-ux.github.io/karstweather/lowcloud_avg.html |
 | 雲海の検証ページ | 3版すべて | https://t-fukuda-ux.github.io/karstweather/unkai_lab.html |
 
-WordPress 等には トップページを iframe で埋め込む。埋め込み先には高さ自動追従スクリプトが入っている（`postMessage` で親ページに通知）。
+WordPress 等には トップページを iframe で埋め込む。埋め込み先には高さ自動追従スクリプトが入っている（`postMessage` で親ページに通知）。埋め込み先のページは「9-6. WordPress の天気予報ページ」を参照。
 
 雲海の検証ページは**予報ページからリンクしておらず、`noindex` を付けてある**。ただしURLを知っていれば誰でも閲覧できる（中身は予報の診断値のみ）。
 
@@ -514,6 +514,33 @@ Healthchecks.io は「合図が一定時間途絶えたら知らせる」方式�
 5. 次の Actions 実行後、Healthchecks.io の画面が緑（up）になれば完了
 
 Issue 作成には、Git Credential Manager に保存された PAT に **Issues: Read and write** 権限が必要（既存の Contents・Actions に追加）。無い場合は `weather-trigger.log` に「Issue を作成できませんでした」と残る。
+
+### 9-6. WordPress の天気予報ページ（2026-10-16〜）
+
+姫鶴荘の公式サイト（`https://www.karst.co.jp/`）に、平均版（トップページ）を iframe で埋め込んだ「天気予報活用方法」の固定ページがある。多言語プラグインは使っておらず、言語ごとに別の固定ページになっている。
+
+| 言語 | 固定ページID | タイトル |
+|---|---|---|
+| 日本語（基準） | 280 | 四国カルストを訪れる際の天気予報活用方法 |
+| 英語 | 542 | How to Use Weather Forecasts When Visiting the Shikoku Karst |
+| 中国語（繁体字） | 710 | 造訪四國喀斯特地貌時如何善用天氣預報 |
+| 韓国語 | 616 | 시코쿠 카르스트를 방문할 때 일기 예보를 활용하는 방법 |
+
+編集画面は `https://www.karst.co.jp/wp-admin/post.php?post=<ID>&action=edit`。
+
+**ページの構成（4言語共通）**
+
+1. 冒頭の注記（ベータ版・低層雲の目安・星空指数・雲海予想・風の5項目）
+2. カスタムHTMLブロック: 平均版の iframe と高さ自動追従スクリプト
+3. 対照表（英中韓のみ）: 詳細ブロック（`core/details`、初期表示は開いた状態）の中に「日本語｜その言語」の2列の表。項目名・記号（●◐○、日の出入り、月）・天気の言葉（のち/時々/一時 など）
+4. ライブカメラのリンク・画像（10分ごとに更新）
+5. 1．天気予報（WeatherNews）以降の各節
+
+**運用ルール**
+
+- 日本語ページを先に直し、その変更を英中韓の3ページへ訳して反映する。
+- 予報の HTML 側（平均版）に対照表は置かない。訳は WordPress の各言語ページで補う。平均版の注釈は週間予報の下に折りたたみ式で置いている。
+- 平均版の表示項目・記号・天気の言葉を増やしたり名前を変えたりしたときは、3言語の対照表も更新する。
 
 ---
 
