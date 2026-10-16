@@ -495,6 +495,8 @@ td.temp{font-weight:600;color:#c0392b;}
 td.low{font-weight:700;}
 .sat{color:#d6336c;}.sun{color:#1c7ed6;}
 .legend{font-size:11px;color:#888;margin:8px 16px 16px;}
+details.legend summary{cursor:pointer;color:#666;}
+details.legend p{margin:4px 0 0;}
 h2{font-size:16px;margin:18px 16px 6px;font-weight:600;}
 .days{display:flex;gap:8px;overflow-x:auto;padding:0 16px 16px;}
 .card{background:#fff;border:1px solid #e3e7ec;border-radius:10px;padding:10px 8px;min-width:112px;text-align:center;flex:0 0 auto;}
@@ -683,7 +685,7 @@ th.nowcol{background:#fff3bf;color:#a15c00;font-weight:800;}
         [void]$sb.AppendLine('</div>')
     }
 
-    [void]$sb.AppendLine('<p class="legend">※best_match と ECMWF の平均値です。天気の文言は数値からの推定で、気象庁の予報文とは異なります。<br>※低層雲が多いほど霧が出やすく濃い傾向。霧の見通しは時間帯ごとの低層雲平均で3段階（30%未満○・30〜60%◐・60%以上●）、雨や朝の湿度も加味しています。<br>※晴れた昼間の気温は低めに出がちです。山の上は表示より風が強く、3m以上は強風です。<br>※星空指数は大きいほど好条件（雲量・月明かりから算出）。<br>※雲海期待度は日の出前後4時間の目安で、発生確率ではありません。麓の谷の霧と、姫鶴平が雲の上に出る条件を掛け合わせています。当日朝の値は朝より前の予報で固定。試作中の指標です。</p>')
+    [void]$sb.AppendLine('<details class="legend"><summary>注釈（数値の見方）</summary><p>※best_match と ECMWF の平均値です。天気の文言は数値からの推定で、気象庁の予報文とは異なります。<br>※低層雲が多いほど霧が出やすく濃い傾向。霧の見通しは時間帯ごとの低層雲平均で3段階（30%未満○・30〜60%◐・60%以上●）、雨や朝の湿度も加味しています。<br>※晴れた昼間の気温は低めに出がちです。山の上は表示より風が強く、3m以上は強風です。<br>※星空指数は大きいほど好条件（雲量・月明かりから算出）。<br>※雲海期待度は日の出前後4時間の目安で、発生確率ではありません。麓の谷の霧と、姫鶴平が雲の上に出る条件を掛け合わせています。当日朝の値は朝より前の予報で固定。試作中の指標です。</p></details>')
 
     [void]$sb.AppendLine('</div>')
 
