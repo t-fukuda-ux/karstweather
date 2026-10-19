@@ -13,3 +13,4 @@ forecast-runs/
 camera/images/
 camera/capture.log
 camera/mezuru_contrast.csv.bak
+camera/push-backup/

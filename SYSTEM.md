@@ -621,6 +621,20 @@ Issue 作成には、Git Credential Manager に保存された PAT に **Issues:
 | 2026-07-03 | pushが永久に失敗 | `publish.ps1` が pull せず push していた | 実行前に origin/main へ追従するよう修正 |
 | 2026-07-05 | 警報が「発表なし」のまま | 気象庁が r8形式へ移行。**旧URLは404にならず古いJSONを返し続けた** | 新URL・新パーサへ移行（8章） |
 | **2026-09-02 / 09-06** | **予報ページが空になる** | **Open-Meteo が HTTP 200 のまま中身の無い応答を返した** | 空応答をリトライ＋ガードで前回ページを保持（5-2/5-3） |
+| **2026-10-18〜19** | **サーバーPCのカメラ記録が2日間送られず、10/18 06:50〜17:50 の12行が消えた** | **10/18 06:25 の `pull --rebase` が途中で止まり付け替えの途中状態が残った。次回の `rebase --abort` で途中に追記された行が巻き戻り、その後は GitHub から入る forecast-history の同名管理外ファイルが邪魔をした** | 送信スクリプトを改修（下記） |
+
+### 2026-10-18〜19 のカメラ記録の送信停止（詳細）
+
+**症状**: `camera/push.log` で 10/18 18:25 から「rebase-merge directory」、10/19 から「untracked working tree files would be overwritten」（forecast-history/2026-10-17/h23-*.json など）で失敗が続いた。手で復旧して push したが、10/18 06:50〜17:50 のカメラ記録12行は失われた（画像は `camera/images/` に90日残る）。
+
+**原因**: `pull --rebase` は通信と付け替えを一度に行う。10/18 06:25 の実行が付け替えの途中で止まり（タスクの10分制限か通信の停止とみられる）、作業リポジトリに途中状態が残った。その間も撮影は CSV へ行を追記し続け、次回の `rebase --abort` が追跡ファイルを巻き戻したため追記行が消えた。途中状態の間にサーバーPC側で作られた forecast-history のファイルが管理外のまま残り、GitHub 側の同名ファイルと衝突して以後の付け替えを止めた。
+
+**対処**（`camera/push-camera-data.ps1`）:
+
+- 通信（`fetch`）と付け替え（`rebase origin/main`）を分けた。通信中に止まっても作業リポジトリは変わらない。通信が1000バイト/秒未満で60秒続いたら打ち切る
+- 開始時に付け替えの途中状態が残っていたら解除する。解除の前に2つのCSVを控え（`camera/push-backup/` にもコピー）、解除で消えた行を末尾へ書き戻す
+- 付け替えの邪魔になる管理外ファイルは、GitHub 上と中身が完全に同じものだけ `camera/push-backup/untracked-<日時>/` へ退避する。中身が違えば動かさずに中断する（終了コード1）
+- `camera/push-backup/` は Git の管理外。中身が溜まったら手で消してよい
 
 ### 2026-09-06 の空ページ障害（詳細）
 
@@ -710,7 +724,7 @@ SDをやめ、**帯の中で隣接画素の輝度差の絶対値を平均**す�
 | `camera/fog-verification-20260923.md` | 追跡 | 上記の検証記録 |
 | `camera/save-fog-forecast.ps1` | 追跡 | **予報の履歴。** 姫鶴平の毎時予報を発表時刻つきで保存する（1日2回）。これがないと「事前に当てられたか」は検証できない |
 | `camera/install-fog-forecast-task.ps1` | 追跡 | 06:25 と 18:25 のタスク `KarstFogForecast` を登録（`-Remove` で削除）。`-WakeToRun` 付き |
-| `camera/push-camera-data.ps1` | 追跡 | **2つのCSVだけを commit・push する**（2026-09-23〜）。`KarstFogForecast` タスクの2つ目の動作として、予報保存の直後に1日2回走る。main 以外のブランチにいる時や、camera 以外の未送信 commit がある時は送らない（終了コード1）。作業中の変更は `--autostash` で退避する。ログは `camera/push.log` |
+| `camera/push-camera-data.ps1` | 追跡 | **2つのCSVだけを commit・push する**（2026-09-23〜）。`KarstFogForecast` タスクの2つ目の動作として、予報保存の直後に1日2回走る。main 以外のブランチにいる時や、camera 以外の未送信 commit がある時は送らない（終了コード1）。作業中の変更は `--autostash` で退避する。通信と付け替えを分け、付け替えの途中状態や邪魔な管理外ファイルは記録を失わずに片付ける（11章 2026-10-18〜19）。ログは `camera/push.log`、控えは `camera/push-backup/` |
 | `camera/fog_forecast.csv` | **追跡** | 予報の履歴。1発表あたり約24行・2.3KB。1日2回で年間約1万行 |
 | `camera/migrate-csv.ps1` | 追跡 | 2026-09-10 の列追加にともなう一度きりの移行。実行済み。`.bak` にバックアップを残す |
 | `camera/mezuru_contrast.csv` | **追跡** | 測定値と判定の記録。他PCや解析で使うためgitに入れる。このPCにしか無いデータなので自動で送る（上記） |
