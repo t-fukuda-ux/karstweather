@@ -21,7 +21,7 @@ summary{cursor:pointer;color:#3a3f7a;font-size:12px;padding:3px 0;}
 .wrap{overflow-x:auto;}
 .legend{font-size:11px;color:#555;line-height:1.7;}</style></head><body>
 <h1>雲海指数 検証用ページ<span style="font-size:12px;color:#a00;">（予報ページとは別。どこからもリンクしていません）</span></h1>
-<p class="meta">生成: 2026-10-20 10:20　|　展望地点の判定高度 H_S = 1400m　|　降水ゲート 0.5mm　|　出典: Open-Meteo</p>
+<p class="meta">生成: 2026-10-20 13:20　|　展望地点の判定高度 H_S = 1400m　|　降水ゲート 0.5mm　|　出典: Open-Meteo</p>
 <p class="note">係数・しきい値はすべて試作値で、現地実績で検証された式ではありません。指数は「雲海期待度」であって発生確率ではありません。</p>
 <h2>地点</h2>
 <div class="wrap"><table><tr><th class="l">ID</th><th class="l">名称</th><th class="l">方角</th><th>要求緯度</th><th>要求経度</th><th>応答緯度</th><th>応答経度</th><th>返却標高</th></tr>
@@ -59,10 +59,10 @@ summary{cursor:pointer;color:#3a3f7a;font-size:12px;padding:3px 0;}
 <tr><td class="l">2026-10-25 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
 <tr><td class="l">2026-10-25 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
 <tr><td class="l">2026-10-25 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海の条件なし</td></tr>
-<tr><td class="l">2026-10-26 05:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海期待・霧の恐れ</td></tr>
-<tr><td class="l">2026-10-26 06:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海期待・霧の恐れ</td></tr>
-<tr><td class="l">2026-10-26 07:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海期待・霧の恐れ</td></tr>
-<tr><td class="l">2026-10-26 08:00</td><td class="l">美川</td><td>0</td><td>0</td><td class="prod">0</td><td>0</td><td>×</td><td class="l">雲海期待・霧の恐れ</td></tr>
+<tr><td class="l">2026-10-26 05:00</td><td class="l">津野町</td><td>43</td><td>40</td><td class="prod">38</td><td>40</td><td>×</td><td class="l">雲海期待・視界不良</td></tr>
+<tr><td class="l">2026-10-26 06:00</td><td class="l">梼原</td><td>42</td><td>37</td><td class="prod">36</td><td>38</td><td>×</td><td class="l">雲海期待・視界不良</td></tr>
+<tr><td class="l">2026-10-26 07:00</td><td class="l">梼原</td><td>42</td><td>38</td><td class="prod">35</td><td>39</td><td>×</td><td class="l">雲海期待・視界不良</td></tr>
+<tr><td class="l">2026-10-26 08:00</td><td class="l">梼原</td><td>40</td><td>36</td><td class="prod">33</td><td>37</td><td>×</td><td class="l">雲海期待・視界不良</td></tr>
 </table></div>
 <p class="note">現行(加算)=M×(.30+.30W+.25C+.15R)　案b=M×W×(.35+.45C+.20R)　案c=M×(.3+.7C)×(.35+.40W+.25R)　当初案=露点差ベース・定数0.50・全雲量C0。<br>簡易判定＝経験則（湿度80%以上・風3m/s未満・日較差8℃以上・中高層雲40%未満）。指数がこの判定に勝てなければ複雑な式を使う意味がありません。</p>
 <details><summary>M・R の比較（構造は案cで固定）</summary><div class="wrap"><table><tr><th class="l">日時</th><th class="l">地点</th><th class="prod">M_rh 本番</th><th>M 露点差(線形)</th><th>M 露点差(曲線)</th><th>R 日較差版</th></tr>
@@ -90,10 +90,10 @@ summary{cursor:pointer;color:#3a3f7a;font-size:12px;padding:3px 0;}
 <tr><td class="l">2026-10-25 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
 <tr><td class="l">2026-10-25 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
 <tr><td class="l">2026-10-25 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
-<tr><td class="l">2026-10-26 05:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
-<tr><td class="l">2026-10-26 06:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
-<tr><td class="l">2026-10-26 07:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
-<tr><td class="l">2026-10-26 08:00</td><td class="l">美川</td><td class="prod">0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="l">2026-10-26 05:00</td><td class="l">津野町</td><td class="prod">38</td><td>38</td><td>38</td><td>34</td></tr>
+<tr><td class="l">2026-10-26 06:00</td><td class="l">梼原</td><td class="prod">36</td><td>36</td><td>36</td><td>33</td></tr>
+<tr><td class="l">2026-10-26 07:00</td><td class="l">梼原</td><td class="prod">35</td><td>35</td><td>35</td><td>34</td></tr>
+<tr><td class="l">2026-10-26 08:00</td><td class="l">梼原</td><td class="prod">33</td><td>32</td><td>32</td><td>33</td></tr>
 </table></div></details>
 <h3>変数の生値</h3>
 <h3>美川（主軸）</h3>
@@ -357,163 +357,163 @@ summary{cursor:pointer;color:#3a3f7a;font-size:12px;padding:3px 0;}
 <tr><td class="l">2026-10-23 06:00</td><td class="l">美川</td><td>969</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td>77%<br>627m</td>
-<td>52%<br>850m</td>
-<td>35%<br>1081m</td>
+<td>75%<br>626m</td>
+<td>43%<br>849m</td>
+<td>26%<br>1080m</td>
 <td>25%<br>1315m</td>
-<td>58%<br>1563m</td>
+<td>9%<br>1560m</td>
 <td>10%<br>1805m</td>
 <td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-23 06:00</td><td class="l">面河</td><td>945</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td>47%<br>854m</td>
-<td>41%<br>1085m</td>
+<td>37%<br>853m</td>
+<td>38%<br>1083m</td>
 <td>27%<br>1318m</td>
-<td>58%<br>1565m</td>
+<td>16%<br>1563m</td>
 <td>17%<br>1807m</td>
 <td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-23 06:00</td><td class="l">梼原</td><td>960</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td>49%<br>626m</td>
-<td>39%<br>852m</td>
-<td>44%<br>1084m</td>
+<td>56%<br>625m</td>
+<td>39%<br>850m</td>
+<td>32%<br>1082m</td>
 <td>28%<br>1315m</td>
-<td class="warn">95%<br>1564m</td>
+<td>29%<br>1561m</td>
 <td>19%<br>1804m</td>
 <td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-23 06:00</td><td class="l">津野町</td><td>956</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td>44%<br>628m</td>
-<td>43%<br>854m</td>
-<td>47%<br>1085m</td>
+<td>51%<br>628m</td>
+<td>48%<br>853m</td>
+<td>38%<br>1084m</td>
 <td>28%<br>1315m</td>
-<td>87%<br>1566m</td>
+<td>21%<br>1563m</td>
 <td>19%<br>1804m</td>
 <td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-24 06:00</td><td class="l">美川</td><td>967</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td>88%<br>597m</td>
-<td>78%<br>826m</td>
-<td>83%<br>1062m</td>
+<td class="warn">97%<br>608m</td>
+<td class="warn">91%<br>837m</td>
+<td>87%<br>1072m</td>
 <td class="warn">99%<br>1305m</td>
-<td>85%<br>1550m</td>
+<td class="warn">92%<br>1559m</td>
 <td class="warn">100%<br>1802m</td>
-<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
+<td class="l">雲頂を挟めた</td><td>837</td><td>1072</td><td class="prod">1.00</td></tr>
 <tr><td class="l">2026-10-24 06:00</td><td class="l">面河</td><td>944</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">95%<br>833m</td>
-<td class="warn">94%<br>1068m</td>
+<td class="warn">96%<br>841m</td>
+<td class="warn">93%<br>1076m</td>
 <td class="warn">100%<br>1305m</td>
-<td class="warn">98%<br>1555m</td>
+<td class="warn">97%<br>1564m</td>
 <td class="warn">100%<br>1804m</td>
 <td class="l">取得範囲の上まで湿潤</td><td>1804</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-24 06:00</td><td class="l">梼原</td><td>958</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">92%<br>602m</td>
-<td class="warn">94%<br>832m</td>
-<td class="warn">100%<br>1067m</td>
+<td class="warn">93%<br>609m</td>
+<td class="warn">93%<br>839m</td>
+<td class="warn">98%<br>1075m</td>
 <td class="warn">100%<br>1304m</td>
-<td class="warn">92%<br>1555m</td>
+<td class="warn">90%<br>1563m</td>
 <td class="warn">100%<br>1802m</td>
 <td class="l">取得範囲の上まで湿潤</td><td>1802</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-24 06:00</td><td class="l">津野町</td><td>955</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">96%<br>604m</td>
-<td class="warn">100%<br>833m</td>
-<td class="warn">100%<br>1068m</td>
+<td class="warn">96%<br>611m</td>
+<td class="warn">98%<br>840m</td>
+<td class="warn">99%<br>1076m</td>
 <td class="warn">100%<br>1304m</td>
-<td>86%<br>1556m</td>
+<td class="warn">96%<br>1563m</td>
 <td class="warn">100%<br>1802m</td>
-<td class="l">展望地点の高度を跨ぐ</td><td>1304</td><td>1556</td><td class="prod">0.28</td></tr>
+<td class="l">取得範囲の上まで湿潤</td><td>1802</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-25 06:00</td><td class="l">美川</td><td>968</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">91%<br>607m</td>
-<td>77%<br>837m</td>
-<td>84%<br>1074m</td>
+<td class="warn">90%<br>605m</td>
+<td>79%<br>835m</td>
+<td>86%<br>1071m</td>
 <td>66%<br>1328m</td>
-<td class="warn">95%<br>1564m</td>
+<td class="warn">97%<br>1561m</td>
 <td>63%<br>1827m</td>
-<td class="l">雲頂を挟めた</td><td>607</td><td>837</td><td class="prod">1.00</td></tr>
+<td class="l">雲頂を挟めた</td><td>605</td><td>835</td><td class="prod">1.00</td></tr>
 <tr><td class="l">2026-10-25 06:00</td><td class="l">面河</td><td>945</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">97%<br>840m</td>
-<td>89%<br>1076m</td>
+<td class="warn">99%<br>838m</td>
+<td class="warn">90%<br>1073m</td>
 <td>79%<br>1327m</td>
-<td class="warn">95%<br>1566m</td>
+<td class="warn">97%<br>1562m</td>
 <td>68%<br>1827m</td>
-<td class="l">雲頂を挟めた</td><td>840</td><td>1076</td><td class="prod">1.00</td></tr>
+<td class="l">雲頂を挟めた</td><td>1073</td><td>1327</td><td class="prod">1.00</td></tr>
 <tr><td class="l">2026-10-25 06:00</td><td class="l">梼原</td><td>959</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">91%<br>608m</td>
-<td class="warn">94%<br>839m</td>
-<td class="warn">99%<br>1076m</td>
+<td class="warn">90%<br>607m</td>
+<td class="warn">95%<br>837m</td>
+<td class="warn">100%<br>1073m</td>
 <td>81%<br>1328m</td>
-<td class="warn">97%<br>1565m</td>
+<td class="warn">99%<br>1563m</td>
 <td>73%<br>1827m</td>
-<td class="l">雲頂を挟めた</td><td>1076</td><td>1328</td><td class="prod">1.00</td></tr>
+<td class="l">雲頂を挟めた</td><td>1073</td><td>1328</td><td class="prod">1.00</td></tr>
 <tr><td class="l">2026-10-25 06:00</td><td class="l">津野町</td><td>956</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">95%<br>610m</td>
-<td class="warn">98%<br>840m</td>
-<td class="warn">95%<br>1077m</td>
+<td class="warn">93%<br>608m</td>
+<td class="warn">98%<br>839m</td>
+<td class="warn">98%<br>1074m</td>
 <td>81%<br>1328m</td>
-<td class="warn">92%<br>1566m</td>
+<td class="warn">100%<br>1563m</td>
 <td>73%<br>1827m</td>
-<td class="l">雲頂を挟めた</td><td>1077</td><td>1328</td><td class="prod">1.00</td></tr>
+<td class="l">雲頂を挟めた</td><td>1074</td><td>1328</td><td class="prod">1.00</td></tr>
 <tr><td class="l">2026-10-26 06:00</td><td class="l">美川</td><td>967</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">95%<br>605m</td>
-<td>87%<br>835m</td>
-<td class="warn">90%<br>1072m</td>
+<td>79%<br>585m</td>
+<td>65%<br>814m</td>
+<td>69%<br>1051m</td>
 <td>80%<br>1320m</td>
-<td class="warn">94%<br>1563m</td>
+<td>61%<br>1542m</td>
 <td>85%<br>1816m</td>
-<td class="l">雲頂を挟めた</td><td>605</td><td>835</td><td class="prod">1.00</td></tr>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-26 06:00</td><td class="l">面河</td><td>945</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">100%<br>837m</td>
-<td class="warn">96%<br>1073m</td>
+<td class="warn">99%<br>818m</td>
+<td>81%<br>1054m</td>
 <td class="warn">100%<br>1321m</td>
-<td class="warn">99%<br>1564m</td>
+<td>74%<br>1544m</td>
 <td class="warn">99%<br>1819m</td>
-<td class="l">取得範囲の上まで湿潤</td><td>1819</td><td>--</td><td class="prod">--</td></tr>
+<td class="l">雲頂を挟めた</td><td>818</td><td>1054</td><td class="prod">1.00</td></tr>
 <tr><td class="l">2026-10-26 06:00</td><td class="l">梼原</td><td>959</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">95%<br>606m</td>
-<td class="warn">98%<br>837m</td>
-<td class="warn">100%<br>1074m</td>
+<td>88%<br>589m</td>
+<td class="warn">93%<br>820m</td>
+<td class="warn">100%<br>1056m</td>
 <td class="warn">96%<br>1321m</td>
-<td>87%<br>1565m</td>
+<td>59%<br>1546m</td>
 <td class="warn">91%<br>1818m</td>
-<td class="l">展望地点の高度を跨ぐ</td><td>1321</td><td>1565</td><td class="prod">0.23</td></tr>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
 <tr><td class="l">2026-10-26 06:00</td><td class="l">津野町</td><td>955</td>
 <td class="dim">地中/欠</td>
 <td class="dim">地中/欠</td>
-<td class="warn">95%<br>606m</td>
-<td class="warn">98%<br>837m</td>
-<td class="warn">100%<br>1074m</td>
+<td>88%<br>590m</td>
+<td class="warn">96%<br>821m</td>
+<td class="warn">98%<br>1057m</td>
 <td class="warn">96%<br>1321m</td>
-<td class="warn">93%<br>1565m</td>
+<td>56%<br>1546m</td>
 <td class="warn">91%<br>1818m</td>
-<td class="l">取得範囲の上まで湿潤</td><td>1818</td><td>--</td><td class="prod">--</td></tr>
+<td class="l">湿潤層を検出できず</td><td>--</td><td>--</td><td class="prod">--</td></tr>
 </table></div>
 <p class="note">湿度90%以上の面を黄色で示します。地上気圧より下の面は地中として除外していますが、地上気圧自体も返却標高への補正を受けている可能性があるため、判別の妥当性を後から確認できるよう値を併記しています。<br>展望地点の判定高度 1400m は 875hPa(約1215m)と850hPa(約1461m)の間にあり、この帯に雲頂が入る日は上下の判定ができません（状態「展望地点の高度を跨ぐ」）。ECMWF は 1000/925/850hPa しか返さないため、谷では実質2面しか使えず雲頂をほぼ評価できません（V_summit は 850hPa 1面で成立するので、EC版でも指数は出せます）。<br>取得する気圧面は 1000〜825hPa の8段です。谷でおよそ地表〜1720mにあたり、判定に必要な範囲を覆います。それより上は判定に使わないため取得していません。</p>
 <h3>V の内訳</h3>
@@ -614,117 +614,117 @@ summary{cursor:pointer;color:#3a3f7a;font-size:12px;padding:3px 0;}
 <td>--</td><td>－</td>
 <td>--</td><td>－</td>
 </tr>
-<tr><td class="l">2026-10-23 05:00</td><td>1296</td><td>78</td><td>850hPa</td><td>1561</td><td>32</td><td class="prod">1.00</td>
+<tr><td class="l">2026-10-23 05:00</td><td>1296</td><td>78</td><td>850hPa</td><td>1559</td><td>14</td><td class="prod">1.00</td>
 <td>45200</td><td class="l">ok</td><td>1.00</td><td>0</td><td>1.00</td><td>0.00</td><td>1.5</td>
 <td>--</td><td>－</td>
 <td>--</td><td>－</td>
 <td>--</td><td>－</td>
 <td>--</td><td>－</td>
 </tr>
-<tr><td class="l">2026-10-23 06:00</td><td>1296</td><td>75</td><td>850hPa</td><td>1564</td><td>64</td><td class="prod">1.00</td>
+<tr><td class="l">2026-10-23 06:00</td><td>1296</td><td>75</td><td>850hPa</td><td>1562</td><td>13</td><td class="prod">1.00</td>
 <td>48860</td><td class="l">ok</td><td>1.00</td><td>0</td><td>1.00</td><td>0.00</td><td>0.6</td>
 <td>--</td><td>－</td>
 <td>--</td><td>－</td>
-<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
 <td>--</td><td>－</td>
 </tr>
-<tr><td class="l">2026-10-23 07:00</td><td>1296</td><td>70</td><td>850hPa</td><td>1566</td><td>79</td><td class="prod">1.00</td>
+<tr><td class="l">2026-10-23 07:00</td><td>1296</td><td>70</td><td>850hPa</td><td>1563</td><td>24</td><td class="prod">1.00</td>
 <td>48820</td><td class="l">ok</td><td>1.00</td><td>0</td><td>1.00</td><td>0.00</td><td>0.8</td>
 <td>--</td><td>－</td>
 <td>--</td><td>－</td>
-<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
 <td>--</td><td>－</td>
 </tr>
-<tr><td class="l">2026-10-23 08:00</td><td>1296</td><td>66</td><td>850hPa</td><td>1569</td><td>74</td><td class="prod">1.00</td>
+<tr><td class="l">2026-10-23 08:00</td><td>1296</td><td>66</td><td>850hPa</td><td>1566</td><td>58</td><td class="prod">1.00</td>
 <td>48760</td><td class="l">ok</td><td>1.00</td><td>0</td><td>1.00</td><td>0.00</td><td>4.7</td>
 <td>--</td><td>－</td>
 <td>--</td><td>－</td>
 <td>--</td><td>湿</td>
-<td>--</td><td>湿</td>
+<td>--</td><td>－</td>
 </tr>
-<tr><td class="l">2026-10-24 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1552</td><td>96</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-24 05:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1560</td><td>98</td><td class="bad">0.00</td>
 <td>320</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td class="bad">0.80</td><td>2.8</td>
+<td>1.00</td><td>湿</td>
 <td>--</td><td>湿</td>
 <td>--</td><td>湿</td>
 <td>--</td><td>湿</td>
-<td>0.28</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-24 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1553</td><td>96</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-24 06:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1562</td><td>98</td><td class="bad">0.00</td>
 <td>260</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td class="bad">0.80</td><td>1.2</td>
+<td>1.00</td><td>湿</td>
 <td>--</td><td>湿</td>
 <td>--</td><td>湿</td>
 <td>--</td><td>湿</td>
-<td>0.28</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-24 07:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1557</td><td>97</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-24 07:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1564</td><td>98</td><td class="bad">0.00</td>
 <td>400</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td class="bad">1.40</td><td>1.7</td>
+<td>1.00</td><td>湿</td>
 <td>--</td><td>湿</td>
 <td>--</td><td>湿</td>
-<td>0.27</td><td>湿</td>
-<td>0.27</td><td>湿</td>
+<td>--</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-24 08:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1562</td><td>98</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-24 08:00</td><td>1296</td><td>100</td><td>850hPa</td><td>1567</td><td>99</td><td class="bad">0.00</td>
 <td>560</td><td class="l">ok</td><td>0.00</td><td>100</td><td>0.00</td><td class="bad">1.40</td><td>3.6</td>
+<td>1.00</td><td>湿</td>
 <td>--</td><td>湿</td>
 <td>--</td><td>湿</td>
-<td>0.26</td><td>湿</td>
-<td>0.26</td><td>湿</td>
+<td>--</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-25 05:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1562</td><td>100</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-25 05:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1559</td><td>95</td><td class="bad">0.00</td>
 <td>29380</td><td class="l">ok</td><td>1.00</td><td>1</td><td>0.40</td><td>0.00</td><td>6.8</td>
+<td>--</td><td>湿</td>
 <td>1.00</td><td>湿</td>
-<td>1.00</td><td>湿</td>
-<td>1.00</td><td>湿</td>
-<td>1.00</td><td>湿</td>
+<td>--</td><td>湿</td>
+<td>1.00</td><td>－</td>
 </tr>
-<tr><td class="l">2026-10-25 06:00</td><td>1296</td><td>93</td><td>850hPa</td><td>1565</td><td>100</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-25 06:00</td><td>1296</td><td>93</td><td>850hPa</td><td>1562</td><td>97</td><td class="bad">0.00</td>
 <td>40900</td><td class="l">ok</td><td>1.00</td><td>0</td><td>0.50</td><td>0.00</td><td>6.7</td>
 <td>1.00</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-25 07:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1569</td><td>100</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-25 07:00</td><td>1296</td><td>94</td><td>850hPa</td><td>1566</td><td>98</td><td class="bad">0.00</td>
 <td>35620</td><td class="l">ok</td><td>1.00</td><td>0</td><td>0.40</td><td>0.00</td><td>4.9</td>
-<td>--</td><td>湿</td>
+<td>1.00</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-25 08:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1574</td><td>100</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-25 08:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1571</td><td>99</td><td class="bad">0.00</td>
 <td>30360</td><td class="l">ok</td><td>1.00</td><td>0</td><td>0.10</td><td>0.00</td><td>2.4</td>
 <td>--</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 <td>1.00</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-26 05:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1562</td><td>97</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-26 05:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1545</td><td>81</td><td class="prod">0.50</td>
 <td>780</td><td class="l">ok</td><td>0.00</td><td>82</td><td>0.00</td><td>0.00</td><td>4.7</td>
+<td>--</td><td>－</td>
 <td>1.00</td><td>湿</td>
 <td>--</td><td>湿</td>
-<td>0.23</td><td>湿</td>
-<td>0.00</td><td>湿</td>
+<td>--</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-26 06:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1564</td><td>97</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-26 06:00</td><td>1296</td><td>98</td><td>850hPa</td><td>1544</td><td>77</td><td class="prod">0.50</td>
 <td>1120</td><td class="l">ok</td><td>0.01</td><td>71</td><td>0.00</td><td>0.00</td><td>6.1</td>
+<td>--</td><td>－</td>
 <td>1.00</td><td>湿</td>
 <td>--</td><td>湿</td>
-<td>0.23</td><td>湿</td>
 <td>--</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-26 07:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1566</td><td>97</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-26 07:00</td><td>1296</td><td>97</td><td>850hPa</td><td>1545</td><td>80</td><td class="prod">0.50</td>
 <td>1460</td><td class="l">ok</td><td>0.05</td><td>59</td><td>0.10</td><td>0.00</td><td>7.4</td>
+<td>--</td><td>－</td>
 <td>1.00</td><td>湿</td>
 <td>--</td><td>湿</td>
-<td>0.22</td><td>湿</td>
 <td>--</td><td>湿</td>
 </tr>
-<tr><td class="l">2026-10-26 08:00</td><td>1296</td><td>95</td><td>850hPa</td><td>1568</td><td>97</td><td class="bad">0.00</td>
+<tr><td class="l">2026-10-26 08:00</td><td>1296</td><td>95</td><td>850hPa</td><td>1547</td><td>88</td><td class="prod">0.50</td>
 <td>1820</td><td class="l">ok</td><td>0.09</td><td>47</td><td>0.30</td><td>0.00</td><td>8.6</td>
+<td>--</td><td>－</td>
+<td>1.00</td><td>湿</td>
 <td>--</td><td>湿</td>
 <td>--</td><td>湿</td>
-<td>0.00</td><td>湿</td>
-<td>0.00</td><td>湿</td>
 </tr>
 </table></div>
 <p class="note"><b>V = min(V_top_fog, V_summit)</b>（V_vis は2026-09-07から記録のみ）。適用できた補正だけの最小値をとり、すべて適用できなければ「--」です。<b>補正を適用しないことと「良好(1.0)」は区別</b>しており、湿潤層を検出できない場合や上端が不明な場合を 1.0 にはしていません。<br>V_summit は展望地点の高度 1400m を挟む上下の湿り具合です。挟む面は固定せず、その時刻の geopotential_height から毎回選びます（上側の高度が時刻ごとに動くのはそのためです）。上下どちらかが欠ける場合は「判定材料不足」とし、1.0 にはしません。<br>0／0.15／0.50／1.0 はいずれも仮の係数です。<b>0 は「確実に霧」ではなく、濃い霧の可能性を重く見た暫定的な強い減点</b>です。上下の湿度だけでは 0.15 と 0.50 の差を物理的に確定できません（直上だけ湿っていても、層の下端が展望地点より下にある可能性があります）。<br>「谷上空」は谷側のプロファイルで展望高度帯が湿っているかの補助記録で、V には掛けていません。山上判定と食い違うときの手がかりとして残しています。<br>V_vis が「missing」の版は視程補正なしで、視界良好という意味ではありません。V_sfc（山上の低層雲）も記録のみです。山上格子の低層雲は「現地の霧」と「眼下の雲海が同じセルに含まれているだけ」を区別できないためです。</p>
@@ -2247,22 +2247,22 @@ summary{cursor:pointer;color:#3a3f7a;font-size:12px;padding:3px 0;}
 <td>11</td>
 </tr>
 <tr><td class="l">2026-10-26 05:00</td>
-<td>0</td>
+<td>38</td>
 <td>35</td>
 <td>38</td>
 </tr>
 <tr><td class="l">2026-10-26 06:00</td>
-<td>0</td>
+<td>36</td>
 <td>32</td>
 <td>36</td>
 </tr>
 <tr><td class="l">2026-10-26 07:00</td>
-<td>0</td>
+<td>35</td>
 <td>32</td>
 <td>35</td>
 </tr>
 <tr><td class="l">2026-10-26 08:00</td>
-<td>0</td>
+<td>33</td>
 <td>31</td>
 <td>33</td>
 </tr>
