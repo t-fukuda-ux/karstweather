@@ -48,7 +48,12 @@ $avgRows=Build-AvgRows -hA $h -hB $h
 $avgDaily=Build-AvgDaily -allRows $avgRows -sunMap @{} -days 7
 Assert ($avgDaily[0].tmax -eq 23.2 -and $avgDaily[0].tmin -eq 9.1) '平均版の補正後集計'
 Assert ($null -eq $avgDaily[6].tmax) '平均版の欠測'
-Assert ((Get-UnkaiLabel -F 0.8 -V 1 -TopStatus 'capped' -SummitStatus 'summit_dry' -GateF $true -GateV $true) -eq '雲海期待・視界良好') '短い予測ラベル'
+Assert ((Get-UnkaiLabel -F 0.6 -V 1 -TopStatus 'capped' -SummitStatus 'summit_dry' -GateF $true -GateV $true) -eq '雲海期待・視界良好') '短い予測ラベル'
+Assert ((Get-UnkaiLabel -F 0.7 -V 1 -TopStatus 'capped' -SummitStatus 'summit_dry' -GateF $true -GateV $true) -eq '雲海期待大・視界良好') 'F 0.70 以上は期待大'
+Assert ((Get-UnkaiLabel -F 0.69 -V 1 -TopStatus 'capped' -SummitStatus 'summit_dry' -GateF $true -GateV $true) -eq '雲海期待・視界良好') 'F 0.70 未満は期待'
+Assert ((Get-UnkaiLabel -F 0.9 -V 0.5 -TopStatus 'straddles_summit' -SummitStatus 'below_wet' -GateF $true -GateV $true) -eq '雲海期待大・霧で見えないかも') '山上の地上だけ湿っていれば雲頂不明より霧を伝える'
+Assert ((Get-UnkaiLabel -F 0.5 -V 0 -TopStatus 'capped' -SummitStatus 'summit_in_layer' -GateF $true -GateV $true) -eq '雲海期待・霧の恐れ') '山上が雲の中なら霧の恐れ'
+Assert ((Get-UnkaiLabel -F 0.3 -V 0.5 -TopStatus 'straddles_summit' -SummitStatus 'below_wet' -GateF $true -GateV $true) -eq '雲海の条件なし') 'F が低ければ霧の文言は出さない'
 # 実運用の平均版は F を best_match、V と山上降水ゲートを EC 側から使う。
 $va=[ordered]@{id='N_C';dir='北';f_c=0.6;f_add=0.6;f_b=0.6;f_c_mlin=0.6;f_c_mpow=0.6;f_c_rrange=0.6;f0=0.6;v=0.0;gate_f=$true;gate_v=$true;top=[ordered]@{top_status='capped'};summit_status='summit_in_layer'}
 $vb=[ordered]@{id='N_C';dir='北';f_c=0.8;f_add=0.8;f_b=0.8;f_c_mlin=0.8;f_c_mpow=0.8;f_c_rrange=0.8;f0=0.8;v=0.5;gate_f=$true;gate_v=$true;top=[ordered]@{top_status='no_moist_layer'};summit_status='below_wet';v_summit=0.5}

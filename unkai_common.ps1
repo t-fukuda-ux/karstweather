@@ -537,19 +537,35 @@ function Get-UnkaiGate {
     return ([double]$Precip -le $UnkaiPrecipGate)
 }
 
+# 谷の霧の条件 F で期待度を2段に分ける（2026-10-21〜、福田さん判断）。
+# 9/8〜10/21 の朝で現地記録のある12日: F≥0.70 は3日とも雲海あり、0.40〜0.70 は7日中3日、
+# 0.40未満は2日とも雲海なし。0.55 で中・小に分ける根拠はまだ無いため、記録が増えてから見直す。
+$UnkaiHighF = 0.70
+
 function Get-UnkaiLabel {
     param($F, $V, [string]$TopStatus, [string]$SummitStatus, [bool]$GateF = $true, [bool]$GateV = $true)
     if (-not $GateF -or -not $GateV) { return "降水あり" }
     if ($null -eq $F) { return "判定不能" }
     if ($null -eq $V) { return "判定不能" }
     if ([double]$F -lt 0.40) { return "雲海の条件なし" }
+    $head = if ([double]$F -ge $UnkaiHighF) { "雲海期待大" } else { "雲海期待" }
+    return ("{0}・{1}" -f $head, (Get-UnkaiViewText -V $V -TopStatus $TopStatus -SummitStatus $SummitStatus))
+}
+
+# 雲海ラベルの後半（姫鶴平から見えるか）
+function Get-UnkaiViewText {
+    param($V, [string]$TopStatus, [string]$SummitStatus)
     # 「現地も霧」は断定ではなく、展望高度帯が湿っているという疑いを示す。
-    if ($SummitStatus -eq "summit_in_layer") { return "雲海期待・霧の恐れ" }
-    if ($TopStatus -eq "straddles_summit")   { return "雲海期待・雲頂不明" }
-    if ($SummitStatus -eq "insufficient")    { return "雲海期待・視界不明" }
-    if ([double]$V -ge 0.60) { return "雲海期待・視界良好" }
-    if ([double]$V -ge 0.30) { return "雲海期待・視界不良" }
-    return "雲海期待・霧の恐れ"
+    if ($SummitStatus -eq "summit_in_layer") { return "霧の恐れ" }
+    # 山上の地上だけ湿っている（V_summit=0.5）。9/8〜10/20 の朝63時刻で、カメラは霧（濃霧・薄霧）44%・
+    # 見通しあり56%と半々。霧でなければ下に雲海があるため減点は強めず、文言で霧の可能性を伝える
+    # （2026-10-21〜、福田さん判断）。雲頂不明より先に見る（10/21 は雲頂不明と出て霧が伝わらなかった）。
+    if ($SummitStatus -eq "below_wet")       { return "霧で見えないかも" }
+    if ($TopStatus -eq "straddles_summit")   { return "雲頂不明" }
+    if ($SummitStatus -eq "insufficient")    { return "視界不明" }
+    if ([double]$V -ge 0.60) { return "視界良好" }
+    if ([double]$V -ge 0.30) { return "視界不良" }
+    return "霧の恐れ"
 }
 
 function Get-UnkaiIdx {
