@@ -25,6 +25,7 @@ PowerShell のみで動作する（Python 不要）。**低層雲(%)の把握**�
 | EC版 | ecmwf_ifs025 | https://t-fukuda-ux.github.io/karstweather/lowcloud_ec.html |
 | 平均版（単独URL） | 同上 | https://t-fukuda-ux.github.io/karstweather/lowcloud_avg.html |
 | 雲海の検証ページ | 3版すべて | https://t-fukuda-ux.github.io/karstweather/unkai_lab.html |
+| 3版の索引・並べて表示 | 3版すべて | https://t-fukuda-ux.github.io/karstweather/versions.html |
 
 WordPress 等には トップページを iframe で埋め込む。埋め込み先には高さ自動追従スクリプトが入っている（`postMessage` で親ページに通知）。埋め込み先のページは「9-6. WordPress の天気予報ページ」を参照。
 
@@ -66,7 +67,8 @@ WordPress 等には トップページを iframe で埋め込む。埋め込み�
 | `setup-localtask.ps1` | 軽量バックアップタスクの登録入口 |
 | `local-trigger/invoke-weather-update.ps1` | 公開ページが古い時だけActionsを起動し、公開反映まで確認 |
 | `local-trigger/install-weather-trigger.ps1` | 毎時20分・低優先度のWindowsタスクを安全なACLで登録 |
-| `windy_compare.ps1` | 検証用。Windy(GFS) vs Open-Meteo 比較（要APIキー・git未追跡） |
+| `windy_compare.ps1` | 検証用。Windy(GFS) vs Open-Meteo 比較（要APIキー。キーは引数か環境変数で渡し、ファイルには書かない） |
+| `versions.html` | **手で管理する静的ページ**（2026-10-22〜）。3版と雲海の検証ページへのリンク、PCで3版を横に並べる表示。各版ページの高さ通知（`karstweather-height`）で iframe の高さを合わせる。自動生成・自動コミットの対象外で、予報ページからはリンクせず `noindex` |
 
 ### 生成物
 
@@ -959,8 +961,6 @@ RH2m 82〜99 / RH900 89〜99 / RH875 91〜100 / RH850 86〜99。モデルは「�
 - 移流型の雲海（放射冷却型以外）を別の判定式として追加する
 - 雲海の谷地点の絞り込み（実績との対応で主軸を決める）
 - Actions の cron 停止が再発する場合の根本原因の切り分け
-- `lowcloud.py`（旧Python版）の削除
-- 3版比較用の索引ページ（現状は各URLを個別に開く必要がある）
 
 ---
 
@@ -999,6 +999,7 @@ $env:WINDY_KEY="..."; .\windy_compare.ps1
 |---|---|
 | 公開ページ | https://t-fukuda-ux.github.io/karstweather/ |
 | 雲海の検証 | https://t-fukuda-ux.github.io/karstweather/unkai_lab.html |
+| 3版の索引・並べて表示 | https://t-fukuda-ux.github.io/karstweather/versions.html |
 | Actions の実行状況 | https://github.com/t-fukuda-ux/karstweather/actions/workflows/update.yml |
 | リポジトリ | https://github.com/t-fukuda-ux/karstweather |
 

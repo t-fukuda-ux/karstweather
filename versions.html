@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>3版の比較 - 四国カルスト姫鶴荘</title>
+<style>
+:root{font-family:"Segoe UI",system-ui,sans-serif;}
+body{margin:0;background:#f5f7fa;color:#222;}
+h1{font-size:18px;margin:14px 16px 2px;}
+.meta{font-size:12px;color:#666;margin:0 16px 12px;}
+h2{font-size:16px;margin:18px 16px 6px;font-weight:600;}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;padding:0 16px;}
+.card{background:#fff;border:1px solid #e3e7ec;border-radius:10px;padding:10px 12px;}
+.card a{font-weight:600;color:#1c7ed6;text-decoration:none;font-size:14px;}
+.card a:hover{text-decoration:underline;}
+.card .model{font-size:12px;color:#888;margin-top:2px;}
+.card p{font-size:12px;color:#555;margin:6px 0 0;line-height:1.5;}
+.card.main{border-color:#1c7ed6;}
+.card.lab{background:#fafbfc;}
+.note{font-size:12px;color:#666;margin:0 16px 8px;line-height:1.5;}
+.compare{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 8px 16px;}
+.col{background:#fff;border:1px solid #e3e7ec;border-radius:10px;overflow:hidden;min-width:0;}
+.col .hd{font-size:13px;font-weight:600;color:#444;padding:6px 10px;background:#eef1f5;border-bottom:1px solid #e3e7ec;}
+.col iframe{display:block;width:100%;height:600px;border:0;}
+@media (max-width:1099px){.compare{grid-template-columns:minmax(0,1fr);}}
+</style>
+</head>
+<body>
+<h1>3版の比較（四国カルスト姫鶴荘）</h1>
+<div class="meta">同じ地点を3つのモデル系統で出した予報ページの索引です。</div>
+
+<div class="links">
+  <div class="card main">
+    <a href="lowcloud_avg.html">平均版（公開のメイン）</a>
+    <div class="model">best_match ＋ ECMWF</div>
+    <p>トップページと同じ内容です。降水量と全雲量は規定版0.7・ECMWF0.3、そのほかは単純平均です。雲海の F は規定版、V は ECMWF を使います。霧の見通しはこの版だけに出ます。</p>
+  </div>
+  <div class="card">
+    <a href="lowcloud.html">規定版</a>
+    <div class="model">best_match（この地点では実質 気象庁MSM）</div>
+    <p>Open-Meteo の既定のモデルです。</p>
+  </div>
+  <div class="card">
+    <a href="lowcloud_ec.html">EC版</a>
+    <div class="model">ecmwf_ifs025</div>
+    <p>ECMWF の約25km格子です。谷の湿度が高く出やすく、予報視程はありません。</p>
+  </div>
+  <div class="card lab">
+    <a href="unkai_lab.html">雲海の検証ページ</a>
+    <div class="model">3版すべて</div>
+    <p>雲海期待度の式の比較と内訳です。3時間おきに更新されます。</p>
+  </div>
+</div>
+
+<h2>並べて見る</h2>
+<div class="note">横幅の広い画面では3版が横に並びます。狭い画面では縦に並びます。各ページは横にスクロールできます。</div>
+<div class="compare">
+  <div class="col"><div class="hd">平均版</div><iframe src="lowcloud_avg.html" title="平均版" loading="lazy"></iframe></div>
+  <div class="col"><div class="hd">規定版</div><iframe src="lowcloud.html" title="規定版" loading="lazy"></iframe></div>
+  <div class="col"><div class="hd">EC版</div><iframe src="lowcloud_ec.html" title="EC版" loading="lazy"></iframe></div>
+</div>
+
+<script>
+// 各版のページは自分の高さを postMessage で通知する（WordPress 埋め込み用と同じ仕組み）。送り元の iframe の高さに合わせる。
+// 通知値は iframe 自身の高さを下回らないため、CSS の初期値は小さくしておき、中身に合わせて伸ばす。
+window.addEventListener('message', function (e) {
+  var d = e.data;
+  if (!d || d.type !== 'karstweather-height' || typeof d.height !== 'number') return;
+  var frames = document.querySelectorAll('.compare iframe');
+  for (var i = 0; i < frames.length; i++) {
+    if (frames[i].contentWindow === e.source) { frames[i].style.height = Math.ceil(d.height) + 'px'; }
+  }
+});
+</script>
+</body>
+</html>
