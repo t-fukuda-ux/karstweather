@@ -655,12 +655,17 @@ $FogBlocks = @(
     @{ name = "昼";   from = 12; to = 15 },
     @{ name = "夕";   from = 16; to = 20 }
 )
+# 2026-10-25〜 50〜60% を「霧が出そう」に分け、60%以上を「濃い霧」から「霧の見込み」に変えた（福田さん判断）。
+# 9/8〜10/25 の前夜予報とカメラ判定（時間帯平均の低層雲 → 時間帯内の各時刻）で、霧（濃霧＋薄霧）の割合は
+# 30〜40% 33%・40〜50% 59%・50〜60% 58%（霧なしは6%で残りも靄）・60〜70% 84%（濃霧64%）・70%以上 86〜100%。
+# 60%台は3分の1が濃霧以外のため、濃さは言わず「見込み」にした。
 $FogLevels = @(
-    @{ min = 60; key = "high"; mark = "●"; text = "濃い霧" },
-    @{ min = 30; key = "mid";  mark = "◐"; text = "霧かも" },
-    @{ min = 0;  key = "low";  mark = "○"; text = "霧はなさそう" }
+    @{ min = 60; key = "high";    mark = "●"; text = "霧の見込み" },
+    @{ min = 50; key = "midhigh"; mark = "◐"; text = "霧が出そう" },
+    @{ min = 30; key = "mid";     mark = "◐"; text = "霧かも" },
+    @{ min = 0;  key = "low";     mark = "○"; text = "霧はなさそう" }
 )
-# 「霧かも」（旧「霧が出るかも」）の時間帯に 1時間1mm以上の雨の予報が1つでもあれば「霧が出そう」に上げる（2026-09-26〜、福田さん判断）。
+# 「霧かも」（30〜50%。旧「霧が出るかも」）の時間帯に 1時間1mm以上の雨の予報が1つでもあれば「霧が出そう」に上げる（2026-09-26〜、福田さん判断）。
 # 低層雲30〜60%の時刻で、前夜予報の雨1mm以上は霧75%（15/20）、雨0mmは52%（15/29）だった（9/12〜9/23 のカメラ目視）。
 $FogRainLevel = @{ key = "midrain"; mark = "◐"; text = "霧が出そう" }
 $FogRainMinMm = 1.0
@@ -669,7 +674,7 @@ $FogRainMinMm = 1.0
 # 9/12〜10/2 の前夜予報とカメラ判定の照合で、心配なしの時間帯31件のうち V≤0.5 なし16件は霧0件、
 # V≤0.5 あり15件は霧2件（いずれも朝・薄霧）。10/6朝の濃霧（V=0.50）を含めると朝は約3/10。
 # 昼・夕は該当6件がすべて空振りだったため朝だけに限る。
-# 「霧かも」（低層雲30〜60%、霧59〜68%）の意味を薄めないよう、別の弱い表現にしている。
+# 「霧かも」（低層雲30〜50%）の意味を薄めないよう、別の弱い表現にしている。
 $FogLowVLevel = @{ key = "lowv"; mark = "○"; text = "霧が出る事も" }
 $FogLowVMax = 0.5
 
@@ -750,7 +755,7 @@ $FogOutlookCss = @'
 .fogtbl .fm{margin-right:4px;}
 .fogtbl td.fog-high{background:#e0e0e0;color:#333;font-weight:600;}
 .fogtbl td.fog-mid{background:#f2f2f2;color:#444;}
-.fogtbl td.fog-midrain{background:#e8e8e8;color:#333;font-weight:600;}
+.fogtbl td.fog-midrain,.fogtbl td.fog-midhigh{background:#e8e8e8;color:#333;font-weight:600;}
 .fogtbl td.fog-low{background:#fff;color:#666;}
 .fogtbl td.fog-lowv{background:#fafafa;color:#555;}
 .fogtbl td.fogpast{opacity:.4;}

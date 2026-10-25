@@ -95,15 +95,16 @@ $caught=$false
 try { Assert-BundleUsable -Bundle @{hourly=@{time=$h.time;temperature_2m=@($h.time | ForEach-Object { $null })}} -Model 'test' } catch { $caught=$true }
 Assert $caught '値が全部 null の応答は中身が無い扱いにする'
 # 霧の見通し: 時間帯（早朝5-8・午前9-11・昼12-15・夕16-20）の低層雲平均で3段階。
-Assert ((Get-FogLevel 29.9).key -eq 'low' -and (Get-FogLevel 30).key -eq 'mid' -and (Get-FogLevel 59.9).key -eq 'mid' -and (Get-FogLevel 60).key -eq 'high' -and $null -eq (Get-FogLevel $null)) '霧の見通しの段階'
+Assert ((Get-FogLevel 29.9).key -eq 'low' -and (Get-FogLevel 30).key -eq 'mid' -and (Get-FogLevel 49.9).key -eq 'mid' -and (Get-FogLevel 50).key -eq 'midhigh' -and (Get-FogLevel 59.9).key -eq 'midhigh' -and (Get-FogLevel 60).key -eq 'high' -and $null -eq (Get-FogLevel $null)) '霧の見通しの段階'
+Assert ((Get-FogLevel 55).text -eq '霧が出そう' -and (Get-FogLevel 60).text -eq '霧の見込み') '50〜60%は霧が出そう、60%以上は霧の見込み'
 $fogRows=@(0..47 | ForEach-Object { $t=([datetime]'2026-09-25').AddHours($_); [pscustomobject]@{ time=$t.ToString('yyyy-MM-dd HH:mm'); low=$(if ($t.Hour -le 8) { 70 } elseif ($t.Hour -le 11) { 40 } elseif ($t.Hour -le 15) { 20 } else { 10 }) } })
 $fog=@(Get-FogOutlook -rows $fogRows -now ([datetime]'2026-09-25 12:30'))
 Assert ($fog.Count -eq 2 -and $fog[0].blocks.Count -eq 4 -and $fog[0].blocks[0].level.key -eq 'high' -and $fog[0].blocks[1].level.key -eq 'mid' -and $fog[0].blocks[2].level.key -eq 'low' -and $fog[0].blocks[3].level.key -eq 'low') '霧の見通しの時間帯集計（4区分）'
-Assert ($fog[0].blocks[0].level.text -eq '濃い霧' -and $fog[0].blocks[1].level.text -eq '霧かも' -and $fog[0].blocks[2].level.text -eq '霧はなさそう') 'スマホ向けの短い文言'
+Assert ($fog[0].blocks[0].level.text -eq '霧の見込み' -and $fog[0].blocks[1].level.text -eq '霧かも' -and $fog[0].blocks[2].level.text -eq '霧はなさそう') 'スマホ向けの短い文言'
 $fogRainRows=@(0..23 | ForEach-Object { $t=([datetime]"2026-09-25").AddHours($_); [pscustomobject]@{ time=$t.ToString("yyyy-MM-dd HH:mm"); low=40; precip=$(if ($_ -eq 12) { 1.0 } elseif ($_ -eq 17) { 0.9 } else { 0 }) } })
 $fogRain=@(Get-FogOutlook -rows $fogRainRows -now ([datetime]"2026-09-25 04:00") -days 1)
 Assert ($fogRain[0].blocks[0].level.key -eq "mid" -and $fogRain[0].blocks[2].level.key -eq "midrain" -and $fogRain[0].blocks[2].level.text -eq "霧が出そう" -and $fogRain[0].blocks[3].level.key -eq "mid") "30〜60%で1mm以上の雨なら霧が出そう"
-Assert ((Get-FogLevel 70 5).key -eq "high" -and (Get-FogLevel 20 5).key -eq "low") "雨で上げるのは30〜60%だけ"
+Assert ((Get-FogLevel 70 5).key -eq "high" -and (Get-FogLevel 55 5).key -eq "midhigh" -and (Get-FogLevel 45 5).key -eq "midrain" -and (Get-FogLevel 20 5).key -eq "low") "雨で上げるのは30〜50%（霧かも）だけ"
 # 早朝の「霧はなさそう」で展望地点の V_summit≤0.5 があれば「霧が出る事も」。午前・昼・夕、低層雲30%以上には効かせない。
 $fogVRows=@(0..23 | ForEach-Object { $t=([datetime]'2026-10-06').AddHours($_); [pscustomobject]@{ time=$t.ToString('yyyy-MM-dd HH:mm'); low=$(if ($t.Hour -ge 16) { 40 } else { 10 }) } })
 $fogV=@(Get-FogOutlook -rows $fogVRows -now ([datetime]'2026-10-06 04:00') -days 1 -summitV @{ '2026-10-06 06:00'=0.5; '2026-10-06 12:00'=0.0; '2026-10-06 17:00'=0.0 })
