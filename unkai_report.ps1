@@ -25,6 +25,14 @@ function Format-UnkaiCell {
     return ("{0:F$Digits}" -f [double]$v)
 }
 
+# 風向（度）を16方位に
+function Format-UnkaiWindDir {
+    param($deg)
+    if ($null -eq $deg) { return "--" }
+    $names = @("北","北北東","北東","東北東","東","東南東","南東","南南東","南","南南西","南西","西南西","西","西北西","北西","北北西")
+    return $names[[int][math]::Floor((([double]$deg % 360.0) + 11.25) / 22.5) % 16]
+}
+
 function Format-UnkaiInt {
     param($v)
     if ($null -eq $v) { return "--" }
@@ -57,7 +65,8 @@ $UnkaiDetailHeader = @(
     "summit_status","V_summit","summit_rh_below","summit_z_below","summit_p_above","summit_rh_above","summit_z_above","valley_band_wet",
     "vis","vis_status","V_vis","V_sfc","V","gate_f","gate_v",
     "idx","idx_add","idx_b","idx_c_mlin","idx_c_mpow","idx_c_rrange","idx_f0","label",
-    "summit_wind"   # 2026-09-23 追加（末尾に足して既存列の位置を変えない）。展望地点の地上風 m/s、記録のみ
+    "summit_wind",  # 2026-09-23 追加（末尾に足して既存列の位置を変えない）。展望地点の地上風 m/s、記録のみ
+    "summit_wind850","summit_wind850_dir","summit_wind850_night"  # 2026-10-31 追加。850hPa の風 m/s・風向°・前日21時〜対象時刻の平均 m/s、記録のみ
 ) -join ","
 
 function Get-UnkaiDetailLines {
@@ -90,7 +99,8 @@ function Get-UnkaiDetailLines {
                 (Format-UnkaiInt $r.idx), (Format-UnkaiInt $r.idx_add), (Format-UnkaiInt $r.idx_b),
                 (Format-UnkaiInt $r.idx_c_mlin), (Format-UnkaiInt $r.idx_c_mpow), (Format-UnkaiInt $r.idx_c_rrange),
                 (Format-UnkaiInt $r.idx_f0), $r.label,
-                (Format-UnkaiNum $h.vp_wind 2)
+                (Format-UnkaiNum $h.vp_wind 2),
+                (Format-UnkaiNum $h.vp_wind850 2), (Format-UnkaiNum $h.vp_wind850_dir 0), (Format-UnkaiNum $h.vp_wind850_night 2)
             ) -join ",")
         }
     }
@@ -269,10 +279,10 @@ function Get-UnkaiLabHtml {
         # --- V の内訳 ---
         [void]$sb.AppendLine('<h3>V の内訳</h3>')
         [void]$sb.AppendLine('<div class="wrap"><table>')
-        [void]$sb.AppendLine('<tr><th class="l" rowspan="2">日時</th><th colspan="6">V_summit（展望地点が雲の中にないか・主）</th><th colspan="3">V_vis（予報視程）</th><th colspan="4">記録のみ</th>')
+        [void]$sb.AppendLine('<tr><th class="l" rowspan="2">日時</th><th colspan="6">V_summit（展望地点が雲の中にないか・主）</th><th colspan="3">V_vis（予報視程）</th><th colspan="6">記録のみ</th>')
         foreach ($v in $UnkaiValleys) { [void]$sb.AppendLine(("<th colspan=""2"">{0}</th>" -f $v.name)) }
         [void]$sb.AppendLine('</tr><tr><th>下側高度</th><th>下側湿度</th><th>上側面</th><th>上側高度</th><th>上側湿度</th><th class="prod">V_summit</th>')
-        [void]$sb.AppendLine('<th>視程</th><th class="l">状態</th><th>V_vis</th><th>山上低層雲</th><th>V_sfc</th><th>山上降水</th><th>山上風km/h</th>')
+        [void]$sb.AppendLine('<th>視程</th><th class="l">状態</th><th>V_vis</th><th>山上低層雲</th><th>V_sfc</th><th>山上降水</th><th>山上風km/h</th><th>850hPa風m/s</th><th>同 夜間平均</th>')
         foreach ($v in $UnkaiValleys) { [void]$sb.AppendLine('<th>V_top_fog</th><th>谷上空</th>') }
         [void]$sb.AppendLine('</tr>')
         foreach ($h in $hrs) {
@@ -284,10 +294,12 @@ function Get-UnkaiLabHtml {
                 (&{ if ($null -eq $sm.p_above) { "--" } else { ("{0}hPa" -f $sm.p_above) } }),
                 (Format-UnkaiCell $sm.z_above 0), (Format-UnkaiCell $sm.rh_above 0), $sc, (Format-UnkaiCell $sm.v 2)))
             $windKmh = if ($null -eq $h.vp_wind) { $null } else { [double]$h.vp_wind * 3.6 }
-            [void]$sb.AppendLine(("<td>{0}</td><td class=""l"">{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td{5}>{6}</td><td>{7}</td>" -f `
+            $w850 = Format-UnkaiCell $h.vp_wind850 1
+            if ($null -ne $h.vp_wind850 -and $null -ne $h.vp_wind850_dir) { $w850 = "{0} {1}" -f $w850, (Format-UnkaiWindDir $h.vp_wind850_dir) }
+            [void]$sb.AppendLine(("<td>{0}</td><td class=""l"">{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td{5}>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td>" -f `
                 (Format-UnkaiCell $h.vp_vis 0), $h.vis_status, (Format-UnkaiCell $h.v_vis 2),
                 (Format-UnkaiCell $h.vp_low 0), (Format-UnkaiCell $h.v_sfc 2), $gc, (Format-UnkaiCell $h.vp_precip 2),
-                (Format-UnkaiCell $windKmh 1)))
+                (Format-UnkaiCell $windKmh 1), $w850, (Format-UnkaiCell $h.vp_wind850_night 1)))
             foreach ($v in $UnkaiValleys) {
                 $r = $h.valleys | Where-Object { $_.id -eq $v.id }
                 $bw = if ($r.valley_band_wet) { "湿" } else { "－" }
@@ -300,7 +312,8 @@ function Get-UnkaiLabHtml {
             "V_summit は展望地点の高度 $([int]$UnkaiSummitElev)m を挟む上下の湿り具合です。挟む面は固定せず、その時刻の geopotential_height から毎回選びます（上側の高度が時刻ごとに動くのはそのためです）。上下どちらかが欠ける場合は「判定材料不足」とし、1.0 にはしません。<br>" +
             "0／0.15／0.50／1.0 はいずれも仮の係数です。<b>0 は「確実に霧」ではなく、濃い霧の可能性を重く見た暫定的な強い減点</b>です。上下の湿度だけでは 0.15 と 0.50 の差を物理的に確定できません（直上だけ湿っていても、層の下端が展望地点より下にある可能性があります）。<br>" +
             "「谷上空」は谷側のプロファイルで展望高度帯が湿っているかの補助記録で、V には掛けていません。山上判定と食い違うときの手がかりとして残しています。<br>" +
-            "V_vis が「missing」の版は視程補正なしで、視界良好という意味ではありません。V_sfc（山上の低層雲）も記録のみです。山上格子の低層雲は「現地の霧」と「眼下の雲海が同じセルに含まれているだけ」を区別できないためです。</p>"))
+            "V_vis が「missing」の版は視程補正なしで、視界良好という意味ではありません。V_sfc（山上の低層雲）も記録のみです。山上格子の低層雲は「現地の霧」と「眼下の雲海が同じセルに含まれているだけ」を区別できないためです。<br>" +
+            "山上風は格子の地表（10m）の風で、尾根の強風を弱めに出します。850hPa風は展望地点とほぼ同じ高さの風で、夜間平均は前日21時〜その時刻の平均です。強風で雲海が崩れる減点の候補として記録だけしており、指数には使っていません（2026-10-31〜。同日は地上2.5m/sの予報に対し850hPaは14〜17m/sで、1時からの強風と合っていた）。</p>"))
     }
 
     # --- モデル比較 ---

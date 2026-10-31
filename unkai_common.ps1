@@ -363,7 +363,7 @@ function Get-UnkaiVSfc {
 
 # ---- API取得 ----
 
-$UnkaiSurfaceVars = "temperature_2m,dew_point_2m,relative_humidity_2m,wind_speed_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,precipitation,surface_pressure,visibility"
+$UnkaiSurfaceVars = "temperature_2m,dew_point_2m,relative_humidity_2m,wind_speed_10m,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,precipitation,surface_pressure,visibility,wind_speed_850hPa,wind_direction_850hPa"
 $UnkaiDailyVars   = "temperature_2m_max,temperature_2m_min,sunrise,sunset"
 
 # 展望地点1 + 谷5 をカンマ区切りで1リクエストにまとめて取得する。
@@ -644,7 +644,7 @@ function Get-UnkaiTableAverage {
         $agg = Get-UnkaiAggregate -Valleys $valleys
         $h = [ordered]@{}
         foreach ($k in $ha.Keys) { $h[$k] = $ha[$k] }
-        # 山上の風 vp_wind は F と同じく best_match 側を残す（上書きの対象に含めない）
+        # 山上の風 vp_wind・vp_wind850* は F と同じく best_match 側を残す（上書きの対象に含めない）
         if ($null -ne $hb) {
             foreach ($k in @("vp_vis","vp_low","vp_rh","vp_precip","v_vis","v_sfc","vis_status",
                               "gate_v","summit","vp_levels")) {
@@ -697,6 +697,12 @@ function Get-UnkaiTable {
             $vpPrec = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.precipitation        -at $at
             # 山上の風（m/s）。強風で雲海が崩れる減点の候補として記録だけする（指数には未使用。2026-09-23〜）
             $vpWind = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.wind_speed_10m       -at $at
+            # 850hPa（約1400〜1500m、展望地点とほぼ同じ高さ）の風。地上10mの風は格子の地表で弱められ、
+            # 2026-10-31 は 2.5m/s の予報に対し 850hPa は 14〜17m/s で、1時からの強風を捉えていたため追加（記録のみ）。
+            # 夜間平均は前日21時〜対象時刻。夜のうちに風が混ぜて冷え込みが崩れたかを見る。
+            $vpWind850    = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.wind_speed_850hPa     -at $at
+            $vpWindDir850 = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.wind_direction_850hPa -at $at
+            $vpWind850Night = Get-UnkaiMean -idxMap $vpIx -values $vpH.wind_speed_850hPa -from $dayStart.AddHours(-3) -to $at
             $vVis   = Get-UnkaiVVis -vis $vis
             $vSfc   = Get-UnkaiVSfc -low $vpLow -rh $vpRh
             $visStatus = if ($null -eq $vis) { "missing" } else { "ok" }
@@ -781,6 +787,7 @@ function Get-UnkaiTable {
                 spread = $spread
                 spread_total = $UnkaiValleys.Count
                 vp_vis = $vis; vp_low = $vpLow; vp_rh = $vpRh; vp_precip = $vpPrec; vp_wind = $vpWind
+                vp_wind850 = $vpWind850; vp_wind850_dir = $vpWindDir850; vp_wind850_night = $vpWind850Night
                 v_vis = $vVis; v_sfc = $vSfc; vis_status = $visStatus; gate_v = $gateV
                 summit = $summit; vp_levels = $vpLevels
             }
