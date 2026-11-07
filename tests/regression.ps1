@@ -42,6 +42,13 @@ $daily=Get-DailyRows -d $d -allRows $rows
 Assert ($rows.Count -eq 168 -and $daily.Count -eq 7) '週間用に7日分が必要です'
 Assert ($daily[0].tmax -eq 23.2 -and $daily[0].tmin -eq 9.1) '規定/ECの補正後最高・最低が不一致'
 Assert ((Format-DisplayTemperature $daily[0].tmax) -eq '24') '夏の晴天補正と切り上げ'
+Assert ((Format-AvgHourlyDisplayTemperature 0.2 '2026-11-08 07:29' '06:30' '17:10') -eq '0') '日の出1時間後より前は切り捨て'
+Assert ((Format-AvgHourlyDisplayTemperature 0.2 '2026-11-08 07:30' '06:30' '17:10') -eq '1') '日の出1時間後から切り上げ'
+Assert ((Format-AvgHourlyDisplayTemperature 0.2 '2026-11-08 17:09' '06:30' '17:10') -eq '1') '日の入り直前までは切り上げ'
+Assert ((Format-AvgHourlyDisplayTemperature 0.2 '2026-11-08 17:10' '06:30' '17:10') -eq '0') '日の入りから切り捨て'
+Assert ((Format-AvgHourlyDisplayTemperature -0.2 '2026-11-08 05:00' '06:30' '17:10') -eq '-1') '夜間の氷点下は負方向へ切り捨て'
+Assert ((Format-AvgDailyMaximumTemperature 10.01) -eq '11°') '週間最高気温は切り上げ'
+Assert ((Format-AvgDailyMinimumTemperature -0.05) -eq '-1°') '週間最低気温は切り捨て'
 Assert ($daily[5].tmax -eq 23.2) '毎時表示範囲外の6日目も集計が必要'
 Assert ($null -eq $daily[6].tmax -and (Format-DisplayTemperature $daily[6].tmin) -eq '--') '全欠測を0℃にしない'
 $avgRows=Build-AvgRows -hA $h -hB $h
