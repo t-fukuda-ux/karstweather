@@ -66,7 +66,9 @@ $UnkaiDetailHeader = @(
     "vis","vis_status","V_vis","V_sfc","V","gate_f","gate_v",
     "idx","idx_add","idx_b","idx_c_mlin","idx_c_mpow","idx_c_rrange","idx_f0","label",
     "summit_wind",  # 2026-09-23 追加（末尾に足して既存列の位置を変えない）。展望地点の地上風 m/s、記録のみ
-    "summit_wind850","summit_wind850_dir","summit_wind850_night"  # 2026-10-31 追加。850hPa の風 m/s・風向°・前日21時〜対象時刻の平均 m/s、記録のみ
+    "summit_wind850","summit_wind850_dir","summit_wind850_night",  # 2026-10-31 追加。850hPa の風 m/s・風向°・前日21時〜対象時刻の平均 m/s
+    "G850","F_c_nowind"  # 2026-11-11 追加。上空の夜間の風の減点係数と、減点前の F_c（F_c は減点後）
+
 ) -join ","
 
 function Get-UnkaiDetailLines {
@@ -100,7 +102,8 @@ function Get-UnkaiDetailLines {
                 (Format-UnkaiInt $r.idx_c_mlin), (Format-UnkaiInt $r.idx_c_mpow), (Format-UnkaiInt $r.idx_c_rrange),
                 (Format-UnkaiInt $r.idx_f0), $r.label,
                 (Format-UnkaiNum $h.vp_wind 2),
-                (Format-UnkaiNum $h.vp_wind850 2), (Format-UnkaiNum $h.vp_wind850_dir 0), (Format-UnkaiNum $h.vp_wind850_night 2)
+                (Format-UnkaiNum $h.vp_wind850 2), (Format-UnkaiNum $h.vp_wind850_dir 0), (Format-UnkaiNum $h.vp_wind850_night 2),
+                (Format-UnkaiNum $r.g850 3), (Format-UnkaiNum $r.f_c_nowind 3)
             ) -join ",")
         }
     }
@@ -227,18 +230,18 @@ function Get-UnkaiLabHtml {
         foreach ($v in $UnkaiValleys) {
             $isMain = ($v.id -eq "N_C" -or $v.id -eq "S_A")
             $tbl = New-Object System.Text.StringBuilder
-            [void]$tbl.AppendLine('<div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th class="prod">F 案c</th></tr>')
+            [void]$tbl.AppendLine('<div class="wrap"><table><tr><th class="l">日時</th><th>気温</th><th>露点</th><th>T-Td</th><th>湿度</th><th>風</th><th>低層雲</th><th>日没時低層雲</th><th>中層雲</th><th>高層雲</th><th>全雲量</th><th>降水</th><th>地上気圧</th><th>日較差</th><th>M</th><th>W</th><th>C</th><th>C0</th><th>R</th><th>G850</th><th class="prod">F 案c</th></tr>')
             foreach ($h in $hrs) {
                 $r = $h.valleys | Where-Object { $_.id -eq $v.id }
                 if ($null -eq $r) { continue }
                 $cls = if (-not $r.gate_f) { ' class="bad"' } else { '' }
-                [void]$tbl.AppendLine(("<tr><td class=""l"">{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td><td>{10}</td><td{11}>{12}</td><td>{13}</td><td>{14}</td><td>{15}</td><td>{16}</td><td>{17}</td><td>{18}</td><td>{19}</td><td class=""prod"">{20}</td></tr>" -f `
+                [void]$tbl.AppendLine(("<tr><td class=""l"">{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td><td>{10}</td><td{11}>{12}</td><td>{13}</td><td>{14}</td><td>{15}</td><td>{16}</td><td>{17}</td><td>{18}</td><td>{19}</td><td>{21}</td><td class=""prod"">{20}</td></tr>" -f `
                     $h.time, (Format-UnkaiCell $r.t 1), (Format-UnkaiCell $r.td 1), (Format-UnkaiCell $r.dpd 1),
                     (Format-UnkaiCell $r.rh 0), (Format-UnkaiCell $r.wind 1), (Format-UnkaiCell $r.low 0), (Format-UnkaiCell $r.low_at_sunset 0),
                     (Format-UnkaiCell $r.mid 0), (Format-UnkaiCell $r.high 0), (Format-UnkaiCell $r.total 0),
                     $cls, (Format-UnkaiCell $r.precip 2), (Format-UnkaiCell $r.surface_pressure 1), (Format-UnkaiCell $r.day_range 1),
                     (Format-UnkaiCell $r.m_rh 2), (Format-UnkaiCell $r.w 2), (Format-UnkaiCell $r.c 2), (Format-UnkaiCell $r.c0 2),
-                    (Format-UnkaiCell $r.r_drop 2), (Format-UnkaiCell $r.f_c 2)))
+                    (Format-UnkaiCell $r.r_drop 2), (Format-UnkaiCell $r.f_c 2), (Format-UnkaiCell $r.g850 2)))
             }
             [void]$tbl.AppendLine('</table></div>')
             if ($isMain) {

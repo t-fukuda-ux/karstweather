@@ -80,6 +80,10 @@ $va96=[ordered]@{}; foreach($k in $va.Keys){ $va96[$k]=$va[$k] }; $va96['summit_
 $mixed96=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';valleys=@($va96);summit=[ordered]@{v=0.0}}) `
                                   -TableB @([ordered]@{time='2026-09-08 06:00';valleys=@($vb);summit=[ordered]@{v=0.5}}))
 Assert ($mixed96[0].valleys[0].v -eq 0.5 -and $mixed96[0].valleys[0].summit_status -eq 'below_wet') '規定版の山上湿度96%ではECの判定のまま'
+# 上空（850hPa）の夜間平均風で F を減点する（2026-11-11〜）。9m/s以下は1、15m/sで下限0.2、欠測は減点なし。
+Assert ((Get-UnkaiG850 -windNight $null) -eq 1.0 -and (Get-UnkaiG850 -windNight 9.0) -eq 1.0) '上空の風9m/s以下と欠測は減点しない'
+Assert ([math]::Abs((Get-UnkaiG850 -windNight 12.0) - 0.6) -lt 0.0001) '上空の風12m/sでFは0.6倍'
+Assert ((Get-UnkaiG850 -windNight 15.0) -eq 0.2 -and (Get-UnkaiG850 -windNight 20.0) -eq 0.2) '上空の風15m/s以上は下限0.2'
 # 週間カードの雲海は朝の4時刻の最大値（2026-10-15〜）。同点は 日の出 → +1h → -1h → +2h の順。
 $udHours=@(@{date='2026-10-01';hh='05';offset=-1;idx=90;dir='北';label='a';spread=1;spread_total=4}, @{date='2026-10-01';hh='06';offset=0;idx=40;dir='南';label='b';spread=0;spread_total=4})
 $ud=@(Get-UnkaiDaily -Hours $udHours)

@@ -132,6 +132,25 @@ function Get-UnkaiW {
     return 0.0
 }
 
+# G850: 上空（850hPa、展望地点とほぼ同じ高さ）の夜間の風の弱さ。F に掛ける（2026-11-11〜）。
+# 引数は前日21時〜対象時刻の 850hPa 風速の平均（m/s、規定版 best_match）。
+# W は谷底の地上風しか見ず、夜中に上空の強風が谷へ混ざって冷え込みが崩れる日を捉えられない。
+# 実績（谷を確認できた朝の 25 件、9/17〜11/1）では夜間平均 12m/s 以上の 9/21・10/22・10/31 が
+# すべて雲海なし〜薄い（10/31 は北西風の風下の高知側だけ薄く出た）。雲海ありの最大は 9/18 の 8.3m/s。
+# 9m/s 以下は 1、15m/s で下限 0.2（風下側に薄く出ることがあるため 0 にはしない）。
+# 前夜18時発表の朝の最大値で AUC 0.48 → 0.59。件数が少なく閾値は暫定。欠測なら減点しない。
+$UnkaiG850Lo    = 9.0
+$UnkaiG850Hi    = 15.0
+$UnkaiG850Floor = 0.2
+function Get-UnkaiG850 {
+    param($windNight)
+    if ($null -eq $windNight) { return 1.0 }
+    $w = [double]$windNight
+    if ($w -le $UnkaiG850Lo) { return 1.0 }
+    if ($w -ge $UnkaiG850Hi) { return $UnkaiG850Floor }
+    return 1.0 - (1.0 - $UnkaiG850Floor) * ($w - $UnkaiG850Lo) / ($UnkaiG850Hi - $UnkaiG850Lo)
+}
+
 # C: 上空の雲による冷却の妨げが少ない度合い。放射冷却そのものではない。
 # 低層雲は「これから霧になるのを妨げる雲」と「発生した雲海」をAPI上区別できないため
 # 初版では外し、中・高層雲だけで作る（高層雲は妨げる力が弱いので重み0.5）。
@@ -717,10 +736,11 @@ function Get-UnkaiTable {
             $vpLow  = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.cloud_cover_low      -at $at
             $vpRh   = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.relative_humidity_2m -at $at
             $vpPrec = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.precipitation        -at $at
-            # 山上の風（m/s）。強風で雲海が崩れる減点の候補として記録だけする（指数には未使用。2026-09-23〜）
+            # 山上の風（m/s）。強風で雲海が崩れる減点の候補として記録だけする（指数には未使用。2026-09-23〜）。
+            # 減点には下の 850hPa 夜間平均を使う（G850、2026-11-11〜）
             $vpWind = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.wind_speed_10m       -at $at
             # 850hPa（約1400〜1500m、展望地点とほぼ同じ高さ）の風。地上10mの風は格子の地表で弱められ、
-            # 2026-10-31 は 2.5m/s の予報に対し 850hPa は 14〜17m/s で、1時からの強風を捉えていたため追加（記録のみ）。
+            # 2026-10-31 は 2.5m/s の予報に対し 850hPa は 14〜17m/s で、1時からの強風を捉えていたため追加。
             # 夜間平均は前日21時〜対象時刻。夜のうちに風が混ぜて冷え込みが崩れたかを見る。
             $vpWind850    = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.wind_speed_850hPa     -at $at
             $vpWindDir850 = Get-UnkaiValueAt -idxMap $vpIx -values $vpH.wind_direction_850hPa -at $at
@@ -749,6 +769,16 @@ function Get-UnkaiTable {
                 $row = Get-UnkaiValleyRow -Point $pt -At $at -SunsetPrev $sunsetPrev -MidnightPrev $dayStart `
                         -TMaxPrev $vd.temperature_2m_max[$j - 1] -TMinToday $vd.temperature_2m_min[$j] `
                         -SummitElev $SummitElev
+
+                # 上空の夜間の風で F（本番の案c）を減点する。減点前の値は f_c_nowind に残す。
+                # 並記用の他の F 案は減点しない（式の構造の比較用のため）。
+                $g850 = Get-UnkaiG850 -windNight $vpWind850Night
+                $row["g850"] = $g850
+                $row["f_c_nowind"] = $row.f_c
+                if ($null -ne $row.f_c) {
+                    $row["f_c"] = [double]$row.f_c * $g850
+                    $row["f"]   = $row["f_c"]
+                }
 
                 # V_dir = min(V_top_fog_dir, V_summit)
                 # 適用できた補正だけの最小値をとる。すべて適用できなければ null（指数は "--"）。
