@@ -220,6 +220,7 @@ function Get-UnkaiVTop {
 #   17時       86%         98%         濃霧
 # 850hPa は展望地点の高度 1400m とほぼ同じで、格子の地表(1296m)より 100m 以上高い。
 # 実際に立っている場所に近いほうを重く見るのが正しい、というのが実測の結論。
+$UnkaiAboveWetRhSplit = 80.0
 function Get-UnkaiVSummit {
     param($RhBelow, $ElevBelow, $Levels, [double]$SummitElev)
     $res = [ordered]@{
@@ -243,7 +244,18 @@ function Get-UnkaiVSummit {
     $wetBelow = ([double]$RhBelow    -ge 90.0)
     $wetAbove = ([double]$above.rh -ge 90.0)
     if     ($wetBelow -and $wetAbove) { $res.v = 0.00; $res.status = "summit_in_layer" }
-    elseif ($wetAbove)                { $res.v = 0.15; $res.status = "above_wet" }
+    elseif ($wetAbove) {
+        # 上側だけ湿潤。2026-11-11 に 0.15 一律から山上地上湿度で2段に分けた。
+        # 9/10〜11/10 の保存予報（camera/fog_forecast.csv、終日）× カメラ v1 で、above_wet の霧は全体で 21〜33% と
+        # 0.15 が想定するほど多くなく、地上湿度で分かれた（前夜・当日朝 × EC・規定版の4通り）。
+        #   地上 80%未満 … 霧 0〜35%、合計 13/123 = 11%（summit_dry の 4% に近い）
+        #   地上 80%以上 … 霧 10〜83%、合計 48/98 = 49%（below_wet の 45〜60% と同程度）
+        # 「展望ありの確率」とみたブライアスコアは 0.15一律 0.49〜0.58 → 2段 0.14〜0.20。
+        # 9/7 15〜16時（地上76〜79%・850hPa 96〜97%で濃霧）は 80%未満側に入るが、その後の実績では少数派。
+        # 朝（5〜9時）の該当は12時刻しかなく、根拠の大半は日中の時刻。
+        if ([double]$RhBelow -ge $UnkaiAboveWetRhSplit) { $res.v = 0.50 } else { $res.v = 0.85 }
+        $res.status = "above_wet"
+    }
     elseif ($wetBelow)                { $res.v = 0.50; $res.status = "below_wet" }
     else                              { $res.v = 1.00; $res.status = "summit_dry" }
     return $res
@@ -585,6 +597,8 @@ function Get-UnkaiViewText {
     # 見通しあり56%と半々。霧でなければ下に雲海があるため減点は強めず、文言で霧の可能性を伝える
     # （2026-10-21〜、福田さん判断）。雲頂不明より先に見る（10/21 は雲頂不明と出て霧が伝わらなかった）。
     if ($SummitStatus -eq "below_wet")       { return "霧で見えないかも" }
+    # 上側だけ湿潤で山上地上湿度80%以上（V_summit=0.5、霧は約5割）。below_wet と同じ文言にする（2026-11-11〜）。
+    if ($SummitStatus -eq "above_wet" -and $null -ne $V -and [double]$V -lt 0.60) { return "霧で見えないかも" }
     if ($TopStatus -eq "straddles_summit")   { return "雲頂不明" }
     if ($SummitStatus -eq "insufficient")    { return "視界不明" }
     if ([double]$V -ge 0.60) { return "視界良好" }

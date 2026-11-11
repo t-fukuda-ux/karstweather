@@ -80,6 +80,12 @@ $va96=[ordered]@{}; foreach($k in $va.Keys){ $va96[$k]=$va[$k] }; $va96['summit_
 $mixed96=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';valleys=@($va96);summit=[ordered]@{v=0.0}}) `
                                   -TableB @([ordered]@{time='2026-09-08 06:00';valleys=@($vb);summit=[ordered]@{v=0.5}}))
 Assert ($mixed96[0].valleys[0].v -eq 0.5 -and $mixed96[0].valleys[0].summit_status -eq 'below_wet') '規定版の山上湿度96%ではECの判定のまま'
+# 上側だけ湿潤（above_wet）は山上地上湿度80%以上で0.5、未満で0.85（2026-11-11〜）。
+$awLv=@([ordered]@{p=850;rh=95;z=1450;valid=$true})
+$aw85=Get-UnkaiVSummit -RhBelow 79 -ElevBelow 1296 -Levels $awLv -SummitElev 1400
+$aw50=Get-UnkaiVSummit -RhBelow 80 -ElevBelow 1296 -Levels $awLv -SummitElev 1400
+Assert ($aw85.status -eq 'above_wet' -and $aw85.v -eq 0.85 -and $aw50.status -eq 'above_wet' -and $aw50.v -eq 0.5) '上側だけ湿潤は山上地上湿度80%で0.5と0.85に分ける'
+Assert ((Get-UnkaiViewText -V 0.5 -TopStatus 'no_moist_layer' -SummitStatus 'above_wet') -eq '霧で見えないかも' -and (Get-UnkaiViewText -V 0.85 -TopStatus 'no_moist_layer' -SummitStatus 'above_wet') -eq '視界良好') '上側だけ湿潤の文言'
 # 上空（850hPa）の夜間平均風で F を減点する（2026-11-11〜）。9m/s以下は1、15m/sで下限0.2、欠測は減点なし。
 Assert ((Get-UnkaiG850 -windNight $null) -eq 1.0 -and (Get-UnkaiG850 -windNight 9.0) -eq 1.0) '上空の風9m/s以下と欠測は減点しない'
 Assert ([math]::Abs((Get-UnkaiG850 -windNight 12.0) - 0.6) -lt 0.0001) '上空の風12m/sでFは0.6倍'
