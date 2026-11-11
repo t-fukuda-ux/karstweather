@@ -69,6 +69,17 @@ $mixed=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';vall
 Assert ([math]::Abs([double]$mixed[0].valleys[0].f_c-0.6) -lt 0.0001) '平均版Fはbest_match由来'
 Assert ($mixed[0].valleys[0].v -eq 0.5 -and $mixed[0].valleys[0].idx -eq 30) '平均版VはEC由来'
 Assert ($mixed[0].summit.v -eq 0.5) '平均版のV説明情報もEC由来'
+# 規定版の山上地上湿度が97%以上なら、EC が below_wet でも平均版は山上を霧とみなす（2026-11-11〜）。
+$va97=[ordered]@{}; foreach($k in $va.Keys){ $va97[$k]=$va[$k] }; $va97['summit_rh_below']=97
+$mixed97=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';valleys=@($va97);summit=[ordered]@{v=0.0}}) `
+                                  -TableB @([ordered]@{time='2026-09-08 06:00';valleys=@($vb);summit=[ordered]@{v=0.5}}))
+$r97=$mixed97[0].valleys[0]
+Assert ($r97.v -eq 0 -and $r97.idx -eq 0 -and $r97.summit_status -eq 'summit_wet_bm' -and $r97.summit_status_ec -eq 'below_wet' -and $r97.v_summit_ec -eq 0.5) '規定版の山上湿度97%以上はVを0にしてECの判定を残す'
+Assert ($r97.label -eq '雲海期待・霧の恐れ') '規定版の山上湿度97%以上は霧の恐れ'
+$va96=[ordered]@{}; foreach($k in $va.Keys){ $va96[$k]=$va[$k] }; $va96['summit_rh_below']=96
+$mixed96=@(Get-UnkaiTableAverage -TableA @([ordered]@{time='2026-09-08 06:00';valleys=@($va96);summit=[ordered]@{v=0.0}}) `
+                                  -TableB @([ordered]@{time='2026-09-08 06:00';valleys=@($vb);summit=[ordered]@{v=0.5}}))
+Assert ($mixed96[0].valleys[0].v -eq 0.5 -and $mixed96[0].valleys[0].summit_status -eq 'below_wet') '規定版の山上湿度96%ではECの判定のまま'
 # 週間カードの雲海は朝の4時刻の最大値（2026-10-15〜）。同点は 日の出 → +1h → -1h → +2h の順。
 $udHours=@(@{date='2026-10-01';hh='05';offset=-1;idx=90;dir='北';label='a';spread=1;spread_total=4}, @{date='2026-10-01';hh='06';offset=0;idx=40;dir='南';label='b';spread=0;spread_total=4})
 $ud=@(Get-UnkaiDaily -Hours $udHours)

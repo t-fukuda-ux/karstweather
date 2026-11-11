@@ -542,6 +542,9 @@ function Get-UnkaiGate {
 # 0.40未満は2日とも雲海なし。0.55 で中・小に分ける根拠はまだ無いため、記録が増えてから見直す。
 $UnkaiHighF = 0.70
 
+# 平均版で、規定版の山上地上湿度がこれ以上なら山上は霧とみなす（Get-UnkaiTableAverage、2026-11-11〜）。
+$UnkaiSummitFogRhBm = 97.0
+
 function Get-UnkaiLabel {
     param($F, $V, [string]$TopStatus, [string]$SummitStatus, [bool]$GateF = $true, [bool]$GateV = $true)
     if (-not $GateF -or -not $GateV) { return "降水あり" }
@@ -557,6 +560,8 @@ function Get-UnkaiViewText {
     param($V, [string]$TopStatus, [string]$SummitStatus)
     # 「現地も霧」は断定ではなく、展望高度帯が湿っているという疑いを示す。
     if ($SummitStatus -eq "summit_in_layer") { return "霧の恐れ" }
+    # 平均版で、規定版の山上地上湿度が97%以上（Get-UnkaiTableAverage）。
+    if ($SummitStatus -eq "summit_wet_bm")   { return "霧の恐れ" }
     # 山上の地上だけ湿っている（V_summit=0.5）。9/8〜10/20 の朝63時刻で、カメラは霧（濃霧・薄霧）44%・
     # 見通しあり56%と半々。霧でなければ下に雲海があるため減点は強めず、文言で霧の可能性を伝える
     # （2026-10-21〜、福田さん判断）。雲頂不明より先に見る（10/21 は雲頂不明と出て霧が伝わらなかった）。
@@ -614,6 +619,9 @@ function Get-UnkaiTableAverage {
             $row = [ordered]@{}
             foreach ($k in $ra.Keys) { $row[$k] = $ra[$k] }
             $row["f"] = $row["f_c"]
+            # 規定版（best_match）の山上地上湿度。下の V 上書きで EC 側に置き換わる前に控える。
+            $bmSummitRh = $ra["summit_rh_below"]
+            $row["summit_rh_below_bm"] = $bmSummitRh
             # V・山上降水ゲート・V の説明情報は B（ECMWF）側へ統一する。
             # 対応する EC 行が欠けた場合は best_match へ黙って戻さず、V 不明として扱う。
             $v = if ($null -eq $rb) { $null } else { $rb.v }
@@ -628,6 +636,20 @@ function Get-UnkaiTableAverage {
                 $row["v"] = $null
                 $row["gate_v"] = $true
             }
+            # 規定版の山上地上湿度が97%以上なら、EC の判定にかかわらず山上は霧とみなす（V_summit=0、2026-11-11〜）。
+            # 9/12〜10/21 に見つけ、10/22 に規則として決めてから新しい期間（10/23〜11/10）で確かめた。
+            # 前夜発表で該当時刻は 32/32、当日朝発表で 30/30 が霧（カメラ v1）。朝6〜8時の全期間では、
+            # EC が below_wet でも 90%（9/10）、summit_in_layer なら 95%（21/22）が霧。
+            # EC 自身の地上湿度97%以上は霧 50% で効かないため、規定版の値だけで判定する。
+            if ($null -ne $rb -and $null -ne $bmSummitRh -and [double]$bmSummitRh -ge $UnkaiSummitFogRhBm -and
+                ($null -eq $row["v_summit"] -or [double]$row["v_summit"] -gt 0)) {
+                $row["v_summit_ec"]      = $row["v_summit"]
+                $row["summit_status_ec"] = $row["summit_status"]
+                $row["v_summit"]      = 0.0
+                $row["summit_status"] = "summit_wet_bm"
+                $v = 0.0
+                $row["v"] = $v
+            }
             $row["idx"]          = Get-UnkaiIdx -F $row.f_c        -V $v -GateF $ra.gate_f -GateV $gateV
             $row["idx_add"]      = Get-UnkaiIdx -F $row.f_add      -V $v -GateF $ra.gate_f -GateV $gateV
             $row["idx_b"]        = Get-UnkaiIdx -F $row.f_b        -V $v -GateF $ra.gate_f -GateV $gateV
@@ -637,7 +659,7 @@ function Get-UnkaiTableAverage {
             $row["idx_f0"]       = Get-UnkaiIdx -F $row.f0         -V $v -GateF $ra.gate_f -GateV $gateV
             $row["label"] = Get-UnkaiLabel -F $row.f_c -V $v `
                                 -TopStatus (&{ if ($null -eq $rb) { $null } else { $rb.top.top_status } }) `
-                                -SummitStatus (&{ if ($null -eq $rb) { $null } else { $rb.summit_status } }) `
+                                -SummitStatus (&{ if ($null -eq $rb) { $null } else { $row.summit_status } }) `
                                 -GateF $ra.gate_f -GateV $gateV
             $valleys += , $row
         }
